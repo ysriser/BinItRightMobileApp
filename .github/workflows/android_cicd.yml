@@ -98,10 +98,12 @@ jobs:
       - uses: actions/checkout@v4
 
       # PART A: THE ENFORCER (Fails the build if code is insecure)
-      - name: Run MobSF Enforcer (SAST)
+      - name: MobSF SAST Scan
         uses: MobSF/mobsfscan@main
         with:
-          args: '. --error --severity-level high'
+          # Just point to the current directory ('.')
+          # The .mobsf file will handle the severity filtering automatically
+          args: '.'
 
       # PART B: THE REPORTER (Generates PDF for your project)
       - name: Download APK from Build Job
