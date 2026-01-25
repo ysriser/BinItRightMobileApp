@@ -67,24 +67,78 @@ jobs:
           name: unit-test-results
           path: app/build/test-results/testDebugUnitTest/
 
-  # BOX 4: SAST (The Gatekeeper)
-  sast-scan:
-    name: 🛡️ SAST Scan
-    needs: [lint, unit-tests, sca-scan]
+  # STAGE 4: SCA (Dependency Gate)
+  sca-scan:
+    name: SCA
+    needs: build
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
-      - name: Run MobSF Enforcer
-        uses: MobSF/mobsfscan@main
+      - name: Run Trivy (SCA)
+        uses: aquasecurity/trivy-action@master
         with:
-          # Pointing to '.' will automatically pick up your '.mobsf' config
-          args: '.'
-
-      # OPTIONAL: Only if you want to see the report in the GitHub Security Tab
-      - name: Upload SARIF file
+          scan-type: 'fs'
+          format: 'table'
+          output: 'sca-report.txt'
+          exit-code: '1' # This BLOCKS the merge if High/Crit found
+          severity: 'CRITICAL,HIGH'
+      - name: Upload SCA Report
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: sast-results
-          path: results.sarif
+          name: sca-report
+          path: sca-report.txt
+
+    # BOX 5: SAST (The Final Gate & Detailed Report)
+    sast-scan:
+      name: 🛡️ SAST
+      needs: [lint, unit-tests, sca-scan]
+      runs-on: ubuntu-latest
+      steps:
+        - uses: actions/checkout@v4
+
+        # PART A: Generate the report first
+        - name: Run MobSF Scan
+          uses: MobSF/mobsfscan@main
+          with:
+            args: '. --sarif --output results.sarif'
+
+        # PART B: Upload the "What to Fix" list immediately
+        - name: Upload SAST Findings (SARIF)
+          if: always()
+          uses: actions/upload-artifact@v4
+          with:
+            name: sast-fix-list
+            path: results.sarif
+
+        # PART C: Download APK and generate PDF for documentation
+        - name: Download APK from Build Job
+          uses: actions/download-artifact@v4
+          with:
+            name: compiled-apk
+            path: build-artifacts/
+
+        - name: Generate PDF Security Report
+          uses: fundacaocerti/mobsf-action@v1.7.2
+          env:
+            INPUT_FILE_NAME: build-artifacts/app-debug.apk
+            SCAN_TYPE: apk
+            OUTPUT_FILE_NAME: mobsf-security-report
+
+        - name: Upload SAST Artifacts (PDF & JSON)
+          if: always()
+          uses: actions/upload-artifact@v4
+          with:
+            name: sast-final-reports
+            path: |
+              mobsf-security-report.pdf
+              mobsf-security-report.json
+
+        # PART D: THE ENFORCER (The actual "Rejection" step)
+        # This step checks the results. If high-risk issues exist, it fails the job.
+        - name: Check for High Risk Vulnerabilities
+          run: |
+            if grep -q "error" results.sarif; then
+              echo "❌ High-risk vulnerabilities found! Check the 'sast-fix-list' or 'sast-final-reports' artifact."
+              exit 1
+            fi
