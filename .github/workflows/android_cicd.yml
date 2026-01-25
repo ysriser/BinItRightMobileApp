@@ -67,24 +67,24 @@ jobs:
           name: unit-test-results
           path: app/build/test-results/testDebugUnitTest/
 
-    # BOX 4: SAST (The Gatekeeper)
-    sast-scan:
-      name: 🛡️ SAST Scan
-      needs: [lint, unit-tests, sca-scan]
-      runs-on: ubuntu-latest
-      steps:
-        - uses: actions/checkout@v4
+  # BOX 4: SAST (The Gatekeeper)
+  sast-scan:
+    name: 🛡️ SAST Scan
+    needs: [lint, unit-tests, sca-scan]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
 
-        - name: Run MobSF Enforcer
-          uses: MobSF/mobsfscan@main
-          with:
-            # Pointing to '.' will automatically pick up your '.mobsf' config
-            args: '.'
+      - name: Run MobSF Enforcer
+        uses: MobSF/mobsfscan@main
+        with:
+          # Pointing to '.' will automatically pick up your '.mobsf' config
+          args: '.'
 
-        # OPTIONAL: Only if you want to see the report in the GitHub Security Tab
-        - name: Upload SARIF file
-          if: always()
-          uses: actions/upload-artifact@v4
-          with:
-            name: sast-results
-            path: results.sarif
+      # OPTIONAL: Only if you want to see the report in the GitHub Security Tab
+      - name: Upload SARIF file
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: sast-results
+          path: results.sarif
