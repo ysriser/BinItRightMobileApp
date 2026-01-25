@@ -91,7 +91,7 @@ jobs:
 
   # BOX 5: SAST (The Final Gatekeeper)
   sast-scan:
-    name: 🛡️ SAST
+    name: SAST
     needs: [lint, unit-tests, sca-scan]
     runs-on: ubuntu-latest
     steps:
