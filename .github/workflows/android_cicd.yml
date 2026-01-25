@@ -89,7 +89,7 @@ jobs:
           name: sca-report
           path: sca-report.txt
 
-  # BOX 5: SAST (The Final Gate & Detailed Report)
+  # BOX 5: SAST (The Final Gatekeeper)
   sast-scan:
     name: 🛡️ SAST
     needs: [lint, unit-tests, sca-scan]
@@ -97,48 +97,29 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # PART A: Generate the report first
-      - name: Run MobSF Scan
+      # 1. RUN THE SCAN & GENERATE "WHAT TO FIX" FILE
+      - name: MobSF SAST Scan
         uses: MobSF/mobsfscan@main
         with:
-          args: '. --sarif --output results.sarif'
+          # Points to current dir, outputs JSON for easier reading
+          args: '. --json --output results.json'
 
-      # PART B: Upload the "What to Fix" list immediately
-      - name: Upload SAST Findings (SARIF)
+      # 2. UPLOAD THE FIX LIST (Available even if the build fails)
+      - name: Upload SAST Fix List
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: sast-fix-list
-          path: results.sarif
+          path: results.json
 
-      # PART C: Download APK and generate PDF for documentation
-      - name: Download APK from Build Job
-        uses: actions/download-artifact@v4
-        with:
-          name: compiled-apk
-          path: build-artifacts/
-
-      - name: Generate PDF Security Report
-        uses: fundacaocerti/mobsf-action@v1.7.2
-        env:
-          INPUT_FILE_NAME: build-artifacts/app-debug.apk
-          SCAN_TYPE: apk
-          OUTPUT_FILE_NAME: mobsf-security-report
-
-      - name: Upload SAST Artifacts (PDF & JSON)
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: sast-final-reports
-          path: |
-            mobsf-security-report.pdf
-            mobsf-security-report.json
-
-      # PART D: THE ENFORCER (The actual "Rejection" step)
-      # This step checks the results. If high-risk issues exist, it fails the job.
-      - name: Check for High Risk Vulnerabilities
+      # 3. THE ENFORCER (The logic that blocks the merge)
+      - name: Check for Security Blockers
         run: |
-          if grep -q "error" results.sarif; then
-            echo "❌ High-risk vulnerabilities found! Check the 'sast-fix-list' or 'sast-final-reports' artifact."
+          # Look for "ERROR" severity inside the JSON file
+          if grep -q '"severity": "ERROR"' results.json; then
+            echo "❌ HIGH SEVERITY VULNERABILITIES DETECTED!"
+            echo "Merge blocked. Download the 'sast-fix-list' artifact to see the errors."
             exit 1
+          else
+            echo "✅ No high-severity vulnerabilities found. Proceeding..."
           fi
