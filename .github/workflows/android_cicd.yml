@@ -1,0 +1,127 @@
+name: Android CI
+
+on:
+  push:
+    branches: [ "master", "main" ]
+  pull_request:
+    branches: [ "master", "main" ]
+
+jobs:
+  #️ STAGE 1: BUILD
+  build:
+    name: BUILD
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: gradle
+      - name: Assemble Debug APK
+        run: ./gradlew assembleDebug
+
+      # We MUST upload the APK here so Job 5 can download it
+      - name: Save APK for SAST
+        uses: actions/upload-artifact@v4
+        with:
+          name: compiled-apk
+          path: app/build/outputs/apk/debug/app-debug.apk
+
+  # STAGE 2: LINT (Quality Gate)
+  lint:
+    name: LINT
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run Android Lint
+        run: ./gradlew lintDebug
+      - name: Upload Lint Report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lint-report
+          path: app/build/reports/lint-results-debug.html
+
+  # STAGE 3: UNIT (Logic Gate)
+  unit-tests:
+    name: UNIT
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: gradle
+      - name: Run JUnit Tests
+        run: ./gradlew testDebugUnitTest
+      - name: Upload Test Results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: unit-test-results
+          path: app/build/test-results/testDebugUnitTest/
+
+  # STAGE 4: SCA (Dependency Gate)
+  sca-scan:
+    name: SCA
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run Trivy (SCA)
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          format: 'table'
+          output: 'sca-report.txt'
+          exit-code: '1' # This BLOCKS the merge if High/Crit found
+          severity: 'CRITICAL,HIGH'
+      - name: Upload SCA Report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: sca-report
+          path: sca-report.txt
+
+  # STAGE 5: SAST (The Security Boss)
+  sast-scan:
+    name: SAST
+    needs: [lint, unit-tests, sca-scan]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # PART A: THE ENFORCER (Fails the build if code is insecure)
+      - name: Run MobSF Enforcer (SAST)
+        uses: MobSF/mobsfscan@main
+        with:
+          args: '. --error --severity-level high'
+
+      # PART B: THE REPORTER (Generates PDF for your project)
+      - name: Download APK from Build Job
+        uses: actions/download-artifact@v4
+        with:
+          name: compiled-apk
+          path: build/app/outputs/apk/
+
+      - name: Generate MobSF PDF Report
+        uses: fundacaocerti/mobsf-action@v1.7.2
+        env:
+          INPUT_FILE_NAME: build/app/outputs/apk/app-debug.apk
+          SCAN_TYPE: apk
+          OUTPUT_FILE_NAME: mobsf-report
+
+      - name: Upload Final Security Artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: security-audit-files
+          path: |
+            mobsf-report.pdf
+            mobsf-report.json
