@@ -5,9 +5,9 @@ on:
   # Run for all push to all branches
   push:
     branches: ["**"]
-  # Run when PR is updated, opened or reopened and targeting master/main
-  pull_request:
-    branches: [ "master", "main" ]
+#  # Run when PR is updated, opened or reopened and targeting master/main
+#  pull_request:
+#    branches: [ "master", "main" ]
 
 # This prevents double-running the same code if a PR is open
 concurrency:
