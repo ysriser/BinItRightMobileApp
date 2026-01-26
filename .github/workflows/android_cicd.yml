@@ -1,14 +1,18 @@
 name: Android CI
-# Code push to branches (without PR) will only run build and unit test to save time.
-# Code push to PRs targeting master will run build, unit test, lint, SCA, SAST.
+# Code push to any branch will run everything: build, unit test, lint, SCA, SAST.
 
 on:
-  # Run for all push to all branches (But if statements are added in different jobs to control it)
+  # Run for all push to all branches
   push:
     branches: ["**"]
   # Run when PR is updated, opened or reopened and targeting master/main
   pull_request:
     branches: [ "master", "main" ]
+
+# This prevents double-running the same code if a PR is open
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   # STAGE 1: BUILD (Always Runs)
@@ -55,11 +59,10 @@ jobs:
           name: unit-test-results
           path: app/build/test-results/testDebugUnitTest/
 
-  # STAGE 3: LINT (Gatekeeper - Only on PR/Main)
+  # STAGE 3: LINT (Now runs on every check-in)
   lint:
     name: LINT
     needs: build
-    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master' || github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -72,11 +75,10 @@ jobs:
           name: lint-report
           path: app/build/reports/lint-results-debug.html
 
-  # STAGE 4: SCA (Gatekeeper - Only on PR/Main)
+  # STAGE 4: SCA (Now runs on every check-in)
   sca-scan:
     name: SCA
     needs: build
-    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master' || github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -95,11 +97,10 @@ jobs:
           name: sca-report
           path: sca-report.txt
 
-  # STAGE 5: SAST (Gatekeeper - Only on PR/Main)
+  # STAGE 5: SAST (Now runs on every check-in)
   sast-scan:
     name: SAST
     needs: build
-    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master' || github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
