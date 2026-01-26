@@ -1,13 +1,21 @@
 name: Android CI
+# Code push to any branch will run everything: build, unit test, lint, SCA, SAST.
 
 on:
+  # Run for all push to all branches
   push:
-    branches: [ "master", "main" ]
+    branches: ["**"]
+  # Run when PR is updated, opened or reopened and targeting master/main
   pull_request:
     branches: [ "master", "main" ]
 
+# This prevents double-running the same code if a PR is open
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
-  #️ STAGE 1: BUILD
+  # STAGE 1: BUILD (Always Runs)
   build:
     name: BUILD
     runs-on: ubuntu-latest
@@ -20,16 +28,38 @@ jobs:
           distribution: 'temurin'
           cache: gradle
       - name: Assemble Debug APK
-        run: ./gradlew assembleDebug
+        run: ./gradlew assembleDebug --no-daemon --build-cache
 
-      # We MUST upload the APK here so Job 5 can download it
       - name: Save APK for SAST
         uses: actions/upload-artifact@v4
         with:
           name: compiled-apk
           path: app/build/outputs/apk/debug/app-debug.apk
 
-  # STAGE 2: LINT (Quality Gate)
+  # STAGE 2: UNIT (Always Runs)
+  unit-tests:
+    name: UNIT
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: gradle
+      - name: Run JUnit Tests
+        run: ./gradlew testDebugUnitTest
+
+      - name: Upload Test Results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: unit-test-results
+          path: app/build/test-results/testDebugUnitTest/
+
+  # STAGE 3: LINT (Now runs on every check-in)
   lint:
     name: LINT
     needs: build
@@ -45,29 +75,7 @@ jobs:
           name: lint-report
           path: app/build/reports/lint-results-debug.html
 
-  # STAGE 3: UNIT (Logic Gate)
-  unit-tests:
-    name: UNIT
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Set up JDK 21
-        uses: actions/setup-java@v4
-        with:
-          java-version: '21'
-          distribution: 'temurin'
-          cache: gradle
-      - name: Run JUnit Tests
-        run: ./gradlew testDebugUnitTest
-      - name: Upload Test Results
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: unit-test-results
-          path: app/build/test-results/testDebugUnitTest/
-
-  # STAGE 4: SCA (Dependency Gate)
+  # STAGE 4: SCA (Now runs on every check-in)
   sca-scan:
     name: SCA
     needs: build
@@ -80,7 +88,7 @@ jobs:
           scan-type: 'fs'
           format: 'table'
           output: 'sca-report.txt'
-          exit-code: '1' # This BLOCKS the merge if High/Crit found
+          exit-code: '1'
           severity: 'CRITICAL,HIGH'
       - name: Upload SCA Report
         if: always()
@@ -89,22 +97,18 @@ jobs:
           name: sca-report
           path: sca-report.txt
 
-  # BOX 5: SAST (The Final Gatekeeper)
+  # STAGE 5: SAST (Now runs on every check-in)
   sast-scan:
     name: SAST
-    needs: [lint, unit-tests, sca-scan]
+    needs: build
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
-      # 1. RUN THE SCAN & GENERATE "WHAT TO FIX" FILE
       - name: MobSF SAST Scan
         uses: MobSF/mobsfscan@main
         with:
-          # Points to current dir, outputs JSON for easier reading
           args: '. --json --output results.json'
 
-      # 2. UPLOAD THE FIX LIST (Available even if the build fails)
       - name: Upload SAST Fix List
         if: always()
         uses: actions/upload-artifact@v4
@@ -112,14 +116,11 @@ jobs:
           name: sast-fix-list
           path: results.json
 
-      # 3. THE ENFORCER (The logic that blocks the merge)
       - name: Check for Security Blockers
         run: |
-          # Look for "ERROR" severity inside the JSON file
           if grep -q '"severity": "ERROR"' results.json; then
-            echo "❌ HIGH SEVERITY VULNERABILITIES DETECTED!"
-            echo "Merge blocked. Download the 'sast-fix-list' artifact to see the errors."
+            echo "HIGH SEVERITY VULNERABILITIES DETECTED!"
             exit 1
           else
-            echo "✅ No high-severity vulnerabilities found. Proceeding..."
+            echo "No high-severity vulnerabilities found."
           fi
