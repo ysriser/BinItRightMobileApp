@@ -17,7 +17,7 @@ android {
     defaultConfig {
         applicationId = "iss.nus.edu.sg.webviews.binitrightmobileapp"
         minSdk = 24
-        targetSdk = 33
+        targetSdk = 34
         versionCode = 1
         versionName = "1.0"
 
