@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/checkInFragment">
+
+    <!-- Fragment 1: Check-in screen -->
+    <fragment
+        android:id="@+id/checkInFragment"
+        android:name="iss.nus.edu.sg.webviews.binitrightmobileapp.CheckInFragment"
+        android:label="Check In">
+
+        <action
+            android:id="@+id/action_checkIn_to_videoRecord"
+            app:destination="@id/videoRecordFragment" />
+    </fragment>
+
+    <!-- Fragment 2: Video Recording -->
+    <fragment
+        android:id="@+id/videoRecordFragment"
+        android:name="iss.nus.edu.sg.webviews.binitrightmobileapp.VideoRecordFragment"
+        android:label="Record Video" />
+
+</navigation>
