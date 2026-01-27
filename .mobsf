@@ -1,5 +1,0 @@
----
-# This filters the scan to only report high-level issues
-severity-filter:
-  - ERROR
-  - WARNING
