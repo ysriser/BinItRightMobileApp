@@ -1,6 +1,7 @@
 package iss.nus.edu.sg.webviews.binitrightmobileapp
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -98,9 +99,18 @@ class VideoRecordFragment : Fragment() {
         }
 
         binding.btnStartRecording.setOnClickListener {
-            startRecording()
+            if (hasPermissions()) {
+                @SuppressLint("MissingPermission")
+                startRecording()
+            } else {
+                permissionLauncher.launch(
+                    arrayOf(
+                        Manifest.permission.CAMERA,
+                        Manifest.permission.RECORD_AUDIO
+                    )
+                )
+            }
         }
-
     }
 
     @RequiresPermission(Manifest.permission.RECORD_AUDIO)
