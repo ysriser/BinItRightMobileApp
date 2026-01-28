@@ -1,4 +1,4 @@
-package iss.nus.edu.sg.webviews.binitrightmobileapp
+package iss.sa61.g3.android
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
