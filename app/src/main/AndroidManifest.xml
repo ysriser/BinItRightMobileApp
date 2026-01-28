@@ -10,9 +10,9 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.BinItRightMobileApp">
+        android:theme="@style/Theme.BinItRight">
         <activity
-            android:name=".MainActivity"
+            android:name="iss.nus.edu.sg.webviews.binitrightmobileapp.MainActivity"
             android:exported="true"
             android:launchMode="singleInstance"
             android:taskAffinity="">
