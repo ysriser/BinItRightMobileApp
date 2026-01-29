@@ -20,8 +20,10 @@ class ScanningResultFragment : Fragment() {
     private val binding get() = _binding!!
 
     private val viewModel: ScanViewModel by viewModels {
-        ScanViewModelFactory(RealScanRepository())
+        ScanViewModelFactory(requireContext())
     }
+    
+    private var scanAnimator: android.animation.ObjectAnimator? = null
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -34,20 +36,24 @@ class ScanningResultFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // Retrieve using Bundle instead of SafeArgs
+        // Retrieve using Bundle
         val imageUriString = arguments?.getString("imageUri")
+        // Retrieve result object
+        val scanResult = arguments?.getSerializable("scanResult") as? ScanResult
         
         if (imageUriString != null) {
             val uri = Uri.parse(imageUriString)
-            // Load image using Coil
             binding.ivCapturedImage.load(uri)
 
-            // Auto-trigger scan if file exists
-            if (uri.scheme == "file") {
-                val file = File(uri.path!!)
-                viewModel.scanImage(file)
+            if (scanResult != null) {
+                // Display result directly
+                displayResult(scanResult)
             } else {
-                Toast.makeText(context, "Invalid image URI", Toast.LENGTH_SHORT).show()
+                // Fallback: Auto-trigger scan if file exists and no result passed
+                if (uri.scheme == "file") {
+                    val file = File(uri.path!!)
+                    viewModel.scanImage(file)
+                }
             }
         }
 
@@ -57,28 +63,12 @@ class ScanningResultFragment : Fragment() {
 
     private fun setupObservers() {
         viewModel.scanResult.observe(viewLifecycleOwner) { result ->
-            result.onSuccess { scanResult ->
-                binding.tvCategory.text = scanResult.category
-                binding.tvBadge.text = if (scanResult.recyclable) "♻ Recyclable" else "Not Recyclable"
-                binding.tvBadge.isVisible = true
-                
-                // Logic for Instruction vs Tips
-                if (!scanResult.instruction.isNullOrBlank()) {
-                     binding.tvDescriptionWait.text = scanResult.instruction
-                } else {
-                    // Fallback to tips (scanResult.instructions) - Numbered list
-                    if (scanResult.instructions.isNotEmpty()) {
-                        binding.tvDescriptionWait.text = scanResult.instructions.mapIndexed { index, tip -> "${index + 1}. $tip" }.joinToString("\n")
-                    } else {
-                        binding.tvDescriptionWait.text = if (scanResult.recyclable) 
-                            "Great news! This item can be recycled. ✨" 
-                        else 
-                            "This item cannot be recycled."
-                    }
+            result?.let {
+                it.onSuccess { scanResult ->
+                   displayResult(scanResult)
+                }.onFailure { error ->
+                    Toast.makeText(context, "Scan failed: ${error.message}", Toast.LENGTH_SHORT).show()
                 }
-            }.onFailure {
-                Toast.makeText(context, "Scan failed: ${it.message}", Toast.LENGTH_SHORT).show()
-                 // fallback UI or retry
             }
         }
 
@@ -90,6 +80,44 @@ class ScanningResultFragment : Fragment() {
             }
         }
     }
+    
+    private fun displayResult(scanResult: ScanResult) {
+        binding.tvCategory.text = scanResult.category
+        
+        if (scanResult.recyclable) {
+            binding.tvBadge.text = "♻ Recyclable"
+            binding.tvBadge.setTextColor(androidx.core.content.ContextCompat.getColor(requireContext(), android.R.color.holo_green_dark))
+            binding.tvBadge.setBackgroundResource(R.drawable.bg_badge_recyclable) // Ensure this exists or use tint
+            
+            binding.ivSuccess.setImageResource(R.drawable.ic_check_circle_24)
+            binding.ivSuccess.setColorFilter(androidx.core.content.ContextCompat.getColor(requireContext(), android.R.color.holo_green_dark))
+            
+            binding.tvDescriptionWait.text = "Great news! This item can be recycled. ✨"
+            binding.tvDescriptionWait.setTextColor(androidx.core.content.ContextCompat.getColor(requireContext(), android.R.color.holo_green_dark))
+        } else {
+            binding.tvBadge.text = "Not Recyclable"
+            // Use a darker gray or red for non-recyclable
+            binding.tvBadge.setTextColor(androidx.core.content.ContextCompat.getColor(requireContext(), android.R.color.holo_red_dark))
+            // binding.tvBadge.setBackgroundResource(...) // Optional
+            
+            // Change icon to 'Cancel' or similar
+            binding.ivSuccess.setImageResource(R.drawable.ic_close_24) // Reusing existing close icon if available, or just check-circle with red tint
+            binding.ivSuccess.setColorFilter(androidx.core.content.ContextCompat.getColor(requireContext(), android.R.color.holo_red_dark))
+            
+            binding.tvDescriptionWait.text = "This item cannot be recycled."
+            binding.tvDescriptionWait.setTextColor(androidx.core.content.ContextCompat.getColor(requireContext(), android.R.color.holo_red_dark))
+        }
+        binding.tvBadge.isVisible = true
+        
+        // Overwrite description if instruction exists
+        if (!scanResult.instruction.isNullOrBlank()) {
+             binding.tvDescriptionWait.text = scanResult.instruction
+        } else if (scanResult.instructions.isNotEmpty()) {
+            binding.tvDescriptionWait.text = scanResult.instructions.mapIndexed { index, tip -> "${index + 1}. $tip" }.joinToString("\n")
+        }
+    }
+
+
 
     private fun setupListeners() {
         binding.btnScanAgain.setOnClickListener {

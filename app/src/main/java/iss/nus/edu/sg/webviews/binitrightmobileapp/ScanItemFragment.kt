@@ -25,6 +25,7 @@ import java.text.SimpleDateFormat
 import java.util.Locale
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
+import androidx.fragment.app.viewModels
 
 class ScanItemFragment : Fragment() {
 
@@ -33,6 +34,13 @@ class ScanItemFragment : Fragment() {
 
     private var imageCapture: ImageCapture? = null
     private lateinit var cameraExecutor: ExecutorService
+    
+    // New Logic
+    private val viewModel: ScanViewModel by viewModels {
+        ScanViewModelFactory(requireContext())
+    }
+    private var scanAnimator: android.animation.ObjectAnimator? = null
+    private var lastCapturedUri: Uri? = null
 
     private val requestPermissionLauncher =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted: Boolean ->
@@ -72,6 +80,8 @@ class ScanItemFragment : Fragment() {
                 requireActivity().finish()
             }
         }
+        
+        setupObservers()
     }
 
     companion object {
@@ -80,13 +90,10 @@ class ScanItemFragment : Fragment() {
     }
 
     private fun takePhoto() {
-        // Get a stable reference of the modifiable image capture use case
         val imageCapture = imageCapture ?: return
 
-        binding.loadingOverlay.isVisible = true
         binding.btnTakePhoto.isEnabled = false
 
-        // Create time-stamped output file to hold the image
         val photoFile = File(
             getOutputDirectory(),
             SimpleDateFormat(FILENAME_FORMAT, Locale.US).format(System.currentTimeMillis()) + ".jpg"
@@ -100,24 +107,72 @@ class ScanItemFragment : Fragment() {
             object : ImageCapture.OnImageSavedCallback {
                 override fun onError(exc: ImageCaptureException) {
                     Log.e(TAG, "Photo capture failed: ${exc.message}", exc)
-                    binding.loadingOverlay.isVisible = false
                     binding.btnTakePhoto.isEnabled = true
                     Toast.makeText(requireContext(), "Failed to capture photo", Toast.LENGTH_SHORT).show()
                 }
 
                 override fun onImageSaved(output: ImageCapture.OutputFileResults) {
                     val savedUri = Uri.fromFile(photoFile)
-                    val msg = "Photo capture succeeded: $savedUri"
-                    Log.d(TAG, msg)
+                    lastCapturedUri = savedUri
+                    Log.d(TAG, "Photo capture succeeded: $savedUri")
                     
-                    // Navigate to Result using Bundle
-                    val bundle = Bundle().apply {
-                        putString("imageUri", savedUri.toString())
-                    }
-                    findNavController().navigate(R.id.action_scanItemFragment_to_scanningResultFragment, bundle)
+                    startScanUI()
+                    viewModel.scanImage(photoFile)
                 }
             }
         )
+    }
+
+    private fun setupObservers() {
+        viewModel.scanResult.observe(viewLifecycleOwner) { result ->
+            if (result == null) return@observe // Ignore reset/initial state check
+            
+            result.onSuccess { scanResult ->
+                stopScanUI()
+                
+                val bundle = Bundle().apply {
+                    putString("imageUri", lastCapturedUri?.toString())
+                    putSerializable("scanResult", scanResult)
+                }
+                
+                findNavController().navigate(R.id.action_scanItemFragment_to_scanningResultFragment, bundle)
+                viewModel.resetScanState() // Consume the event immediately after navigating
+                
+            }.onFailure {
+                stopScanUI()
+                Toast.makeText(context, "Scan failed: ${it.message}", Toast.LENGTH_LONG).show()
+                binding.btnTakePhoto.isEnabled = true
+                viewModel.resetScanState() // Reset on failure too so we can try again cleanly
+            }
+        }
+    }
+    
+    override fun onResume() {
+        super.onResume()
+        binding.btnTakePhoto.isEnabled = true
+        binding.loadingOverlay.isVisible = false
+        // Ensure state is clean when returning
+        viewModel.resetScanState()
+    }
+    
+    private fun startScanUI() {
+        binding.loadingOverlay.isVisible = true
+        binding.scanLine.translationX = 0f
+        
+        // Wait for layout
+        val width = binding.loadingOverlay.width.takeIf { it > 0 }?.toFloat() ?: 1000f
+        
+        scanAnimator = android.animation.ObjectAnimator.ofFloat(binding.scanLine, "translationX", 0f, width).apply {
+            duration = 1500
+            repeatCount = android.animation.ValueAnimator.INFINITE
+            repeatMode = android.animation.ValueAnimator.RESTART
+            start()
+        }
+    }
+
+    private fun stopScanUI() {
+        scanAnimator?.cancel()
+        binding.loadingOverlay.isVisible = false
     }
 
     private fun startCamera() {

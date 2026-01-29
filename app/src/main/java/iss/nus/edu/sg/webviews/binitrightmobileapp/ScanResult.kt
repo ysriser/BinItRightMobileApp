@@ -9,7 +9,7 @@ data class ScanResult(
     val confidence: Float,
     val instructions: List<String> = emptyList(),
     val instruction: String? = null
-)
+) : java.io.Serializable
 
 data class FeedbackRequest(
     val imageId: String,

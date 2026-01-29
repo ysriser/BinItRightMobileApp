@@ -57,6 +57,38 @@
                 android:id="@+id/viewFinder"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent" />
+            
+            <!-- Loading Overlay (Scanner Stylized) -->
+            <FrameLayout
+                android:id="@+id/loadingOverlay"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="#80000000"
+                android:clickable="true"
+                android:focusable="true"
+                android:visibility="gone"
+                tools:visibility="visible">
+        
+                <!-- Scan Line -->
+                <View
+                    android:id="@+id/scanLine"
+                    android:layout_width="4dp"
+                    android:layout_height="match_parent"
+                    android:background="#00C853"
+                    android:alpha="0.9"
+                    android:layout_gravity="start"/>
+        
+                <!-- Progress Text - Center -->
+                <TextView
+                    android:id="@+id/tvScanProgress"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:text="Identifying..."
+                    android:textColor="@android:color/white"
+                    android:textStyle="bold"
+                    android:textSize="18sp"/>
+            </FrameLayout>
 
         </FrameLayout>
 
@@ -142,21 +174,7 @@
     </androidx.cardview.widget.CardView>
 
     <!-- Loading Overlay -->
-    <FrameLayout
-        android:id="@+id/loadingOverlay"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="#80FFFFFF"
-        android:clickable="true"
-        android:focusable="true"
-        android:visibility="gone"
-        tools:visibility="gone">
+    <!-- Loading Overlay (Scanner Style) -->
 
-        <ProgressBar
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:indeterminateTint="@color/purple_500" />
-    </FrameLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

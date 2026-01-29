@@ -17,11 +17,22 @@
         <ImageView
             android:id="@+id/ivCapturedImage"
             android:layout_width="match_parent"
-            android:layout_height="200dp"
+            android:layout_height="280dp"
             android:scaleType="centerCrop"
             android:alpha="0.1"
             app:layout_constraintTop_toTopOf="parent"
             tools:src="@drawable/ic_launcher_background" />
+
+        <!-- Gradient Fade Overlay -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="100dp"
+            android:background="@drawable/bg_gradient_fade"
+            app:layout_constraintBottom_toBottomOf="@id/ivCapturedImage"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"/>
+
+
 
         <!-- Green Check Circle -->
         <ImageView
@@ -103,7 +114,8 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:layout_marginEnd="8dp"
-                        android:text="Yes, accurate"
+                        android:text="YES"
+                        android:textSize="13sp"
                         android:textColor="#00C853"
                         app:strokeColor="#00C853" />
 
@@ -114,7 +126,8 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:layout_marginStart="8dp"
-                        android:text="No, incorrect"
+                        android:text="NO"
+                        android:textSize="13sp"
                         android:textColor="#D32F2F"
                         app:strokeColor="#D32F2F" />
                 </LinearLayout>
@@ -180,7 +193,7 @@
                              android:layout_width="wrap_content"
                              android:layout_height="wrap_content"
                              android:layout_marginTop="4dp"
-                             android:text="• Earn recycling points\n• Track your environmental impact\n•"
+                             android:text="• Earn recycling points\n• Track your environmental impact"
                              android:textColor="#616161"
                              android:lineSpacingExtra="4dp"/>
                     </LinearLayout>
@@ -215,7 +228,7 @@
             android:minHeight="48dp"
             android:paddingVertical="12dp"
             android:layout_marginHorizontal="24dp"
-            android:layout_marginTop="16dp"
+            android:layout_marginTop="0dp"
             android:backgroundTint="#2962FF"
             android:text="Scan Another Item"
             android:textSize="14sp"
@@ -244,6 +257,42 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/btnScanAgain" />
+
+        <!-- Loading Overlay -->
+        <FrameLayout
+            android:id="@+id/flLoadingOverlay"
+            android:layout_width="match_parent"
+            android:layout_height="200dp"
+            android:visibility="gone"
+            app:layout_constraintTop_toTopOf="@+id/ivCapturedImage"
+            app:layout_constraintBottom_toBottomOf="@+id/ivCapturedImage">
+            
+            <!-- Semi-transparent dimmer -->
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="#80000000" />
+            
+            <!-- Scan Line -->
+            <View
+                android:id="@+id/scanLine"
+                android:layout_width="4dp"
+                android:layout_height="match_parent"
+                android:background="#00C853"
+                android:alpha="0.8"
+                android:layout_gravity="start"/>
+
+            <!-- Progress Text -->
+             <TextView
+                android:id="@+id/tvScanProgress"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:text="Identifying..."
+                android:textColor="@android:color/white"
+                android:textStyle="bold"
+                android:textSize="18sp"/>
+        </FrameLayout>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </ScrollView>

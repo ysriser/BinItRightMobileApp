@@ -60,6 +60,7 @@ dependencies {
     implementation(libs.retrofit)
     implementation(libs.retrofit.gson)
     implementation(libs.gson)
+    implementation("com.microsoft.onnxruntime:onnxruntime-android:1.16.0") // Or similar recent version
 
     // Coil
     implementation(libs.coil)

@@ -89,3 +89,50 @@ class RealScanRepository : ScanRepository {
         }
     }
 }
+
+class LocalModelScanRepository(private val context: android.content.Context) : ScanRepository {
+    private val classifier = ImageClassifier(context)
+
+    override suspend fun scanImage(imageFile: File): Result<ScanResult> {
+        return try {
+            // Convert file to bitmap
+            val bitmap = android.graphics.BitmapFactory.decodeFile(imageFile.absolutePath)
+            
+            // Run inference
+            val label = classifier.classify(bitmap)
+            
+            // Map label to Recyclable status (Mock logic based on label)
+            val isRecyclable = when(label) {
+                "plastic", "metal", "glass", "paper" -> true
+                else -> false // e-waste, textile, other, etc.
+            }
+            
+            // Simulate processing time for UX (scanner animation)
+            delay(2000) 
+
+            Result.success(
+                ScanResult(
+                    category = label.replaceFirstChar { it.uppercase() },
+                    recyclable = isRecyclable,
+                    confidence = 0.95f, // Mock confidence
+                    instructions = if (isRecyclable) 
+                        listOf("Clean and Dry", "Recycle in Blue Bin") 
+                    else 
+                        listOf("Check specific disposal guidelines"),
+                    instruction = if (isRecyclable)
+                        "1. Rinse the item.\n2. Place in Blue Bin."
+                    else
+                        "1. Do not put in Blue Bin.\n2. Check local guidelines."
+                )
+            )
+        } catch (e: Exception) {
+             Log.e("LocalModelRepository", "Error running local model", e)
+             Result.failure(e)
+        }
+    }
+
+    override suspend fun sendFeedback(feedback: FeedbackRequest): Result<Boolean> {
+         return Result.success(true)
+    }
+}
+
