@@ -1,0 +1,11 @@
+    fun resetScanState() {
+        _scanResult.value = null // This might compile error if LiveData value type isn't nullable? 
+        // MutableLiveData<Result<ScanResult>> accepts null if I didn't enforce non-null.
+        // Actually Result is a value class in Kotlin 1.5+? It might have issues with null.
+        // Safer to use a wrapper or just don't re-observe/ignore?
+        // Let's use a "Pending" state or just allow re-scan to overwrite. 
+        // Best: Clear the observer? No.
+        
+        // Actually, let's just create a new MutableLiveData or set it to something harmless?
+        // Or better, checking for handling status in Fragment.
+    }
