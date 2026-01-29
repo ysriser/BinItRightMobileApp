@@ -44,7 +44,8 @@ class FakeScanRepository : ScanRepository {
                 category = "Electronics",
                 recyclable = true,
                 confidence = 0.86f,
-                instructions = listOf("Remove batteries if removable", "Dispose in e-waste bin")
+                instructions = listOf("Remove batteries if removable", "Dispose in e-waste bin"),
+                instruction = "1. Remove batteries if removable.\n2. Dispose in e-waste bin."
             )
         )
     }

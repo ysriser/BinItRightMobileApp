@@ -96,6 +96,8 @@
                         android:layout_weight="1"
                         android:layout_marginEnd="8dp"
                         android:text="Yes, accurate"
+                        android:maxLines="1"
+                        app:autoSizeTextType="uniform"
                         android:textColor="#00C853"
                         app:strokeColor="#00C853" />
 
@@ -107,6 +109,8 @@
                         android:layout_weight="1"
                         android:layout_marginStart="8dp"
                         android:text="No, incorrect"
+                        android:maxLines="1"
+                        app:autoSizeTextType="uniform"
                         android:textColor="#D32F2F"
                         app:strokeColor="#D32F2F" />
                 </LinearLayout>
@@ -166,7 +170,7 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Tips / Benefits:"
+                            android:text="Instructions:"
                             android:textStyle="bold"
                             android:textColor="#424242"/>
                          <TextView
@@ -186,12 +190,16 @@
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnRecycle"
             android:layout_width="0dp"
-            android:layout_height="60dp"
+            android:layout_height="wrap_content"
+            android:minHeight="48dp"
+            android:paddingVertical="12dp"
             android:layout_marginHorizontal="24dp"
             android:layout_marginTop="32dp"
             android:backgroundTint="#00C853"
             android:text="Yes, I want to recycle this →"
-            android:textSize="16sp"
+            android:textSize="14sp"
+            android:maxLines="2"
+            android:ellipsize="end"
             android:textColor="@android:color/white"
             app:cornerRadius="8dp"
             app:layout_constraintEnd_toEndOf="parent"
@@ -201,12 +209,16 @@
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnScanAgain"
             android:layout_width="0dp"
-            android:layout_height="60dp"
+            android:layout_height="wrap_content"
+            android:minHeight="48dp"
+            android:paddingVertical="12dp"
             android:layout_marginHorizontal="24dp"
             android:layout_marginTop="16dp"
             android:backgroundTint="#2962FF"
             android:text="Scan Another Item"
-            android:textSize="16sp"
+            android:textSize="14sp"
+            android:maxLines="2"
+            android:ellipsize="end"
             android:textColor="@android:color/white"
             app:cornerRadius="8dp"
             app:icon="@drawable/ic_camera_alt_24"

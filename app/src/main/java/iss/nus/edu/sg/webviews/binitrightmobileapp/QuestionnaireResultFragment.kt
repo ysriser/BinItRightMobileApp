@@ -44,8 +44,14 @@ class QuestionnaireResultFragment : Fragment() {
         binding.tvExplanationDetail.text = "Certainty: ${outcome.certainty}" // Added certainty info
         
         // Tips
-        val tipsText = outcome.tips.joinToString("\n") { "• $it" }
-        binding.tvTips.text = tipsText
+        // Instructions / Tips Logic
+        if (!outcome.instruction.isNullOrBlank()) {
+             binding.tvTips.text = outcome.instruction
+        } else {
+             // Fallback to Instructions (formerly Tips) - Numbered list
+             val tipsText = outcome.tips.mapIndexed { index, tip -> "${index + 1}. $tip" }.joinToString("\n")
+             binding.tvTips.text = tipsText
+        }
 
         // Logic based on Certainty and Label
         val certainty = try { Certainty.valueOf(outcome.certainty) } catch (e: Exception) { Certainty.LOW }

@@ -38,7 +38,8 @@ data class OutcomeNode(
     val disposalLabel: String,
     val certainty: String,
     val explanation: String,
-    val tips: List<String>
+    val tips: List<String>,
+    val instruction: String? = null
 )
 
 // Helper to bundle result for passing between fragments
@@ -47,5 +48,6 @@ data class SerializableOutcome(
     val disposalLabel: String,
     val certainty: String,
     val explanation: String,
-    val tips: List<String>
+    val tips: List<String>,
+    val instruction: String? = null
 ) : Serializable

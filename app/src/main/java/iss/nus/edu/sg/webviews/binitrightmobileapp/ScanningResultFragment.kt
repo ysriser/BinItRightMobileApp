@@ -61,11 +61,21 @@ class ScanningResultFragment : Fragment() {
                 binding.tvCategory.text = scanResult.category
                 binding.tvBadge.text = if (scanResult.recyclable) "♻ Recyclable" else "Not Recyclable"
                 binding.tvBadge.isVisible = true
-                binding.tvDescriptionWait.text = if (scanResult.recyclable) 
-                    "Great news! This item can be recycled. ✨" 
-                else 
-                    "This item cannot be recycled."
-                // For instructions/benefits, we could parse from scanResult.instructions
+                
+                // Logic for Instruction vs Tips
+                if (!scanResult.instruction.isNullOrBlank()) {
+                     binding.tvDescriptionWait.text = scanResult.instruction
+                } else {
+                    // Fallback to tips (scanResult.instructions) - Numbered list
+                    if (scanResult.instructions.isNotEmpty()) {
+                        binding.tvDescriptionWait.text = scanResult.instructions.mapIndexed { index, tip -> "${index + 1}. $tip" }.joinToString("\n")
+                    } else {
+                        binding.tvDescriptionWait.text = if (scanResult.recyclable) 
+                            "Great news! This item can be recycled. ✨" 
+                        else 
+                            "This item cannot be recycled."
+                    }
+                }
             }.onFailure {
                 Toast.makeText(context, "Scan failed: ${it.message}", Toast.LENGTH_SHORT).show()
                  // fallback UI or retry

@@ -89,7 +89,8 @@
         "Empty, rinse, and dry the item before recycling",
         "Remove mixed materials if possible (e.g., caps, liners)",
         "If in doubt, use camera scan for confirmation"
-      ]
+      ],
+      "instruction": "1. Rinse the bottle thoroughly.\n2. Remove the cap.\n3. Crush the bottle to save space."
     },
     {
       "id": "out_dirty_contaminated",
