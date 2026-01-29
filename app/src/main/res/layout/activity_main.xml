@@ -22,10 +22,10 @@
         android:id="@+id/bottom_nav_view"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/white"
+        android:background="@color/primary_green"
         app:menu="@menu/bottom_menu"
-        app:itemIconTint="@color/primary_green"
-        app:itemTextColor="@color/primary_green"
+        app:itemIconTint="@color/white"
+        app:itemTextColor="@color/white"
         app:layout_constraintBottom_toBottomOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
