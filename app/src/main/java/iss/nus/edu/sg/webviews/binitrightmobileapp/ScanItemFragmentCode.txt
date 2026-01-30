@@ -1,0 +1,38 @@
+    private fun setupObservers() {
+        viewModel.scanResult.observe(viewLifecycleOwner) { result ->
+            result.onSuccess { scanResult ->
+                stopScanUI()
+                
+                val bundle = Bundle().apply {
+                    putString("imageUri", lastCapturedUri?.toString())
+                    putSerializable("scanResult", scanResult)
+                }
+                
+                // Clear result to prevent re-navigation if view recreated (optional, but good practice if using SharedViewModel, here scoped is Fragment so okay)
+                findNavController().navigate(R.id.action_scanItemFragment_to_scanningResultFragment, bundle)
+                
+            }.onFailure {
+                stopScanUI()
+                Toast.makeText(context, "Scan failed: ${it.message}", Toast.LENGTH_LONG).show()
+                binding.btnTakePhoto.isEnabled = true
+            }
+        }
+    }
+    
+    private fun startScanUI() {
+        binding.loadingOverlay.isVisible = true
+        binding.scanLine.translationX = 0f
+        
+        val width = binding.loadingOverlay.width.toFloat()
+        scanAnimator = android.animation.ObjectAnimator.ofFloat(binding.scanLine, "translationX", 0f, width).apply {
+            duration = 1500
+            repeatCount = android.animation.ValueAnimator.INFINITE
+            repeatMode = android.animation.ValueAnimator.RESTART
+            start()
+        }
+    }
+
+    private fun stopScanUI() {
+        scanAnimator?.cancel()
+        binding.loadingOverlay.isVisible = false
+    }
