@@ -3,73 +3,30 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/nav_graph"
-    app:startDestination="@id/homeFragment">
+    app:startDestination="@id/nav_home"> <fragment
+    android:id="@+id/nav_home"
+    android:name="iss.nus.edu.sg.webviews.binitrightmobileapp.HomeFragment"
+    android:label="Home"
+    tools:layout="@layout/fragment_home" />
 
     <fragment
-        android:id="@+id/homeFragment"
-        android:name="iss.nus.edu.sg.webviews.binitrightmobileapp.HomeFragment"
-        android:label="Home"
-        tools:layout="@layout/fragment_home">
-        <action
-            android:id="@+id/action_homeFragment_to_scanItemFragment"
-            app:destination="@id/scanItemFragment"
-            app:enterAnim="@anim/nav_default_enter_anim"
-            app:exitAnim="@anim/nav_default_exit_anim"
-            app:popEnterAnim="@anim/nav_default_pop_enter_anim"
-            app:popExitAnim="@anim/nav_default_pop_exit_anim" />
-        <action
-            android:id="@+id/action_homeFragment_to_questionnaireFragment"
-            app:destination="@id/questionnaireFragment"
-            app:enterAnim="@anim/nav_default_enter_anim"
-            app:exitAnim="@anim/nav_default_exit_anim"
-            app:popEnterAnim="@anim/nav_default_pop_enter_anim"
-            app:popExitAnim="@anim/nav_default_pop_exit_anim" />
-    </fragment>
+        android:id="@+id/nav_news"
+        android:name="iss.nus.edu.sg.webviews.binitrightmobileapp.NewsFragment"
+        android:label="News" />
 
     <fragment
-        android:id="@+id/scanItemFragment"
-        android:name="iss.nus.edu.sg.webviews.binitrightmobileapp.ScanItemFragment"
-        android:label="Scan Item"
-        tools:layout="@layout/fragment_scan_item">
-        <action
-            android:id="@+id/action_scanItemFragment_to_scanningResultFragment"
-            app:destination="@id/scanningResultFragment"
-            app:enterAnim="@anim/nav_default_enter_anim"
-            app:exitAnim="@anim/nav_default_exit_anim"
-            app:popEnterAnim="@anim/nav_default_pop_enter_anim"
-            app:popExitAnim="@anim/nav_default_pop_exit_anim" />
-    </fragment>
+        android:id="@+id/nav_events"
+        android:name="iss.nus.edu.sg.webviews.binitrightmobileapp.EventsFragment"
+        android:label="Events" />
 
     <fragment
-        android:id="@+id/scanningResultFragment"
-        android:name="iss.nus.edu.sg.webviews.binitrightmobileapp.ScanningResultFragment"
-        android:label="Scanning Result"
-        tools:layout="@layout/fragment_scanning_result">
-    </fragment>
+        android:id="@+id/nav_games"
+        android:name="iss.nus.edu.sg.webviews.binitrightmobileapp.GamesFragment"
+        android:label="Games" />
 
     <fragment
-        android:id="@+id/questionnaireFragment"
-        android:name="iss.nus.edu.sg.webviews.binitrightmobileapp.QuestionnaireFragment"
-        android:label="Questionnaire"
-        tools:layout="@layout/fragment_questionnaire">
-        <action
-            android:id="@+id/action_questionnaireFragment_to_questionnaireResultFragment"
-            app:destination="@id/questionnaireResultFragment"
-            app:enterAnim="@anim/nav_default_enter_anim"
-            app:exitAnim="@anim/nav_default_exit_anim"
-            app:popEnterAnim="@anim/nav_default_pop_enter_anim"
-            app:popExitAnim="@anim/nav_default_pop_exit_anim" />
-    </fragment>
+        android:id="@+id/nav_profile"
+        android:name="iss.nus.edu.sg.webviews.binitrightmobileapp.ProfileFragment"
+        android:label="Profile" />
 
-    <fragment
-        android:id="@+id/questionnaireResultFragment"
-        android:name="iss.nus.edu.sg.webviews.binitrightmobileapp.QuestionnaireResultFragment"
-        android:label="Result"
-        tools:layout="@layout/fragment_questionnaire_result">
-        <action
-            android:id="@+id/action_questionnaireResultFragment_to_scanItemFragment"
-            app:destination="@id/scanItemFragment"
-            app:enterAnim="@anim/nav_default_enter_anim"
-            app:exitAnim="@anim/nav_default_exit_anim" />
-    </fragment>
 </navigation>

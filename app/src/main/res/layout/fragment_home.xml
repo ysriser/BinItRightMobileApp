@@ -1,46 +1,40 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="24dp"
-    tools:context=".HomeFragment"
-    android:orientation="vertical"
-    android:gravity="center">
+    android:background="#F5F7F6"> <RelativeLayout
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <View
+        android:id="@+id/headerBg"
+        android:layout_width="match_parent"
+        android:layout_height="220dp"
+        android:background="#00C853" />
+
+    <LinearLayout
+        android:id="@+id/headerTextContainer"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingStart="24dp"
+        android:paddingTop="32dp"
+        android:paddingEnd="24dp">
 
     <TextView
-        android:id="@+id/tvAppTitle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Bin It Right"
-        android:textSize="32sp"
         android:textStyle="bold"
         android:textColor="#2E7D32"
-        android:layout_marginBottom="16dp"/>
 
-
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/btnStartScan"
         android:layout_width="match_parent"
-        android:layout_height="64dp"
-        android:text="Start Scanning"
         android:textSize="18sp"
-        app:cornerRadius="12dp"
-        app:icon="@drawable/ic_camera_alt_24"
-        app:iconGravity="textStart"
-        android:layout_marginBottom="16dp"/>
 
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/btnQuestionnaire"
         android:layout_width="match_parent"
-        android:layout_height="64dp"
-        android:text="Identify with Quiz"
         android:textSize="18sp"
-        app:cornerRadius="12dp"
-        app:icon="@drawable/ic_arrow_forward_24"
-        app:iconGravity="textStart"
-        android:backgroundTint="#0288D1" />
 
 
 </LinearLayout>
