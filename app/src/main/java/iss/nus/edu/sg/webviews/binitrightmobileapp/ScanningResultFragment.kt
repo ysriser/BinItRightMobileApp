@@ -22,7 +22,7 @@ class ScanningResultFragment : Fragment() {
     private val viewModel: ScanViewModel by viewModels {
         ScanViewModelFactory(requireContext())
     }
-    
+
     private var scanAnimator: android.animation.ObjectAnimator? = null
 
     override fun onCreateView(
@@ -40,7 +40,7 @@ class ScanningResultFragment : Fragment() {
         val imageUriString = arguments?.getString("imageUri")
         // Retrieve result object
         val scanResult = arguments?.getSerializable("scanResult") as? ScanResult
-        
+
         if (imageUriString != null) {
             val uri = Uri.parse(imageUriString)
             binding.ivCapturedImage.load(uri)
@@ -65,7 +65,7 @@ class ScanningResultFragment : Fragment() {
         viewModel.scanResult.observe(viewLifecycleOwner) { result ->
             result?.let {
                 it.onSuccess { scanResult ->
-                   displayResult(scanResult)
+                    displayResult(scanResult)
                 }.onFailure { error ->
                     Toast.makeText(context, "Scan failed: ${error.message}", Toast.LENGTH_SHORT).show()
                 }
@@ -80,18 +80,18 @@ class ScanningResultFragment : Fragment() {
             }
         }
     }
-    
+
     private fun displayResult(scanResult: ScanResult) {
         binding.tvCategory.text = scanResult.category
-        
+
         if (scanResult.recyclable) {
             binding.tvBadge.text = "♻ Recyclable"
             binding.tvBadge.setTextColor(androidx.core.content.ContextCompat.getColor(requireContext(), android.R.color.holo_green_dark))
             binding.tvBadge.setBackgroundResource(R.drawable.bg_badge_recyclable) // Ensure this exists or use tint
-            
+
             binding.ivSuccess.setImageResource(R.drawable.ic_check_circle_24)
             binding.ivSuccess.setColorFilter(androidx.core.content.ContextCompat.getColor(requireContext(), android.R.color.holo_green_dark))
-            
+
             binding.tvDescriptionWait.text = "Great news! This item can be recycled. ✨"
             binding.tvDescriptionWait.setTextColor(androidx.core.content.ContextCompat.getColor(requireContext(), android.R.color.holo_green_dark))
         } else {
@@ -99,19 +99,19 @@ class ScanningResultFragment : Fragment() {
             // Use a darker gray or red for non-recyclable
             binding.tvBadge.setTextColor(androidx.core.content.ContextCompat.getColor(requireContext(), android.R.color.holo_red_dark))
             // binding.tvBadge.setBackgroundResource(...) // Optional
-            
+
             // Change icon to 'Cancel' or similar
             binding.ivSuccess.setImageResource(R.drawable.ic_close_24) // Reusing existing close icon if available, or just check-circle with red tint
             binding.ivSuccess.setColorFilter(androidx.core.content.ContextCompat.getColor(requireContext(), android.R.color.holo_red_dark))
-            
+
             binding.tvDescriptionWait.text = "This item cannot be recycled."
             binding.tvDescriptionWait.setTextColor(androidx.core.content.ContextCompat.getColor(requireContext(), android.R.color.holo_red_dark))
         }
         binding.tvBadge.isVisible = true
-        
+
         // Overwrite description if instruction exists
         if (!scanResult.instruction.isNullOrBlank()) {
-             binding.tvDescriptionWait.text = scanResult.instruction
+            binding.tvDescriptionWait.text = scanResult.instruction
         } else if (scanResult.instructions.isNotEmpty()) {
             binding.tvDescriptionWait.text = scanResult.instructions.mapIndexed { index, tip -> "${index + 1}. $tip" }.joinToString("\n")
         }
@@ -126,7 +126,8 @@ class ScanningResultFragment : Fragment() {
 
         binding.btnNotNow.setOnClickListener {
             // Navigate home or exit
-            findNavController().popBackStack(R.id.homeFragment, false)
+            // 修复这里：将 R.id.homeFragment 改为 R.id.nav_home
+            findNavController().popBackStack(R.id.nav_home, false)
 
         }
 
@@ -135,7 +136,7 @@ class ScanningResultFragment : Fragment() {
         }
 
         binding.btnAccurate.setOnClickListener {
-           sendFeedback(true)
+            sendFeedback(true)
         }
 
         binding.btnIncorrect.setOnClickListener {
