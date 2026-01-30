@@ -175,5 +175,4 @@ jobs:
               arch: x86_64
               profile: pixel_5
               script: |
-                cd appium-tests
                 mvn test -Dapk.path=$GITHUB_WORKSPACE/apk/app-debug.apk
