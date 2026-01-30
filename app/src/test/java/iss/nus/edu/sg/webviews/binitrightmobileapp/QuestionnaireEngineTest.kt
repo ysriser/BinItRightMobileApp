@@ -15,9 +15,11 @@ import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.robolectric.annotation.Config
 import org.robolectric.RobolectricTestRunner
 
 @RunWith(RobolectricTestRunner::class)
+@Config(manifest = Config.NONE, assetDir = "src/main/assets")
 class QuestionnaireEngineTest {
 
     private fun buildEngine(): QuestionnaireEngine {
