@@ -19,7 +19,7 @@ import org.robolectric.annotation.Config
 import org.robolectric.RobolectricTestRunner
 
 @RunWith(RobolectricTestRunner::class)
-@Config(manifest = Config.NONE, assetDir = "src/main/assets")
+@Config(manifest = Config.NONE, assetDir = "app/src/main/assets")
 class QuestionnaireEngineTest {
 
     private fun buildEngine(): QuestionnaireEngine {
