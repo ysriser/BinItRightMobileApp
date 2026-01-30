@@ -1,0 +1,314 @@
+package iss.nus.edu.sg.webviews.binitrightmobileapp
+
+import android.Manifest
+import android.content.pm.PackageManager
+import android.os.Bundle
+import android.util.Log
+import android.view.View
+import androidx.core.app.ActivityCompat
+import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
+import androidx.navigation.fragment.findNavController
+import androidx.recyclerview.widget.LinearLayoutManager
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationServices
+import com.google.android.gms.maps.CameraUpdateFactory
+import com.google.android.gms.maps.GoogleMap
+import com.google.android.gms.maps.OnMapReadyCallback
+import com.google.android.gms.maps.SupportMapFragment
+import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.MarkerOptions
+import iss.nus.edu.sg.todo.samplebin.FindBinsAdapter
+import iss.nus.edu.sg.webviews.binitrightmobileapp.databinding.FragmentFindRecyclingBinBinding
+import iss.nus.edu.sg.webviews.binitrightmobileapp.model.DropOffLocation
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import java.io.BufferedReader
+import java.io.InputStreamReader
+import java.net.URL
+
+class FindRecyclingBinFragment : Fragment(R.layout.fragment_find_recycling_bin), OnMapReadyCallback {
+
+    private var _binding: FragmentFindRecyclingBinBinding? = null
+    private val binding get() = _binding!!
+
+    private lateinit var googleMap: GoogleMap
+    private var pendingBins: List<DropOffLocation>? = null
+    private var isMapReady = false
+    private var lastCameraMoveToken = 0
+    private val allBins = mutableListOf<DropOffLocation>()
+    private val filteredBins = mutableListOf<DropOffLocation>()
+    private lateinit var adapter: FindBinsAdapter
+    private lateinit var locationClient: FusedLocationProviderClient
+
+    companion object {
+        private const val LOCATION_PERMISSION_REQUEST_CODE = 1001
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        _binding = FragmentFindRecyclingBinBinding.bind(view)
+
+        locationClient = LocationServices.getFusedLocationProviderClient(requireActivity())
+
+        binding.btnBackToHome.setOnClickListener {
+            findNavController().navigateUp()
+        }
+        setupMap()
+        setupRecyclerView()
+        setupChipFiltering()
+    }
+
+    // -----------------------------
+    // Map
+    // -----------------------------
+    private fun setupMap() {
+        val mapFragment = childFragmentManager.findFragmentById(R.id.mapContainer)
+                as? SupportMapFragment ?: SupportMapFragment.newInstance().also {
+            childFragmentManager.beginTransaction()
+                .replace(R.id.mapContainer, it)
+                .commit()
+        }
+        mapFragment.getMapAsync(this)
+    }
+
+    override fun onMapReady(map: GoogleMap) {
+        googleMap = map
+        isMapReady = true
+
+        googleMap.uiSettings.isZoomControlsEnabled = true
+
+        pendingBins?.let {
+            updateMapMarkers(it, lastCameraMoveToken)
+            pendingBins = null
+        }
+        fetchBinsWithLocation("")
+    }
+
+    // -----------------------------
+    // RecyclerView
+    // -----------------------------
+    private fun setupRecyclerView() {
+        binding.binsRecyclerView.layoutManager = LinearLayoutManager(requireContext())
+        adapter = FindBinsAdapter(filteredBins)
+        binding.binsRecyclerView.adapter = adapter
+    }
+
+    // -----------------------------
+    // Fetch All Bins From Backend
+    // -----------------------------
+    private fun fetchBinsWithLocation(binType: String) {
+        if (ActivityCompat.checkSelfPermission(
+                requireContext(),
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            requestPermissions(
+                arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
+                LOCATION_PERMISSION_REQUEST_CODE
+            )
+            return
+        }
+
+        locationClient.lastLocation.addOnSuccessListener { location ->
+            val userLat = location?.latitude ?: 1.28797431732068
+            val userLng = location?.longitude ?: 103.805808773107998
+
+            viewLifecycleOwner.lifecycleScope.launch {
+                val json = withContext(Dispatchers.IO) {
+                    val url = URL("http://10.0.2.2:8081/api/bins/all?lat=$userLat&lng=$userLng&binType=$binType")
+                    val connection = url.openConnection() as java.net.HttpURLConnection
+                    connection.requestMethod = "GET"
+                    connection.connectTimeout = 10000
+                    connection.readTimeout = 10000
+
+                    val stream = if (connection.responseCode in 200..299) {
+                        connection.inputStream
+                    } else {
+                        connection.errorStream
+                    }
+
+                    BufferedReader(InputStreamReader(stream)).use { it.readText() }
+                }
+                Log.d("FIND_BINS_API", "Response JSON = $json")
+                parseAllBinsJson(json)
+            }
+        }
+    }
+
+    // -----------------------------
+    // Parse Backend Response
+    // -----------------------------
+    private fun parseAllBinsJson(json: String) {
+        try {
+            val jsonArray = org.json.JSONArray(json)
+            val tempList = mutableListOf<DropOffLocation>()
+
+            for (i in 0 until jsonArray.length()) {
+                val obj = jsonArray.getJSONObject(i)
+
+                tempList.add(
+                    DropOffLocation(
+                        id = obj.getLong("id"),
+                        name = obj.getString("name"),
+                        address = obj.getString("address"),
+                        description = obj.getString("description"),
+                        postalCode = obj.getString("postalCode"),
+                        binType = obj.getString("binType"),
+                        status = obj.getBoolean("status"),
+                        latitude = obj.getDouble("latitude"),
+                        longitude = obj.getDouble("longitude"),
+                        distanceMeters = obj.optDouble("distanceMeters", 0.0)
+                    )
+                )
+            }
+
+            allBins.clear()
+            allBins.addAll(tempList)
+
+            updateUI()
+        } catch (e: Exception) {
+            Log.e("FIND_BINS_PARSE_ERROR", "JSON Parse Error: ${e.message}")
+        }
+    }
+
+    private fun updateUI() {
+        filteredBins.clear()
+        filteredBins.addAll(allBins)
+
+        adapter.notifyDataSetChanged()
+
+        lastCameraMoveToken++
+        updateMapMarkers(filteredBins, lastCameraMoveToken)
+    }
+
+    // -----------------------------
+    // Apply Filter (not used in current implementation)
+    // -----------------------------
+    private fun applyFilter(type: String) {
+        filteredBins.clear()
+
+        if (type == "ALL") {
+            filteredBins.addAll(allBins)
+        } else {
+            filteredBins.addAll(
+                allBins.filter { it.binType.equals(type, true) }
+            )
+        }
+
+        adapter.notifyDataSetChanged()
+
+        lastCameraMoveToken++
+        updateMapMarkers(filteredBins, lastCameraMoveToken)
+    }
+
+    // -----------------------------
+    // Map Markers
+    // -----------------------------
+    private fun updateMapMarkers(list: List<DropOffLocation>, cameraToken: Int) {
+        if (!isMapReady) {
+            pendingBins = list
+            return
+        }
+
+        googleMap.clear()
+
+        val limited = list.take(40)  // show only 40 nearest bins
+
+        limited.forEach { bin ->
+            googleMap.addMarker(
+                MarkerOptions()
+                    .position(LatLng(bin.latitude, bin.longitude))
+                    .title(bin.name)
+            )
+        }
+
+        if (limited.isNotEmpty()) {
+            val nearest = limited.first()
+            googleMap.animateCamera(
+                CameraUpdateFactory.newLatLngZoom(
+                    LatLng(nearest.latitude, nearest.longitude),
+                    14f
+                )
+            )
+        }
+    }
+
+    private fun moveCamera(
+        bins: List<DropOffLocation>,
+        tokenAtRequest: Int
+    ) {
+        if (bins.isEmpty()) return
+
+        // Wait until map finishes rendering
+        googleMap.setOnMapLoadedCallback {
+            if (tokenAtRequest != lastCameraMoveToken) return@setOnMapLoadedCallback
+
+            val boundsBuilder = com.google.android.gms.maps.model.LatLngBounds.Builder()
+
+            bins.forEach {
+                boundsBuilder.include(
+                    LatLng(it.latitude, it.longitude)
+                )
+            }
+
+            val bounds = boundsBuilder.build()
+
+            googleMap.moveCamera(
+                CameraUpdateFactory.newLatLngBounds(bounds, 120)
+            )
+        }
+    }
+
+    // -----------------------------
+    // Chip Filtering
+    // -----------------------------
+    private fun setupChipFiltering() {
+        binding.apply {
+            chipAll.setOnClickListener {
+                chipAll.isChecked = true
+                fetchBinsWithLocation("")
+            }
+
+            chipBlueBin.setOnClickListener {
+                chipBlueBin.isChecked = true
+                fetchBinsWithLocation("BLUEBIN")
+            }
+
+            chipEwaste.setOnClickListener {
+                chipEwaste.isChecked = true
+                fetchBinsWithLocation("EWASTE")
+            }
+
+            chipLighting.setOnClickListener {
+                chipLighting.isChecked = true
+                fetchBinsWithLocation("LAMP")
+            }
+        }
+    }
+
+    // -----------------------------
+    // Permission Result
+    // -----------------------------
+    @Deprecated("Deprecated in Java")
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+
+        if (requestCode == LOCATION_PERMISSION_REQUEST_CODE &&
+            grantResults.isNotEmpty() &&
+            grantResults[0] == PackageManager.PERMISSION_GRANTED
+        ) {
+            fetchBinsWithLocation("")
+        }
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
+    }
+}

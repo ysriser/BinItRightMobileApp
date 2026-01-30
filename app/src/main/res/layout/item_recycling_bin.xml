@@ -1,0 +1,79 @@
+<androidx.cardview.widget.CardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/cardRoot"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="12dp"
+    app:cardCornerRadius="16dp"
+    app:cardElevation="4dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="16dp"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <TextView
+                android:id="@+id/binName"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Green Earth Recycling Center"
+                android:textStyle="bold"
+                android:textSize="16sp"/>
+
+            <TextView
+                android:id="@+id/binType"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="BlueBin"
+                android:textSize="16sp"/>
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/binAddress"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="123 Eco Street"/>
+
+        <TextView
+            android:id="@+id/binPostalCode"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="111111"/>
+
+        <TextView
+            android:id="@+id/binDistance"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="0.5 km away"/>
+
+        <TextView
+            android:id="@+id/binDescription"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Paper Plastic "/>
+
+        <TextView
+            android:id="@+id/binStatus"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Active"/>
+
+        <Button
+            android:id="@+id/selectButton"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:text="Select This Location"
+            android:backgroundTint="@color/buttonColor"
+            android:textColor="@android:color/white"
+            android:layout_marginTop="12dp"/>
+    </LinearLayout>
+</androidx.cardview.widget.CardView>
