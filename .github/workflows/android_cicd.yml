@@ -125,8 +125,8 @@ jobs:
             echo "No high-severity vulnerabilities found."
           fi
 
-    # STAGE 6: SIT 
-      sit-appium:
+  # STAGE 6: SIT 
+  sit-appium:
         name: SIT (Appium)
         needs: build
         runs-on: ubuntu-latest
