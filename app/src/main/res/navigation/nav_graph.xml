@@ -67,7 +67,6 @@
         android:name="iss.nus.edu.sg.webviews.binitrightmobileapp.ProfileFragment"
         android:label="Profile" />
 
-
     <fragment
         android:id="@+id/scanHomeFragment"
         android:name="iss.nus.edu.sg.webviews.binitrightmobileapp.ScanHomeFragment"

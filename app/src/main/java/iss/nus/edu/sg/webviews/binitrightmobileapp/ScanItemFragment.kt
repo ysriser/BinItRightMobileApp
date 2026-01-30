@@ -35,7 +35,6 @@ class ScanItemFragment : Fragment() {
     private var imageCapture: ImageCapture? = null
     private lateinit var cameraExecutor: ExecutorService
     
-    // New Logic
     private val viewModel: ScanViewModel by viewModels {
         ScanViewModelFactory(requireContext())
     }
@@ -75,12 +74,9 @@ class ScanItemFragment : Fragment() {
         }
 
         binding.btnClose.setOnClickListener {
-            // If root, could finish activity, but for now just pop or do nothing if root
-            if (!findNavController().popBackStack()) {
-                requireActivity().finish()
-            }
+            findNavController().popBackStack(R.id.nav_home, false)
         }
-        
+
         setupObservers()
     }
 
@@ -115,7 +111,7 @@ class ScanItemFragment : Fragment() {
                     val savedUri = Uri.fromFile(photoFile)
                     lastCapturedUri = savedUri
                     Log.d(TAG, "Photo capture succeeded: $savedUri")
-                    
+
                     startScanUI()
                     viewModel.scanImage(photoFile)
                 }
@@ -125,43 +121,41 @@ class ScanItemFragment : Fragment() {
 
     private fun setupObservers() {
         viewModel.scanResult.observe(viewLifecycleOwner) { result ->
-            if (result == null) return@observe // Ignore reset/initial state check
-            
+            if (result == null) return@observe
+
             result.onSuccess { scanResult ->
                 stopScanUI()
-                
+
                 val bundle = Bundle().apply {
                     putString("imageUri", lastCapturedUri?.toString())
                     putSerializable("scanResult", scanResult)
                 }
-                
+
                 findNavController().navigate(R.id.action_scanItemFragment_to_scanningResultFragment, bundle)
-                viewModel.resetScanState() // Consume the event immediately after navigating
-                
+                viewModel.resetScanState()
+
             }.onFailure {
                 stopScanUI()
                 Toast.makeText(context, "Scan failed: ${it.message}", Toast.LENGTH_LONG).show()
                 binding.btnTakePhoto.isEnabled = true
-                viewModel.resetScanState() // Reset on failure too so we can try again cleanly
+                viewModel.resetScanState()
             }
         }
     }
-    
+
     override fun onResume() {
         super.onResume()
         binding.btnTakePhoto.isEnabled = true
         binding.loadingOverlay.isVisible = false
-        // Ensure state is clean when returning
         viewModel.resetScanState()
     }
-    
+
     private fun startScanUI() {
         binding.loadingOverlay.isVisible = true
         binding.scanLine.translationX = 0f
-        
-        // Wait for layout
+
         val width = binding.loadingOverlay.width.takeIf { it > 0 }?.toFloat() ?: 1000f
-        
+
         scanAnimator = android.animation.ObjectAnimator.ofFloat(binding.scanLine, "translationX", 0f, width).apply {
             duration = 1500
             repeatCount = android.animation.ValueAnimator.INFINITE
@@ -179,10 +173,8 @@ class ScanItemFragment : Fragment() {
         val cameraProviderFuture = ProcessCameraProvider.getInstance(requireContext())
 
         cameraProviderFuture.addListener({
-            // Used to bind the lifecycle of cameras to the lifecycle owner
             val cameraProvider: ProcessCameraProvider = cameraProviderFuture.get()
 
-            // Preview
             val preview = Preview.Builder()
                 .build()
                 .also {
@@ -191,14 +183,11 @@ class ScanItemFragment : Fragment() {
 
             imageCapture = ImageCapture.Builder().build()
 
-            // Select back camera as a default
             val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
 
             try {
-                // Unbind use cases before rebinding
                 cameraProvider.unbindAll()
 
-                // Bind use cases to camera
                 cameraProvider.bindToLifecycle(
                     this, cameraSelector, preview, imageCapture
                 )

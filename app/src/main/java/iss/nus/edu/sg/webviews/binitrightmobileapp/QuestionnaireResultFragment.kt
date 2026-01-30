@@ -41,42 +41,42 @@ class QuestionnaireResultFragment : Fragment() {
         binding.tvCategory.text = outcome.categoryTitle
         binding.tvBadge.text = outcome.disposalLabel
         binding.tvExplanation.text = outcome.explanation
-        binding.tvExplanationDetail.text = "Certainty: ${outcome.certainty}" // Added certainty info
-        
+        binding.tvExplanationDetail.text = "Certainty: ${outcome.certainty}"
+
         // Tips
         // Instructions / Tips Logic
         if (!outcome.instruction.isNullOrBlank()) {
-             binding.tvTips.text = outcome.instruction
+            binding.tvTips.text = outcome.instruction
         } else {
-             // Fallback to Instructions (formerly Tips) - Numbered list
-             val tipsText = outcome.tips.mapIndexed { index, tip -> "${index + 1}. $tip" }.joinToString("\n")
-             binding.tvTips.text = tipsText
+            // Fallback to Instructions (formerly Tips) - Numbered list
+            val tipsText = outcome.tips.mapIndexed { index, tip -> "${index + 1}. $tip" }.joinToString("\n")
+            binding.tvTips.text = tipsText
         }
 
         // Logic based on Certainty and Label
         val certainty = try { Certainty.valueOf(outcome.certainty) } catch (e: Exception) { Certainty.LOW }
         val isRecyclable = outcome.disposalLabel.equals("Recyclable", ignoreCase = true)
-        
+
         // Reset Icon/Badge to base logic (Type-based) first
         if (isRecyclable) {
-            binding.tvBadge.setBackgroundResource(R.drawable.bg_badge_recyclable) 
+            binding.tvBadge.setBackgroundResource(R.drawable.bg_badge_recyclable)
             binding.tvBadge.background.setTint(Color.parseColor("#E8F5E9"))
             binding.tvBadge.setTextColor(Color.parseColor("#00695C"))
             binding.ivSuccess.setImageResource(R.drawable.ic_check_circle_24)
             binding.ivSuccess.setColorFilter(Color.parseColor("#00C853"))
         } else {
-             // Default for non-recyclable or unsure
-             binding.tvBadge.setBackgroundResource(R.drawable.bg_badge_recyclable)
-             binding.tvBadge.background.setTint(Color.parseColor("#EEEEEE"))
-             binding.tvBadge.setTextColor(Color.parseColor("#616161"))
-             binding.ivSuccess.setImageResource(R.drawable.ic_help_24)
-             binding.ivSuccess.setColorFilter(Color.parseColor("#757575"))
-             
-             if (!outcome.disposalLabel.equals("Not sure", ignoreCase = true)) {
-                 // Explicit non-recyclable/special
-                 binding.ivSuccess.setImageResource(R.drawable.ic_error_24)
-                 binding.ivSuccess.setColorFilter(Color.parseColor("#D32F2F"))
-             }
+            // Default for non-recyclable or unsure
+            binding.tvBadge.setBackgroundResource(R.drawable.bg_badge_recyclable)
+            binding.tvBadge.background.setTint(Color.parseColor("#EEEEEE"))
+            binding.tvBadge.setTextColor(Color.parseColor("#616161"))
+            binding.ivSuccess.setImageResource(R.drawable.ic_help_24)
+            binding.ivSuccess.setColorFilter(Color.parseColor("#757575"))
+
+            if (!outcome.disposalLabel.equals("Not sure", ignoreCase = true)) {
+                // Explicit non-recyclable/special
+                binding.ivSuccess.setImageResource(R.drawable.ic_error_24)
+                binding.ivSuccess.setColorFilter(Color.parseColor("#D32F2F"))
+            }
         }
 
         // Apply Color Coding to INFO CARD AREA (Background & Texts)
@@ -84,9 +84,9 @@ class QuestionnaireResultFragment : Fragment() {
             Certainty.HIGH -> {
                 if (isRecyclable) {
                     // High Certainty Recyclable -> Green Card
-                     binding.cardInfo.setCardBackgroundColor(Color.parseColor("#E8F5E9")) // Light Green
-                     binding.tvExplanation.setTextColor(Color.parseColor("#1B5E20"))
-                     binding.tvExplanationDetail.setTextColor(Color.parseColor("#2E7D32"))
+                    binding.cardInfo.setCardBackgroundColor(Color.parseColor("#E8F5E9")) // Light Green
+                    binding.tvExplanation.setTextColor(Color.parseColor("#1B5E20"))
+                    binding.tvExplanationDetail.setTextColor(Color.parseColor("#2E7D32"))
                 } else {
                     // High Certainty Non-Recyclable -> Same Green Card
                     binding.cardInfo.setCardBackgroundColor(Color.parseColor("#E8F5E9")) // Light Green
@@ -96,15 +96,15 @@ class QuestionnaireResultFragment : Fragment() {
             }
             Certainty.MEDIUM -> {
                 // Medium -> Blue Card
-                 binding.cardInfo.setCardBackgroundColor(Color.parseColor("#E3F2FD")) // Light Blue
-                 binding.tvExplanation.setTextColor(Color.parseColor("#0D47A1"))
-                 binding.tvExplanationDetail.setTextColor(Color.parseColor("#1565C0"))
+                binding.cardInfo.setCardBackgroundColor(Color.parseColor("#E3F2FD")) // Light Blue
+                binding.tvExplanation.setTextColor(Color.parseColor("#0D47A1"))
+                binding.tvExplanationDetail.setTextColor(Color.parseColor("#1565C0"))
             }
             Certainty.LOW -> {
                 // Low -> Yellow Card
-                 binding.cardInfo.setCardBackgroundColor(Color.parseColor("#FFFDE7")) // Light Yellow
-                 binding.tvExplanation.setTextColor(Color.parseColor("#F57F17")) // Darker Yellow text for contrast
-                 binding.tvExplanationDetail.setTextColor(Color.parseColor("#F9A825"))
+                binding.cardInfo.setCardBackgroundColor(Color.parseColor("#FFFDE7")) // Light Yellow
+                binding.tvExplanation.setTextColor(Color.parseColor("#F57F17")) // Darker Yellow text for contrast
+                binding.tvExplanationDetail.setTextColor(Color.parseColor("#F9A825"))
             }
         }
     }
@@ -134,15 +134,15 @@ class QuestionnaireResultFragment : Fragment() {
                 bundle
             )
         }
-        
+
         binding.btnAccurate.setOnClickListener {
-             Toast.makeText(context, "Thanks for feedback!", Toast.LENGTH_SHORT).show()
-             binding.cardAccuracy.isVisible = false
+            Toast.makeText(context, "Thanks for feedback!", Toast.LENGTH_SHORT).show()
+            binding.cardAccuracy.isVisible = false
         }
-        
+
         binding.btnIncorrect.setOnClickListener {
-             Toast.makeText(context, "Thanks! We'll improve.", Toast.LENGTH_SHORT).show()
-             binding.cardAccuracy.isVisible = false
+            Toast.makeText(context, "Thanks! We'll improve.", Toast.LENGTH_SHORT).show()
+            binding.cardAccuracy.isVisible = false
         }
     }
 
