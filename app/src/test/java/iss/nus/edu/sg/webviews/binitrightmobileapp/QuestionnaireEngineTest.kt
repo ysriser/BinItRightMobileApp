@@ -3,33 +3,61 @@ package iss.nus.edu.sg.webviews.binitrightmobileapp
 /*
  * File purpose:
  * - Basic, practical tests for QuestionnaireEngine.
- * - Uses the real questionnaire.json asset (Robolectric provides assets).
+ * - Uses a small in-memory config instead of assets (more reliable in CI).
  * - Checks start question, selecting an option, and going back.
  */
-
-import android.content.Context
-import androidx.test.core.app.ApplicationProvider
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.robolectric.annotation.Config
 import org.robolectric.RobolectricTestRunner
 
 @RunWith(RobolectricTestRunner::class)
-@Config(manifest = Config.NONE, assetDir = "app/src/main/assets")
 class QuestionnaireEngineTest {
 
     private fun buildEngine(): QuestionnaireEngine {
-        val context = ApplicationProvider.getApplicationContext<Context>()
-        return QuestionnaireEngine(context)
+        val config = QuestionnaireConfig(
+            startQuestionId = "q1",
+            questions = listOf(
+                QuestionNode(
+                    id = "q1",
+                    question = "What is the item made of?",
+                    subtitle = null,
+                    options = listOf(
+                        OptionNode(id = "o1", text = "Plastic", next = "q2"),
+                        OptionNode(id = "o2", text = "Other", next = "out1"),
+                    ),
+                ),
+                QuestionNode(
+                    id = "q2",
+                    question = "Is it clean?",
+                    subtitle = null,
+                    options = listOf(
+                        OptionNode(id = "o3", text = "Yes", next = "out1"),
+                    ),
+                ),
+            ),
+            outcomes = listOf(
+                OutcomeNode(
+                    id = "out1",
+                    categoryTitle = "Plastic",
+                    disposalLabel = "Recycle",
+                    certainty = "HIGH",
+                    explanation = "Test outcome",
+                    tips = listOf("Rinse"),
+                    instruction = "Rinse then recycle",
+                )
+            ),
+        )
+        val context = org.robolectric.RuntimeEnvironment.getApplication()
+        return QuestionnaireEngine(context, config)
     }
 
     @Test
     fun initializesAtStartQuestion() {
-        // Step 1: create engine (loads questionnaire.json).
+        // Step 1: create engine with a small test config.
         val engine = buildEngine()
 
         // Step 2: it should point to a valid start question.

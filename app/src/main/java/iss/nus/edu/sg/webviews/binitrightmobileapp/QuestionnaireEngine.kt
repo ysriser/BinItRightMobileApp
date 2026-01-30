@@ -5,7 +5,10 @@ import com.google.gson.Gson
 import java.io.InputStreamReader
 import java.util.Stack
 
-class QuestionnaireEngine(private val context: Context) {
+class QuestionnaireEngine(
+    private val context: Context,
+    private val configOverride: QuestionnaireConfig? = null,
+) {
 
     private lateinit var config: QuestionnaireConfig
     private val answers = LinkedHashMap<String, String>() // QuestionId -> OptionId
@@ -15,7 +18,12 @@ class QuestionnaireEngine(private val context: Context) {
         private set
 
     init {
-        loadConfig()
+        if (configOverride != null) {
+            config = configOverride
+            currentQuestionId = config.startQuestionId
+        } else {
+            loadConfig()
+        }
     }
 
     private fun loadConfig() {
@@ -26,7 +34,9 @@ class QuestionnaireEngine(private val context: Context) {
             currentQuestionId = config.startQuestionId
         } catch (e: Exception) {
             e.printStackTrace()
-            // Fallback empty config if parsing fails (should not happen in prod if JSON is valid)
+            // Fallback empty config if parsing fails (should not happen in prod if JSON is valid).
+            config = QuestionnaireConfig(startQuestionId = "", questions = emptyList(), outcomes = emptyList())
+            currentQuestionId = null
         }
     }
 
