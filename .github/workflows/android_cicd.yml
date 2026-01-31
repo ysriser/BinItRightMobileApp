@@ -62,7 +62,7 @@ jobs:
   # STAGE 3: LINT (Now runs on every check-in)
   lint:
     name: LINT
-    needs: build
+    needs: unit-tests
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
