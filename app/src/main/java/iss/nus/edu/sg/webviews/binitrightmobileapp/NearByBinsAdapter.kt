@@ -47,10 +47,12 @@ class NearByBinsAdapter(
                 binDistance.text = " ${"%.1f".format(bin.distanceMeters)} m away"
 
                 // Button visibility logic
-                binding.selectButton.visibility = if (isSelected) {
-                    View.VISIBLE
+                if (isSelected) {
+                    binding.selectButton.visibility = View.VISIBLE
                 } else {
-                    View.GONE
+                    // Clear any potential data/state before hiding
+                    binding.selectButton.visibility = View.GONE
+                    binding.selectButton.text = ""
                 }
 
                 // Card click selects item
