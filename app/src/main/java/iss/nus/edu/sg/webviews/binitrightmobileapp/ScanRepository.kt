@@ -13,7 +13,7 @@ import java.util.concurrent.TimeUnit
 
 object RetrofitClient {
     // 10.0.2.2 is localhost for Android Emulator
-    private const val BASE_URL = "http://10.0.2.2:8080/"
+    private const val BASE_URL = "http://192.168.88.4:8081/"
 
     private val okHttpClient = OkHttpClient.Builder()
         .connectTimeout(30, TimeUnit.SECONDS)

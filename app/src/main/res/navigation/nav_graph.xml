@@ -159,29 +159,6 @@
     </fragment>
 
     <fragment
-        android:id="@+id/binHomeFragment"
-        android:name="iss.nus.edu.sg.webviews.binitrightmobileapp.BinHomeFragment"
-        android:label="Recycling Bins"
-        tools:layout="@layout/fragment_bin_home">
-        <action
-            android:id="@+id/action_binHome_to_nearbyBin"
-            app:destination="@id/nearByBinFragment"
-            app:enterAnim="@anim/nav_default_enter_anim"
-            app:exitAnim="@anim/nav_default_exit_anim"
-            app:popEnterAnim="@anim/nav_default_pop_enter_anim"
-            app:popExitAnim="@anim/nav_default_pop_exit_anim" />
-        <action
-            android:id="@+id/action_binHome_to_findRecyclingBin"
-            app:destination="@id/findRecyclingBinFragment"
-            app:enterAnim="@anim/nav_default_enter_anim"
-            app:exitAnim="@anim/nav_default_exit_anim"
-            app:popEnterAnim="@anim/nav_default_pop_enter_anim"
-            app:popExitAnim="@anim/nav_default_pop_exit_anim" />
-    </fragment>
-
-
-    <!-- Nearby Bin Fragment -->
-    <fragment
         android:id="@+id/nearByBinFragment"
         android:name="iss.nus.edu.sg.webviews.binitrightmobileapp.NearByBinFragment"
         android:label="Nearby Bins"
@@ -191,7 +168,6 @@
             app:destination="@id/checkInFragment" />
     </fragment>
 
-    <!-- Find Recycling Bin Fragment (with filters) -->
     <fragment
         android:id="@+id/findRecyclingBinFragment"
         android:name="iss.nus.edu.sg.webviews.binitrightmobileapp.FindRecyclingBinFragment"

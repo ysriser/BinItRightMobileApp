@@ -41,9 +41,13 @@ class FindRecyclingBinFragment : Fragment(R.layout.fragment_find_recycling_bin),
     private val filteredBins = mutableListOf<DropOffLocation>()
     private lateinit var adapter: FindBinsAdapter
     private lateinit var locationClient: FusedLocationProviderClient
+    private var hasFetchedInitialBins = false
 
     companion object {
+        private const val TAG = "FindRecyclingBinFrag"
         private const val LOCATION_PERMISSION_REQUEST_CODE = 1001
+        private const val DEFAULT_LAT = 1.28797431732068
+        private const val DEFAULT_LNG = 103.805808773107998
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -55,6 +59,7 @@ class FindRecyclingBinFragment : Fragment(R.layout.fragment_find_recycling_bin),
         binding.btnBackToHome.setOnClickListener {
             findNavController().navigateUp()
         }
+
         setupMap()
         setupRecyclerView()
         setupChipFiltering()
@@ -83,7 +88,12 @@ class FindRecyclingBinFragment : Fragment(R.layout.fragment_find_recycling_bin),
             updateMapMarkers(it, lastCameraMoveToken)
             pendingBins = null
         }
-        fetchBinsWithLocation("")
+
+        // Fetch initial bins only once
+        if (!hasFetchedInitialBins) {
+            hasFetchedInitialBins = true
+            fetchBinsWithLocation("")
+        }
     }
 
     // -----------------------------
@@ -111,28 +121,50 @@ class FindRecyclingBinFragment : Fragment(R.layout.fragment_find_recycling_bin),
             return
         }
 
-        locationClient.lastLocation.addOnSuccessListener { location ->
-            val userLat = location?.latitude ?: 1.28797431732068
-            val userLng = location?.longitude ?: 103.805808773107998
+        locationClient.lastLocation
+            .addOnSuccessListener { location ->
+                val userLat = location?.latitude ?: DEFAULT_LAT
+                val userLng = location?.longitude ?: DEFAULT_LNG
 
-            viewLifecycleOwner.lifecycleScope.launch {
+                Log.d(TAG, "Fetching bins with lat=$userLat, lng=$userLng, binType=$binType")
+                performBinsFetch(userLat, userLng, binType)
+            }
+            .addOnFailureListener { e ->
+                Log.e(TAG, "Failed to get location", e)
+                // Use default location on failure
+                performBinsFetch(DEFAULT_LAT, DEFAULT_LNG, binType)
+            }
+    }
+
+    private fun performBinsFetch(lat: Double, lng: Double, binType: String) {
+        viewLifecycleOwner.lifecycleScope.launch {
+            try {
                 val json = withContext(Dispatchers.IO) {
-                    val url = URL("http://10.0.2.2:8081/api/bins/all?lat=$userLat&lng=$userLng&binType=$binType")
+                    val url = URL("http://10.0.2.2:8081/api/bins/all?lat=$lat&lng=$lng&binType=$binType")
                     val connection = url.openConnection() as java.net.HttpURLConnection
-                    connection.requestMethod = "GET"
-                    connection.connectTimeout = 10000
-                    connection.readTimeout = 10000
 
-                    val stream = if (connection.responseCode in 200..299) {
-                        connection.inputStream
-                    } else {
-                        connection.errorStream
+                    try {
+                        connection.requestMethod = "GET"
+                        connection.connectTimeout = 10000
+                        connection.readTimeout = 10000
+
+                        val stream = if (connection.responseCode in 200..299) {
+                            connection.inputStream
+                        } else {
+                            Log.e(TAG, "HTTP Error: ${connection.responseCode}")
+                            connection.errorStream
+                        }
+
+                        BufferedReader(InputStreamReader(stream)).use { it.readText() }
+                    } finally {
+                        connection.disconnect()
                     }
-
-                    BufferedReader(InputStreamReader(stream)).use { it.readText() }
                 }
-                Log.d("FIND_BINS_API", "Response JSON = $json")
+
                 parseAllBinsJson(json)
+            } catch (e: Exception) {
+                // You might want to show an error message to the user here
+                // For example: Toast.makeText(requireContext(), "Failed to load bins", Toast.LENGTH_SHORT).show()
             }
         }
     }
@@ -164,16 +196,21 @@ class FindRecyclingBinFragment : Fragment(R.layout.fragment_find_recycling_bin),
                 )
             }
 
+            if (!isAdded) {
+                return
+            }
+
             allBins.clear()
             allBins.addAll(tempList)
 
             updateUI()
         } catch (e: Exception) {
-            Log.e("FIND_BINS_PARSE_ERROR", "JSON Parse Error: ${e.message}")
+            e.printStackTrace()
         }
     }
 
     private fun updateUI() {
+
         filteredBins.clear()
         filteredBins.addAll(allBins)
 
@@ -183,8 +220,9 @@ class FindRecyclingBinFragment : Fragment(R.layout.fragment_find_recycling_bin),
         updateMapMarkers(filteredBins, lastCameraMoveToken)
     }
 
+
     // -----------------------------
-    // Apply Filter (not used in current implementation)
+    // Apply Filter (kept for potential future use)
     // -----------------------------
     private fun applyFilter(type: String) {
         filteredBins.clear()
@@ -221,6 +259,7 @@ class FindRecyclingBinFragment : Fragment(R.layout.fragment_find_recycling_bin),
                 MarkerOptions()
                     .position(LatLng(bin.latitude, bin.longitude))
                     .title(bin.name)
+                    .snippet(bin.address)
             )
         }
 
@@ -304,6 +343,10 @@ class FindRecyclingBinFragment : Fragment(R.layout.fragment_find_recycling_bin),
             grantResults[0] == PackageManager.PERMISSION_GRANTED
         ) {
             fetchBinsWithLocation("")
+        } else {
+            Log.w(TAG, "Location permission denied")
+            // Fetch with default location
+            performBinsFetch(DEFAULT_LAT, DEFAULT_LNG, "")
         }
     }
 

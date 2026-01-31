@@ -19,7 +19,7 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.BinItRight">
+        android:theme="@style/Theme.BinItRightMobileApp">
         <activity
             android:name="iss.nus.edu.sg.webviews.binitrightmobileapp.MainActivity"
             android:exported="true"

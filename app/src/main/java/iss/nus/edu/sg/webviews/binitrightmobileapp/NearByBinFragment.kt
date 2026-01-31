@@ -14,10 +14,9 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
 import java.io.BufferedReader
 import java.io.InputStreamReader
-import kotlin.collections.first
-import kotlin.collections.isNotEmpty
 import android.Manifest
 import android.content.pm.PackageManager
+import android.util.Log
 import androidx.core.app.ActivityCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
@@ -38,27 +37,42 @@ class NearByBinFragment : Fragment(R.layout.fragment_near_by_bin), OnMapReadyCal
     private var hasZoomedToBins = false
     private var hasFetchedBins = false
     private val nearbyBins = mutableListOf<DropOffLocation>()
+    private var scannedBinType: String? = null
     private var adapter: NearByBinsAdapter?= null
     private lateinit var locationClient: FusedLocationProviderClient
+
+    companion object {
+        private const val TAG = "NearByBinFragment"
+        private const val LOCATION_PERMISSION_REQUEST_CODE = 1001
+    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
         _binding = FragmentNearByBinBinding.bind(view)
-        locationClient =
-            LocationServices.getFusedLocationProviderClient(requireActivity())
+        locationClient = LocationServices.getFusedLocationProviderClient(requireActivity())
 
+        retrieveScannedBinType()
         setupMap()
         setupRecyclerView()
+    }
 
+    private fun retrieveScannedBinType() {
+        arguments?.let { bundle ->
+            scannedBinType = bundle.getString("binType")
+            if (scannedBinType != null) {
+            } else {
+            }
+        } ?: run {
+            scannedBinType = null
+        }
     }
 
     // -----------------------------
     // Map
     // -----------------------------
     private fun setupMap() {
-
-        val mapFragment = childFragmentManager.findFragmentById(binding.mapContainer.id)
+        val mapFragment = childFragmentManager.findFragmentById(R.id.mapContainer)
                 as? SupportMapFragment ?: SupportMapFragment.newInstance().also { fragment ->
             childFragmentManager.beginTransaction()
                 .replace(R.id.mapContainer, fragment)
@@ -73,27 +87,29 @@ class NearByBinFragment : Fragment(R.layout.fragment_near_by_bin), OnMapReadyCal
         isMapReady = true
 
         googleMap.uiSettings.isZoomControlsEnabled = true
-        //googleMap.uiSettings.isMyLocationButtonEnabled = true
+
+        pendingBins?.let {
+            updateMapMarkers(it)
+            pendingBins = null
+        }
 
         fetchUserLocation()
     }
-
 
     // -----------------------------
     // RecyclerView
     // -----------------------------
     private fun setupRecyclerView() {
-
         binding.binsRecyclerView.layoutManager = LinearLayoutManager(requireContext())
 
         adapter = NearByBinsAdapter(nearbyBins) { selectedBin ->
-            // Navigate to check-in fragment with selected bin data
             navigateToCheckIn(selectedBin)
         }
         binding.binsRecyclerView.adapter = adapter
     }
 
     private fun navigateToCheckIn(bin: DropOffLocation) {
+
         val bundle = Bundle().apply {
             putLong("binId", bin.id)
             putString("binName", bin.name)
@@ -103,13 +119,22 @@ class NearByBinFragment : Fragment(R.layout.fragment_near_by_bin), OnMapReadyCal
             putDouble("binLongitude", bin.longitude)
         }
 
-        findNavController().navigate(
-            R.id.action_nearByBinFragment_to_checkInFragment,
-            bundle
-        )
-    }
-    private fun fetchUserLocation() {
+        // Pass the scanned bin type if it exists
+        scannedBinType?.let {
+            bundle.putString("scannedBinType", it)
+            Log.d(TAG, "  Added scannedBinType to bundle: $it")
+        }
 
+        try {
+            findNavController().navigate(
+                R.id.action_nearByBinFragment_to_checkInFragment,
+                bundle
+            )
+        } catch (e: Exception) {
+        }
+    }
+
+    private fun fetchUserLocation() {
         if (hasFetchedBins) return
 
         if (ActivityCompat.checkSelfPermission(
@@ -119,27 +144,26 @@ class NearByBinFragment : Fragment(R.layout.fragment_near_by_bin), OnMapReadyCal
         ) {
             requestPermissions(
                 arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
-                1001
+                LOCATION_PERMISSION_REQUEST_CODE
             )
             return
         }
 
         locationClient.lastLocation
             .addOnSuccessListener { location ->
-
                 if (hasFetchedBins) return@addOnSuccessListener
 
-                if (location != null) {
-                    // Normal case
-                    fetchNearbyBins(location.latitude, location.longitude)
-                } else {
-                    // FALLBACK
-                    val fallbackLat = 1.3521
-                    val fallbackLng = 103.8198
+                val lat = location?.latitude ?: 1.2879
+                val lng = location?.longitude ?: 103.8058
 
-                    hasFetchedBins = true
-                    fetchNearbyBins(fallbackLat, fallbackLng)
-                }
+                hasFetchedBins = true
+                fetchNearbyBins(1.29, 103.78)
+            }
+            .addOnFailureListener { e ->
+                Log.e(TAG, "Failed to get location", e)
+                // Use fallback location
+                hasFetchedBins = true
+                fetchNearbyBins(1.3521, 103.8198)
             }
     }
 
@@ -148,31 +172,39 @@ class NearByBinFragment : Fragment(R.layout.fragment_near_by_bin), OnMapReadyCal
     // -----------------------------
     private fun fetchNearbyBins(lat: Double, lng: Double) {
         viewLifecycleOwner.lifecycleScope.launch {
+            try {
+                val json = withContext(Dispatchers.IO) {
+//                    val url = java.net.URL(
+//                        "http://10.0.2.2:8081/api/bins/nearby?lat=$lat&lng=$lng&radius=3000"
+//                    )
 
-            val json = withContext(Dispatchers.IO) {
-//                val url = java.net.URL(
-//                    "http://10.0.2.2:8081/api/bins/nearby?lat=$lat&lng=$lng&radius=3000"
-//                )
+                    val url = java.net.URL(
+                        "http://192.168.88.4:8081/api/bins/nearby?lat=$lat&lng=$lng&radius=3000"
+                    )
 
-                val url = java.net.URL(
-                    "http://192.168.88.3:8081/api/bins/nearby?lat=$lat&lng=$lng&radius=3000"
-                )
+                    val connection = url.openConnection() as java.net.HttpURLConnection
+                    connection.requestMethod = "GET"
+                    connection.connectTimeout = 10000
+                    connection.readTimeout = 10000
 
-                val connection = url.openConnection() as java.net.HttpURLConnection
-                connection.requestMethod = "GET"
-                connection.connectTimeout = 10000
-                connection.readTimeout = 10000
+                    try {
+                        val stream = if (connection.responseCode in 200..299) {
+                            connection.inputStream
+                        } else {
+                            connection.errorStream
+                        }
 
-                val stream = if (connection.responseCode in 200..299) {
-                    connection.inputStream
-                } else {
-                    connection.errorStream
+                        BufferedReader(InputStreamReader(stream)).use { it.readText() }
+                    } finally {
+                        connection.disconnect()
+                    }
                 }
 
-                BufferedReader(InputStreamReader(stream)).use { it.readText() }
+                Log.d(TAG, "Response JSON = $json")
+                parseBinsJson(json)
+            } catch (e: Exception) {
+                // Handle error - maybe show a toast or error message
             }
-
-            parseBinsJson(json)
         }
     }
 
@@ -180,36 +212,42 @@ class NearByBinFragment : Fragment(R.layout.fragment_near_by_bin), OnMapReadyCal
     // Parse Response
     // -----------------------------
     private fun parseBinsJson(json: String) {
-        val jsonArray = org.json.JSONArray(json)
-        val parsedBins = mutableListOf<DropOffLocation>()
+        try {
+            val jsonArray = org.json.JSONArray(json)
+            val parsedBins = mutableListOf<DropOffLocation>()
 
 
-        for (i in 0 until jsonArray.length()) {
-            val obj = jsonArray.getJSONObject(i)
+            for (i in 0 until jsonArray.length()) {
+                val obj = jsonArray.getJSONObject(i)
 
-            parsedBins.add(
-                DropOffLocation(
-                    id = obj.getLong("id"),
-                    name = obj.getString("name"),
-                    address = obj.getString("address"),
-                    description = obj.getString("description"),
-                    postalCode = obj.getString("postalCode"),
-                    binType = obj.getString("binType"),
-                    status = obj.getBoolean("status"),
-                    latitude = obj.getDouble("latitude"),
-                    longitude = obj.getDouble("longitude"),
-                    distanceMeters = obj.getDouble("distanceMeters")
+                parsedBins.add(
+                    DropOffLocation(
+                        id = obj.getLong("id"),
+                        name = obj.getString("name"),
+                        address = obj.getString("address"),
+                        description = obj.getString("description"),
+                        postalCode = obj.getString("postalCode"),
+                        binType = obj.getString("binType"),
+                        status = obj.getBoolean("status"),
+                        latitude = obj.getDouble("latitude"),
+                        longitude = obj.getDouble("longitude"),
+                        distanceMeters = obj.getDouble("distanceMeters")
+                    )
                 )
-            )
+            }
+
+
+            if (!isAdded){
+                return
+            }
+
+            nearbyBins.clear()
+            nearbyBins.addAll(parsedBins)
+
+            adapter?.notifyDataSetChanged()
+            updateMapMarkers(parsedBins)
+        } catch (e: Exception) {
         }
-
-        if (!isAdded) return
-
-        nearbyBins.clear()
-        nearbyBins.addAll(parsedBins)
-        adapter?.notifyDataSetChanged()
-        updateMapMarkers(parsedBins)
-
     }
 
 
@@ -217,7 +255,9 @@ class NearByBinFragment : Fragment(R.layout.fragment_near_by_bin), OnMapReadyCal
     // Mark location in map
     // -----------------------------
     private fun updateMapMarkers(bins: List<DropOffLocation>) {
+
         if (!isMapReady) {
+
             pendingBins = bins
             return
         }
@@ -225,17 +265,18 @@ class NearByBinFragment : Fragment(R.layout.fragment_near_by_bin), OnMapReadyCal
         googleMap.clear()
 
         bins.forEach { bin ->
+
             googleMap.addMarker(
                 MarkerOptions()
                     .position(LatLng(bin.latitude, bin.longitude))
                     .title(bin.name)
-                    .snippet("${bin.distanceMeters} m")
+                    .snippet("${bin.distanceMeters.toInt()} m")
             )
         }
 
-        // Move camera after markers are rendered
         if (!hasZoomedToBins && bins.isNotEmpty()) {
             val first = bins.first()
+
             googleMap.moveCamera(
                 CameraUpdateFactory.newLatLngZoom(
                     LatLng(first.latitude, first.longitude),
@@ -246,7 +287,6 @@ class NearByBinFragment : Fragment(R.layout.fragment_near_by_bin), OnMapReadyCal
         }
     }
 
-
     @Deprecated("Deprecated in Java")
     override fun onRequestPermissionsResult(
         requestCode: Int,
@@ -255,7 +295,7 @@ class NearByBinFragment : Fragment(R.layout.fragment_near_by_bin), OnMapReadyCal
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
 
-        if (requestCode == 1001 &&
+        if (requestCode == LOCATION_PERMISSION_REQUEST_CODE &&
             grantResults.isNotEmpty() &&
             grantResults[0] == PackageManager.PERMISSION_GRANTED
         ) {
@@ -263,10 +303,8 @@ class NearByBinFragment : Fragment(R.layout.fragment_near_by_bin), OnMapReadyCal
         }
     }
 
-
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
     }
-
 }

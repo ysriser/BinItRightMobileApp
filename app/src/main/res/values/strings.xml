@@ -1,6 +1,5 @@
 <resources>
     <string name="app_name">BinItRightMobileApp</string>
-    <string name="google_api_key">AIzaSyCDp5Q_CXqHaSRZfPunpL0UUOz_rjgxUA4</string>
-    <string name="app_name">Android</string>
+    <string name="google_api_key">AIzaSyCDp5Q_CXqHaSRZfPunpL0UUOz_rjgxUA4</string>[-
     <string name="title_activity_main">MainActivity</string>
 </resources>

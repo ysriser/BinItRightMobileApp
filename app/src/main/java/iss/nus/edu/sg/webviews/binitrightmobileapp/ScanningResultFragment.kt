@@ -133,9 +133,19 @@ class ScanningResultFragment : Fragment() {
 
         binding.btnRecycle.setOnClickListener {
             // Get the scanned item type
-            val itemType = binding.tvCategory.text.toString() // e.g., "Paper"
+            val scannedCategory = binding.tvCategory.text.toString() // e.g., "Paper"
+
+            // Map the scanned category to match database bin types
+            val binType = when (scannedCategory.uppercase()) {
+                "PAPER", "CARDBOARD", "NEWSPAPER" -> "BlueBin"
+                "ELECTRONIC", "ELECTRONICS", "E-WASTE", "EWASTE" -> "EWaste"
+                "LIGHTING", "LAMP", "LIGHT", "BULB" -> "Lamp"
+                else -> {
+                    "BlueBin"
+                }
+            }
             val bundle = Bundle().apply {
-                putString("binType", itemType)
+                putString("binType", binType)
             }
 
             findNavController().navigate(

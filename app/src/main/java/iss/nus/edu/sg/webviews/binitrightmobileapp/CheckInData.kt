@@ -5,6 +5,6 @@ data class CheckInData(
     val recordedAt: Long,
     val duration: Int,
     val binId: Int,
-    val itemId: Int,
+    val itemName: String,
     val quantity: Int
 )
