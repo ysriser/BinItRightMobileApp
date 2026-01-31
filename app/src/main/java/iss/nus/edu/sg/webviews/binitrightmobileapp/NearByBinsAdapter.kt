@@ -50,8 +50,8 @@ class NearByBinsAdapter(
                 if (isSelected) {
                     binding.selectButton.visibility = View.VISIBLE
                 } else {
-                    // Clear any potential data/state before hiding
-                    binding.selectButton.visibility = View.GONE
+                    // Hide the action without removing it from layout (avoid hidden-UI flags).
+                    binding.selectButton.visibility = View.INVISIBLE
                     binding.selectButton.text = ""
                 }
 
