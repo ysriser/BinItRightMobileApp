@@ -92,4 +92,36 @@ class QuestionnaireEngineTest {
         assertTrue(didGoBack)
         assertTrue(engine.isAtStart())
     }
+
+    @Test
+    fun selectOption_toOutcome_returnsOutcomeId() {
+        // Step 1: create engine and get current question.
+        val engine = buildEngine()
+        val question = engine.getCurrentQuestion() ?: error("Missing start question")
+
+        // Step 2: pick an option that goes directly to an outcome.
+        val outcomeOption = question.options.first { it.next == "out1" }
+
+        // Step 3: select the option and verify the returned id.
+        val nextId = engine.selectOption(question.id, outcomeOption.id)
+        assertEquals("out1", nextId)
+        assertNotNull(engine.getOutcomeById(nextId))
+    }
+
+    @Test
+    fun backAction_returnsTriggerSignal() {
+        // Step 1: create engine and move forward once.
+        val engine = buildEngine()
+        val question = engine.getCurrentQuestion() ?: error("Missing start question")
+        val nextId = engine.selectOption(question.id, question.options.first().id)
+        assertNotNull(nextId)
+
+        // Step 2: current question should now include a back option.
+        val current = engine.getCurrentQuestion() ?: error("Missing current question")
+        val backOption = current.options.first { it.id == "BACK_ACTION" }
+
+        // Step 3: selecting BACK_ACTION should return the trigger signal.
+        val result = engine.selectOption(current.id, backOption.id)
+        assertEquals("BACK_ACTION_TRIGGERED", result)
+    }
 }

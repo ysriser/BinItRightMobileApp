@@ -101,6 +101,26 @@ class ScanViewModelTest {
         vm.resetScanState()
         assertNull(vm.scanResult.getOrAwaitValue())
     }
+
+    @Test
+    fun submitFeedback_setsFeedbackStatus() = runTest {
+        // Step 1: create ViewModel with a fake repository.
+        val vm = ScanViewModel(FakeRepo())
+
+        // Step 2: send feedback.
+        val feedback = FeedbackRequest(
+            imageId = "img-123",
+            userFeedback = true,
+            timestamp = 123456789L,
+        )
+        vm.submitFeedback(feedback)
+
+        // Step 3: feedback status should be success.
+        val result = vm.feedbackStatus.getOrAwaitValueSkipNull()
+        assertNotNull(result)
+        assertTrue(result!!.isSuccess)
+        assertEquals(true, result.getOrNull())
+    }
 }
 
 private fun <T> LiveData<T>.getOrAwaitValue(
