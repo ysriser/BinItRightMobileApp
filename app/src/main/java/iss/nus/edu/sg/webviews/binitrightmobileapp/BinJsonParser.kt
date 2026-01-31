@@ -1,7 +1,7 @@
 package iss.nus.edu.sg.webviews.binitrightmobileapp
 
+import com.google.gson.Gson
 import iss.nus.edu.sg.webviews.binitrightmobileapp.model.DropOffLocation
-import org.json.JSONArray
 
 /**
  * Simple JSON parser for recycling bin lists.
@@ -10,28 +10,35 @@ import org.json.JSONArray
 object BinJsonParser {
 
     fun parse(json: String): List<DropOffLocation> {
-        val list = mutableListOf<DropOffLocation>()
-        val jsonArray = JSONArray(json)
+        val gson = Gson()
+        val dtoArray = gson.fromJson(json, Array<DropOffLocationDto>::class.java).toList()
 
-        for (i in 0 until jsonArray.length()) {
-            val obj = jsonArray.getJSONObject(i)
-
-            list.add(
-                DropOffLocation(
-                    id = obj.getLong("id"),
-                    name = obj.getString("name"),
-                    address = obj.getString("address"),
-                    description = obj.getString("description"),
-                    postalCode = obj.getString("postalCode"),
-                    binType = obj.getString("binType"),
-                    status = obj.getBoolean("status"),
-                    latitude = obj.getDouble("latitude"),
-                    longitude = obj.getDouble("longitude"),
-                    distanceMeters = obj.optDouble("distanceMeters", 0.0)
-                )
+        return dtoArray.map { dto ->
+            DropOffLocation(
+                id = dto.id,
+                name = dto.name,
+                address = dto.address,
+                description = dto.description,
+                postalCode = dto.postalCode,
+                binType = dto.binType,
+                status = dto.status,
+                latitude = dto.latitude,
+                longitude = dto.longitude,
+                distanceMeters = dto.distanceMeters ?: 0.0,
             )
         }
-
-        return list
     }
+
+    private data class DropOffLocationDto(
+        val id: Long,
+        val name: String,
+        val address: String,
+        val description: String,
+        val postalCode: String,
+        val binType: String,
+        val latitude: Double,
+        val longitude: Double,
+        val status: Boolean,
+        val distanceMeters: Double?,
+    )
 }
