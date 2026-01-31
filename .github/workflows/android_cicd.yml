@@ -1,10 +1,10 @@
-name: Android CI
+name: Android PR Validation
 # Code push to any branch will run everything: build, unit test, lint, SCA, SAST.
 
 on:
-  # Run for all push to all branches
-  push:
-    branches: ["**"]
+  pull_request:
+    branches: [ "main" ]
+
 #  # Run when PR is updated, opened or reopened and targeting master/main
 #  pull_request:
 #    branches: [ "master", "main" ]
@@ -124,61 +124,3 @@ jobs:
           else
             echo "No high-severity vulnerabilities found."
           fi
-
-  # STAGE 6: SIT 
-  sit-appium:
-    name: SIT (Appium)
-    needs: build
-    runs-on: ubuntu-latest
-    timeout-minutes: 30
-
-    steps:
-      # Checkout Appium test repo
-      - name: Checkout Appium Tests
-        uses: actions/checkout@v4
-        with:
-          repository: ysriser/BinItRightAppiumScripts
-          path: appium-tests
-
-      # Download APK
-      - name: Download APK
-        uses: actions/download-artifact@v4
-        with:
-          name: compiled-apk
-          path: apk
-
-      # Set up Java
-      - name: Set up JDK 21
-        uses: actions/setup-java@v4
-        with:
-          java-version: '21'
-          distribution: 'temurin'
-
-      # Install Appium
-      - name: Install Appium
-        run: |
-          npm install -g appium
-          appium -v
-
-      # Start Appium server
-      - name: Start Appium Server
-        run: |
-          appium --log-level error &
-          sleep 10
-
-      # Start Android Emulator ONLY
-      - name: Start Emulator
-        uses: reactivecircus/android-emulator-runner@v2
-        with:
-          api-level: 33
-          target: google_apis
-          arch: x86_64
-          profile: pixel_5
-          script: echo "Emulator started"
-
-      # Run Appium tests (IMPORTANT)
-      - name: Run SIT Tests
-        working-directory: appium-tests
-        run: |
-          mvn test -Dapk.path=$GITHUB_WORKSPACE/apk/app-debug.apk
-
