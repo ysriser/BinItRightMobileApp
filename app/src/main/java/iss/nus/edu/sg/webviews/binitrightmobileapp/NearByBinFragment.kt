@@ -213,28 +213,7 @@ class NearByBinFragment : Fragment(R.layout.fragment_near_by_bin), OnMapReadyCal
     // -----------------------------
     private fun parseBinsJson(json: String) {
         try {
-            val jsonArray = org.json.JSONArray(json)
-            val parsedBins = mutableListOf<DropOffLocation>()
-
-
-            for (i in 0 until jsonArray.length()) {
-                val obj = jsonArray.getJSONObject(i)
-
-                parsedBins.add(
-                    DropOffLocation(
-                        id = obj.getLong("id"),
-                        name = obj.getString("name"),
-                        address = obj.getString("address"),
-                        description = obj.getString("description"),
-                        postalCode = obj.getString("postalCode"),
-                        binType = obj.getString("binType"),
-                        status = obj.getBoolean("status"),
-                        latitude = obj.getDouble("latitude"),
-                        longitude = obj.getDouble("longitude"),
-                        distanceMeters = obj.getDouble("distanceMeters")
-                    )
-                )
-            }
+            val parsedBins = BinJsonParser.parse(json)
 
 
             if (!isAdded){

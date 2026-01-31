@@ -174,27 +174,7 @@ class FindRecyclingBinFragment : Fragment(R.layout.fragment_find_recycling_bin),
     // -----------------------------
     private fun parseAllBinsJson(json: String) {
         try {
-            val jsonArray = org.json.JSONArray(json)
-            val tempList = mutableListOf<DropOffLocation>()
-
-            for (i in 0 until jsonArray.length()) {
-                val obj = jsonArray.getJSONObject(i)
-
-                tempList.add(
-                    DropOffLocation(
-                        id = obj.getLong("id"),
-                        name = obj.getString("name"),
-                        address = obj.getString("address"),
-                        description = obj.getString("description"),
-                        postalCode = obj.getString("postalCode"),
-                        binType = obj.getString("binType"),
-                        status = obj.getBoolean("status"),
-                        latitude = obj.getDouble("latitude"),
-                        longitude = obj.getDouble("longitude"),
-                        distanceMeters = obj.optDouble("distanceMeters", 0.0)
-                    )
-                )
-            }
+            val tempList = BinJsonParser.parse(json)
 
             if (!isAdded) {
                 return
