@@ -90,7 +90,18 @@ jobs:
     name: Tag APK as Production
     needs: sit-appium
     runs-on: ubuntu-latest
+  
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # IMPORTANT: required for tagging
+  
+      - name: Configure Git
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+  
       - name: Tag Commit
         run: |
           git tag production-${{ github.run_number }}
