@@ -17,7 +17,6 @@ import java.io.InputStreamReader
 import android.Manifest
 import android.content.pm.PackageManager
 import android.util.Log
-import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
@@ -38,8 +37,7 @@ class NearByBinFragment : Fragment(R.layout.fragment_near_by_bin), OnMapReadyCal
     private var hasZoomedToBins = false
     private var hasFetchedBins = false
     private val nearbyBins = mutableListOf<DropOffLocation>()
-    private var selectedBinType: String? = null
-    private var wasteCategory: String? = null
+    private var scannedBinType: String? = null
     private var adapter: NearByBinsAdapter?= null
     private lateinit var locationClient: FusedLocationProviderClient
 
@@ -65,7 +63,6 @@ class NearByBinFragment : Fragment(R.layout.fragment_near_by_bin), OnMapReadyCal
             if (selectedBinType != null) {
                 Log.d(TAG, "Retrieved scanned bin type: $selectedBinType")
             } else {
-                Log.d(TAG, "No scanned bin type found")
             }
         } ?: run {
             selectedBinType = null
@@ -141,8 +138,6 @@ class NearByBinFragment : Fragment(R.layout.fragment_near_by_bin), OnMapReadyCal
                 bundle
             )
         } catch (e: Exception) {
-            Log.e(TAG, "Navigation failed: ${e.message}", e)
-            Toast.makeText(requireContext(), "Navigation error", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -157,7 +152,6 @@ class NearByBinFragment : Fragment(R.layout.fragment_near_by_bin), OnMapReadyCal
                 Manifest.permission.ACCESS_FINE_LOCATION
             ) != PackageManager.PERMISSION_GRANTED
         ) {
-            Log.w(TAG, "Location permission not granted, requesting...")
             requestPermissions(
                 arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
                 LOCATION_PERMISSION_REQUEST_CODE
@@ -249,7 +243,7 @@ class NearByBinFragment : Fragment(R.layout.fragment_near_by_bin), OnMapReadyCal
     }
 
     // -----------------------------
-    // Parse Response - FIXED VERSION
+    // Parse Response
     // -----------------------------
     private fun parseBinsJson(json: String) {
         try {
@@ -333,6 +327,7 @@ class NearByBinFragment : Fragment(R.layout.fragment_near_by_bin), OnMapReadyCal
             ).show()
         }
     }
+
 
     // -----------------------------
     // Mark location in map
