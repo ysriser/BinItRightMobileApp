@@ -1,0 +1,97 @@
+name: Android Main Pipeline (Post-Merge)
+
+on:
+  push:
+    branches: [ "master" ]
+
+concurrency:
+  group: android-master-${{ github.ref_name }}
+  cancel-in-progress: true
+
+jobs:
+  # ===============================
+  # BUILD APK
+  # ===============================
+  build:
+    name: Build APK
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: gradle
+
+      - name: Assemble Debug APK
+        run: ./gradlew assembleDebug
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-apk
+          path: app/build/outputs/apk/debug/app-debug.apk
+
+  # ===============================
+  # SYSTEM INTEGRATION TEST (APPIUM)
+  # ===============================
+  sit-appium:
+    name: SIT (Appium)
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout Appium Tests
+        uses: actions/checkout@v4
+        with:
+          repository: ysriser/BinItRightAppiumScripts
+          path: appium-tests
+
+      - name: Download APK
+        uses: actions/download-artifact@v4
+        with:
+          name: release-apk
+          path: apk
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
+      - name: Install Appium
+        run: npm install -g appium
+
+      - name: Start Appium Server
+        run: |
+          appium &
+          sleep 10
+
+      - name: Start Android Emulator
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 33
+          target: google_apis
+          arch: x86_64
+          profile: pixel_5
+          script: echo "Emulator ready"
+
+      - name: Run Appium Tests
+        working-directory: appium-tests
+        run: mvn test -Dapk.path=$GITHUB_WORKSPACE/apk/app-debug.apk
+
+  # ===============================
+  # TAG APK AS PRODUCTION
+  # ===============================
+  tag-production:
+    name: Tag APK as Production
+    needs: sit-appium
+    runs-on: ubuntu-latest
+    steps:
+      - name: Tag Commit
+        run: |
+          git tag production-${{ github.run_number }}
+          git push origin production-${{ github.run_number }}
