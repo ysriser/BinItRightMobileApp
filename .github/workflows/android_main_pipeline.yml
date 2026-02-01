@@ -88,12 +88,15 @@ jobs:
           disable-animations: true
           script: |
             adb wait-for-device
+            until [[ "$(adb shell getprop sys.boot_completed | tr -d '\r')" == "1" ]]; do
+            echo "Waiting for emulator boot..."
+            sleep 10
+            done
             adb devices
-            adb shell getprop sys.boot_completed
-            mvn -f appium-tests/pom.xml test \
-            -Dapk.path="$GITHUB_WORKSPACE/apk/app-debug.apk"
-
+            mvn -f appium-tests/pom.xml test -Dapk.path="$GITHUB_WORKSPACE/apk/app-debug.apk"
+            adb kill-server || true
           
+                    
 
   # ===============================
   # TAG APK AS PRODUCTION
