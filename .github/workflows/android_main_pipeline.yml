@@ -76,10 +76,11 @@ jobs:
       - name: Start Android Emulator and Run Appium Tests
         uses: reactivecircus/android-emulator-runner@v2
         with:
-          api-level: 33
+          api-level: 30
           target: google_apis
           arch: x86_64
           profile: pixel_5
+          emulator-boot-timeout: 900
           emulator-options: >
             -no-window
             -no-audio
