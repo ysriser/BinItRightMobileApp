@@ -91,7 +91,11 @@ jobs:
             adb devices
             adb shell getprop sys.boot_completed
             cd appium-tests
-            mvn test -Dapk.path=$GITHUB_WORKSPACE/apk/app-debug.apk
+            pwd
+            ls -la
+            mvn test -Dapk.path="$GITHUB_WORKSPACE/apk/app-debug.apk"
+
+          
 
   # ===============================
   # TAG APK AS PRODUCTION
