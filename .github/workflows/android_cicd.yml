@@ -3,16 +3,13 @@ name: Android PR Validation
 
 on:
   pull_request:
-    branches: [ "main" ]
+    branches: [ "master" ]
 
 #  # Run when PR is updated, opened or reopened and targeting master/main
 #  pull_request:
 #    branches: [ "master", "main" ]
 
 # This prevents double-running the same code if a PR is open
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
 
 jobs:
   # STAGE 1: BUILD (Always Runs)
@@ -62,7 +59,7 @@ jobs:
   # STAGE 3: LINT (Now runs on every check-in)
   lint:
     name: LINT
-    needs: unit-tests
+    needs: build
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
