@@ -140,8 +140,16 @@ class FindRecyclingBinFragment : Fragment(R.layout.fragment_find_recycling_bin),
         viewLifecycleOwner.lifecycleScope.launch {
             try {
                 val json = withContext(Dispatchers.IO) {
-                    val url = URL("http://10.0.2.2:8081/api/bins/all?lat=$lat&lng=$lng&binType=$binType")
+                    // FIX 1: Build URL properly with proper empty string handling
+                    val urlString = if (binType.isEmpty()) {
+                        "http://10.0.2.2:8082/api/bins/all?lat=$lat&lng=$lng"
+                    } else {
+                        "http://10.0.2.2:8082/api/bins/all?lat=$lat&lng=$lng&binType=$binType"
+                    }
+
+                    val url = URL(urlString)
                     val connection = url.openConnection() as java.net.HttpURLConnection
+
 
                     try {
                         connection.requestMethod = "GET"
@@ -161,7 +169,9 @@ class FindRecyclingBinFragment : Fragment(R.layout.fragment_find_recycling_bin),
                     }
                 }
 
-                parseAllBinsJson(json)
+                withContext(Dispatchers.Main) {
+                    parseAllBinsJson(json)
+                }
             } catch (e: Exception) {
                 // You might want to show an error message to the user here
                 // For example: Toast.makeText(requireContext(), "Failed to load bins", Toast.LENGTH_SHORT).show()
@@ -174,7 +184,31 @@ class FindRecyclingBinFragment : Fragment(R.layout.fragment_find_recycling_bin),
     // -----------------------------
     private fun parseAllBinsJson(json: String) {
         try {
-            val tempList = BinJsonParser.parse(json)
+            val jsonArray = org.json.JSONArray(json)
+            val tempList = mutableListOf<DropOffLocation>()
+
+            for (i in 0 until jsonArray.length()) {
+                try {
+                    val obj = jsonArray.getJSONObject(i)
+
+                    val bin = DropOffLocation(
+                        id = obj.optLong("id", -1),
+                        name = obj.optString("name", "Unknown Bin"),
+                        address = obj.optString("address", ""),
+                        description = obj.optString("description", ""),
+                        postalCode = obj.optString("postalCode", ""),
+                        binType = obj.optString("binType", "Unknown"),
+                        status = obj.optString("status", "ACTIVE") == "ACTIVE",
+                        latitude = obj.optDouble("latitude", 0.0),
+                        longitude = obj.optDouble("longitude", 0.0),
+                        distanceMeters = obj.optDouble("distanceMeters", 0.0)
+                    )
+
+                    tempList.add(bin)
+                } catch (e: Exception) {
+                    Log.e(TAG, "Error parsing bin at index $i: ${e.message}", e)
+                }
+            }
 
             if (!isAdded) {
                 return

@@ -37,7 +37,8 @@ class NearByBinFragment : Fragment(R.layout.fragment_near_by_bin), OnMapReadyCal
     private var hasZoomedToBins = false
     private var hasFetchedBins = false
     private val nearbyBins = mutableListOf<DropOffLocation>()
-    private var scannedBinType: String? = null
+    private var selectedBinType: String? = null
+    private var wasteCategory: String? = null
     private var adapter: NearByBinsAdapter?= null
     private lateinit var locationClient: FusedLocationProviderClient
 
@@ -189,7 +190,7 @@ class NearByBinFragment : Fragment(R.layout.fragment_near_by_bin), OnMapReadyCal
                 val json = withContext(Dispatchers.IO) {
                     // Use emulator URL (10.0.2.2) for Android Emulator
                     // Use device URL (192.168.88.4) for physical device
-                    val urlString = "http://192.168.88.4:8082/api/bins/nearby?lat=$lat&lng=$lng&radius=3000"
+                    val urlString = "http://10.0.2.2:8082/api/bins/nearby?lat=$lat&lng=$lng&radius=3000"
 
                     Log.d(TAG, "Fetching from URL: $urlString")
 
@@ -232,11 +233,7 @@ class NearByBinFragment : Fragment(R.layout.fragment_near_by_bin), OnMapReadyCal
             } catch (e: Exception) {
                 Log.e(TAG, "Error fetching nearby bins: ${e.message}", e)
                 withContext(Dispatchers.Main) {
-                    Toast.makeText(
-                        requireContext(),
-                        "Failed to load nearby bins: ${e.message}",
-                        Toast.LENGTH_LONG
-                    ).show()
+
                 }
             }
         }
@@ -311,20 +308,9 @@ class NearByBinFragment : Fragment(R.layout.fragment_near_by_bin), OnMapReadyCal
             Log.d(TAG, "Updating map markers")
             updateMapMarkers(parsedBins)
 
-            // Show success message
-            Toast.makeText(
-                requireContext(),
-                "Found ${parsedBins.size} nearby bins",
-                Toast.LENGTH_SHORT
-            ).show()
-
         } catch (e: Exception) {
             Log.e(TAG, "Error parsing JSON: ${e.message}", e)
-            Toast.makeText(
-                requireContext(),
-                "Error parsing bins data: ${e.message}",
-                Toast.LENGTH_LONG
-            ).show()
+
         }
     }
 
@@ -400,11 +386,6 @@ class NearByBinFragment : Fragment(R.layout.fragment_near_by_bin), OnMapReadyCal
             fetchUserLocation()
         } else {
             Log.w(TAG, "Location permission denied")
-            Toast.makeText(
-                requireContext(),
-                "Location permission is required to find nearby bins",
-                Toast.LENGTH_LONG
-            ).show()
         }
     }
 
