@@ -132,7 +132,27 @@ class ScanningResultFragment : Fragment() {
         }
 
         binding.btnRecycle.setOnClickListener {
-            Toast.makeText(context, "Proceed to check-in flow (TODO)", Toast.LENGTH_SHORT).show()
+            // Get the scanned item type
+            val scannedCategory = binding.tvCategory.text.toString() // e.g., "Paper"
+
+            // Map the scanned category to match database bin types
+            val binType = when (scannedCategory.uppercase()) {
+                "PAPER", "CARDBOARD", "NEWSPAPER" -> "BlueBin"
+                "ELECTRONIC", "ELECTRONICS", "E-WASTE", "EWASTE" -> "EWaste"
+                "LIGHTING", "LAMP", "LIGHT", "BULB" -> "Lamp"
+                else -> {
+                    ""
+                }
+            }
+            val bundle = Bundle().apply {
+                putString("selectedBinType", binType)
+                putString("wasteCategory", scannedCategory)
+            }
+
+            findNavController().navigate(
+                R.id.action_scanningResultFragment_to_nearbyBinFragment,
+                bundle
+            )
         }
 
         binding.btnAccurate.setOnClickListener {

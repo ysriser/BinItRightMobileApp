@@ -34,7 +34,7 @@ class ScanItemFragment : Fragment() {
 
     private var imageCapture: ImageCapture? = null
     private lateinit var cameraExecutor: ExecutorService
-
+    
     private val viewModel: ScanViewModel by viewModels {
         ScanViewModelFactory(requireContext())
     }

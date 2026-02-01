@@ -112,9 +112,9 @@ class QuestionnaireResultFragment : Fragment() {
     private fun setupListeners() {
         binding.btnScanAgain.text = "Do another questionnaire?"
         binding.btnScanAgain.setOnClickListener {
-            // Pop back to start of questionnaire
-            findNavController().popBackStack(R.id.nav_home, false)
-            findNavController().navigate(R.id.questionnaireFragment)
+             // Pop back to start of questionnaire
+             findNavController().popBackStack(R.id.scanHomeFragment, false)
+             findNavController().navigate(R.id.action_scanHomeFragment_to_questionnaireFragment)
         }
         binding.btnScanAgain.setIconResource(R.drawable.ic_refresh_24)
 
@@ -123,7 +123,26 @@ class QuestionnaireResultFragment : Fragment() {
         }
 
         binding.btnRecycle.setOnClickListener {
-            Toast.makeText(context, "Proceed to drop-off guidance (TODO)", Toast.LENGTH_SHORT).show()
+            // Get the scanned item type
+            val itemType = binding.tvCategory.text.toString() // e.g., "Paper"
+
+            val binType = when (itemType.uppercase()) {
+                "RECYCLABLE ITEM" -> "BlueBin"
+                "ELECTRONIC", "ELECTRONICS", "E-WASTE", "EWASTE" -> "EWaste"
+                "LIGHTING", "LAMP", "LIGHT", "BULB" -> "Lamp"
+                else -> {
+                    ""
+                }
+            }
+            val bundle = Bundle().apply {
+                putString("selectedBinType", binType)
+                putString("wasteCategory", itemType)
+            }
+
+            findNavController().navigate(
+                R.id.action_questionnaireResultFragment_to_nearbyBinFragment,
+                bundle
+            )
         }
 
         binding.btnAccurate.setOnClickListener {
