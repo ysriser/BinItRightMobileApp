@@ -1,18 +1,15 @@
-name: Android CI
+name: Android PR Validation
 # Code push to any branch will run everything: build, unit test, lint, SCA, SAST.
 
 on:
-  # Run for all push to all branches
-  push:
-    branches: ["**"]
+  pull_request:
+    branches: [ "master" ]
+
 #  # Run when PR is updated, opened or reopened and targeting master/main
 #  pull_request:
 #    branches: [ "master", "main" ]
 
 # This prevents double-running the same code if a PR is open
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
 
 jobs:
   # STAGE 1: BUILD (Always Runs)

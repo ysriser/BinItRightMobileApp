@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="24dp"
+    tools:context=".HomeFragment"
+    android:orientation="vertical"
+    android:gravity="center">
+
+    <TextView
+        android:id="@+id/tvAppTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Bin It Right"
+        android:textSize="32sp"
+        android:textStyle="bold"
+        android:textColor="#2E7D32"
+        android:layout_marginBottom="16dp"/>
+
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnStartScan"
+        android:layout_width="match_parent"
+        android:layout_height="64dp"
+        android:text="Start Scanning"
+        android:textSize="18sp"
+        app:cornerRadius="12dp"
+        app:icon="@drawable/ic_camera_alt_24"
+        app:iconGravity="textStart"
+        android:layout_marginBottom="16dp"/>
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnQuestionnaire"
+        android:layout_width="match_parent"
+        android:layout_height="64dp"
+        android:text="Identify with Quiz"
+        android:textSize="18sp"
+        app:cornerRadius="12dp"
+        app:icon="@drawable/ic_arrow_forward_24"
+        app:iconGravity="textStart"
+        android:backgroundTint="#0288D1"
+        android:layout_marginBottom="16dp"/>
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnYesIKnow"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:minHeight="64dp"
+        android:paddingVertical="12dp"
+        android:text="Yes, I Know\nGo directly to location selection"
+        android:textSize="16sp"
+        android:textAllCaps="false"
+        android:gravity="start|center_vertical"
+        android:paddingStart="56dp"
+        android:paddingEnd="16dp"
+        app:cornerRadius="12dp"
+        app:icon="@drawable/ic_recycling_24"
+        app:iconGravity="start"
+        app:iconSize="32dp"
+        app:iconPadding="16dp"
+        android:backgroundTint="#00C853"
+        android:layout_marginBottom="16dp"
+        style="@style/Widget.Material3.Button"/>
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnBackToHome"
+        android:layout_width="match_parent"
+        android:layout_height="64dp"
+        android:text="Back to Home"
+        android:textSize="18sp"
+        app:cornerRadius="12dp"
+        app:icon="@drawable/ic_arrow_back_24"
+        app:iconGravity="textStart"
+        android:backgroundTint="#757575"
+        style="@style/Widget.Material3.Button.OutlinedButton"/>
+
+
+</LinearLayout>
