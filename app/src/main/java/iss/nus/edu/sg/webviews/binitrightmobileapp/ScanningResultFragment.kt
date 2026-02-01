@@ -141,11 +141,12 @@ class ScanningResultFragment : Fragment() {
                 "ELECTRONIC", "ELECTRONICS", "E-WASTE", "EWASTE" -> "EWaste"
                 "LIGHTING", "LAMP", "LIGHT", "BULB" -> "Lamp"
                 else -> {
-                    "BlueBin"
+                    ""
                 }
             }
             val bundle = Bundle().apply {
-                putString("binType", binType)
+                putString("selectedBinType", binType)
+                putString("wasteCategory", scannedCategory)
             }
 
             findNavController().navigate(

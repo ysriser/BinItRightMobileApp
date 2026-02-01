@@ -20,7 +20,7 @@ interface ApiService {
     suspend fun sendFeedback(@Body feedback: FeedbackRequest): Response<Boolean>
 
     @Multipart
-    @POST("/checkin/submit")
+    @POST("api/checkin/submit")
     suspend fun submitRecycleCheckIn(
         @Part video: MultipartBody.Part,
         @Part("metadata") metadata: RequestBody

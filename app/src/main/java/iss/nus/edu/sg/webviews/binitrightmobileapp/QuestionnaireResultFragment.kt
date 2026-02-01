@@ -125,8 +125,18 @@ class QuestionnaireResultFragment : Fragment() {
         binding.btnRecycle.setOnClickListener {
             // Get the scanned item type
             val itemType = binding.tvCategory.text.toString() // e.g., "Paper"
+
+            val binType = when (itemType.uppercase()) {
+                "RECYCLABLE ITEM" -> "BlueBin"
+                "ELECTRONIC", "ELECTRONICS", "E-WASTE", "EWASTE" -> "EWaste"
+                "LIGHTING", "LAMP", "LIGHT", "BULB" -> "Lamp"
+                else -> {
+                    ""
+                }
+            }
             val bundle = Bundle().apply {
-                putString("binType", itemType)
+                putString("selectedBinType", binType)
+                putString("wasteCategory", itemType)
             }
 
             findNavController().navigate(

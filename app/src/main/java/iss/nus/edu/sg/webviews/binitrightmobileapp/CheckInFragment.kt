@@ -39,8 +39,8 @@ class CheckInFragment : Fragment() {
     private var binType: String = ""
     private var binLatitude: Double = 0.0
     private var binLongitude: Double = 0.0
-    private var scannedBinType: String? = null
-
+    private var selectedBinType: String? = null
+    private var wasteCategory: String? = null
     private var currentCount = 0
 
     private var _binding: FragmentCheckInBinding? = null
@@ -95,6 +95,8 @@ class CheckInFragment : Fragment() {
             // Initialize submit button as disabled
             updateSubmitButtonState(false)
 
+            retrieveScannedBinType()
+
             setupButtons()
 
             setupCounter()
@@ -117,6 +119,7 @@ class CheckInFragment : Fragment() {
             binType = bundle.getString("binType", "") ?: ""
             binLatitude = bundle.getDouble("binLatitude", 0.0)
             binLongitude = bundle.getDouble("binLongitude", 0.0)
+            selectedBinType = bundle.getString("selectedBinType", "")?:""
 
         } ?: run {
             binId = 3
@@ -130,32 +133,11 @@ class CheckInFragment : Fragment() {
     private fun displayBinInformation() {
 
         binding.apply {
-            tvLocationName?.text = binName.ifEmpty { "Recycling Bin" }
-            tvLocationAddress?.text = binAddress.ifEmpty { "Location not available" }
+            tvLocationName.text = binName.ifEmpty { "Recycling Bin" }
+            tvLocationAddress.text = binAddress.ifEmpty { "Location not available" }
 
             val itemTypeText = formatBinType(binType)
-            etItemName?.setText(itemTypeText)
-
-            when (binType.uppercase()) {
-                "BLUEBIN", "PAPER" -> {
-                    chipPaper.isChecked = true
-                }
-                "EWASTE" -> {
-                    chipEWaste.isChecked = true
-                }
-                "LAMP", "LIGHTING" -> {
-                    chipLighting.isChecked = true
-                }
-                "PLASTIC" -> {
-                    chipPlastic.isChecked = true
-                }
-                "GLASS" -> {
-                    chipGlass?.isChecked = true
-                }
-                "METAL" -> {
-                    chipMetal?.isChecked = true
-                }
-            }
+            etItemName.setText(itemTypeText)
         }
     }
 
@@ -164,7 +146,7 @@ class CheckInFragment : Fragment() {
             "BlueBin" -> "BlueBin"
             "EWaste" -> "Electronic Waste"
             "Lamp" -> "Lighting"
-            else -> type
+            else -> ""
         }
     }
     private fun setupButtons() {
@@ -212,7 +194,7 @@ class CheckInFragment : Fragment() {
     private fun setupChipListeners() {
 
         try {
-            binding.cgItemType?.setOnCheckedStateChangeListener { group, checkedIds ->
+            binding.cgItemType.setOnCheckedStateChangeListener { group, checkedIds ->
                 if (checkedIds.isEmpty()) {
                     return@setOnCheckedStateChangeListener
                 }
@@ -230,7 +212,6 @@ class CheckInFragment : Fragment() {
                     }
                 }
 
-                Log.d(TAG, "Chip selected: $selectedText (ID: $checkedId)")
                 binding.etItemName.setText(selectedText)
             }
 
@@ -402,12 +383,12 @@ class CheckInFragment : Fragment() {
 
     private fun retrieveScannedBinType() {
         arguments?.let { bundle ->
-            scannedBinType = bundle.getString("binType")
-            if (scannedBinType != null) {
+            selectedBinType = bundle.getString("selectedBinType")
+            if (selectedBinType != null) {
             } else {
             }
         } ?: run {
-            scannedBinType = null
+            selectedBinType = null
         }
     }
 
@@ -422,13 +403,14 @@ class CheckInFragment : Fragment() {
         }
 
         val durationSeconds = getVideoDurationSeconds(file)
+        val wasteType = binding.etItemName.text.toString()
 
         val checkInData = CheckInData(
             userId = userId,
             recordedAt = System.currentTimeMillis(),
             duration = durationSeconds,
             binId = binId.toInt(),
-            itemName = scannedBinType ?: binType, // Use scanned type if available, otherwise use bin type
+            wasteCategory = wasteCategory?: wasteType, // Use scanned type if available, otherwise use selected type
             quantity = currentCount
         )
 

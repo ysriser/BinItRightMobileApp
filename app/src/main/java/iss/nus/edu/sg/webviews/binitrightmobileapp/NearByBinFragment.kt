@@ -17,6 +17,7 @@ import java.io.InputStreamReader
 import android.Manifest
 import android.content.pm.PackageManager
 import android.util.Log
+import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
@@ -37,7 +38,8 @@ class NearByBinFragment : Fragment(R.layout.fragment_near_by_bin), OnMapReadyCal
     private var hasZoomedToBins = false
     private var hasFetchedBins = false
     private val nearbyBins = mutableListOf<DropOffLocation>()
-    private var scannedBinType: String? = null
+    private var selectedBinType: String? = null
+    private var wasteCategory: String? = null
     private var adapter: NearByBinsAdapter?= null
     private lateinit var locationClient: FusedLocationProviderClient
 
@@ -52,19 +54,21 @@ class NearByBinFragment : Fragment(R.layout.fragment_near_by_bin), OnMapReadyCal
         _binding = FragmentNearByBinBinding.bind(view)
         locationClient = LocationServices.getFusedLocationProviderClient(requireActivity())
 
-        retrieveScannedBinType()
+        retrieveBinType()
         setupMap()
         setupRecyclerView()
     }
 
-    private fun retrieveScannedBinType() {
+    private fun retrieveBinType() {
         arguments?.let { bundle ->
-            scannedBinType = bundle.getString("binType")
-            if (scannedBinType != null) {
+            selectedBinType = bundle.getString("binType")
+            if (selectedBinType != null) {
+                Log.d(TAG, "Retrieved scanned bin type: $selectedBinType")
             } else {
+                Log.d(TAG, "No scanned bin type found")
             }
         } ?: run {
-            scannedBinType = null
+            selectedBinType = null
         }
     }
 
@@ -83,12 +87,14 @@ class NearByBinFragment : Fragment(R.layout.fragment_near_by_bin), OnMapReadyCal
     }
 
     override fun onMapReady(map: GoogleMap) {
+        Log.d(TAG, "Map is ready")
         googleMap = map
         isMapReady = true
 
         googleMap.uiSettings.isZoomControlsEnabled = true
 
         pendingBins?.let {
+            Log.d(TAG, "Displaying ${it.size} pending bins")
             updateMapMarkers(it)
             pendingBins = null
         }
@@ -106,9 +112,11 @@ class NearByBinFragment : Fragment(R.layout.fragment_near_by_bin), OnMapReadyCal
             navigateToCheckIn(selectedBin)
         }
         binding.binsRecyclerView.adapter = adapter
+        Log.d(TAG, "RecyclerView setup complete")
     }
 
     private fun navigateToCheckIn(bin: DropOffLocation) {
+        Log.d(TAG, "Navigating to check-in for bin: ${bin.name}")
 
         val bundle = Bundle().apply {
             putLong("binId", bin.id)
@@ -120,9 +128,11 @@ class NearByBinFragment : Fragment(R.layout.fragment_near_by_bin), OnMapReadyCal
         }
 
         // Pass the scanned bin type if it exists
-        scannedBinType?.let {
-            bundle.putString("scannedBinType", it)
-            Log.d(TAG, "  Added scannedBinType to bundle: $it")
+        selectedBinType?.let {
+            bundle.putString("selectedBinType", it)
+        }
+        wasteCategory?.let {
+            bundle.putString("scannedCategory", it)
         }
 
         try {
@@ -131,17 +141,23 @@ class NearByBinFragment : Fragment(R.layout.fragment_near_by_bin), OnMapReadyCal
                 bundle
             )
         } catch (e: Exception) {
+            Log.e(TAG, "Navigation failed: ${e.message}", e)
+            Toast.makeText(requireContext(), "Navigation error", Toast.LENGTH_SHORT).show()
         }
     }
 
     private fun fetchUserLocation() {
-        if (hasFetchedBins) return
+        if (hasFetchedBins) {
+            Log.d(TAG, "Already fetched bins, skipping")
+            return
+        }
 
         if (ActivityCompat.checkSelfPermission(
                 requireContext(),
                 Manifest.permission.ACCESS_FINE_LOCATION
             ) != PackageManager.PERMISSION_GRANTED
         ) {
+            Log.w(TAG, "Location permission not granted, requesting...")
             requestPermissions(
                 arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
                 LOCATION_PERMISSION_REQUEST_CODE
@@ -156,11 +172,12 @@ class NearByBinFragment : Fragment(R.layout.fragment_near_by_bin), OnMapReadyCal
                 val lat = location?.latitude ?: 1.2879
                 val lng = location?.longitude ?: 103.8058
 
+                Log.d(TAG, "Got user location: lat=$lat, lng=$lng")
                 hasFetchedBins = true
-                fetchNearbyBins(1.29, 103.78)
+                fetchNearbyBins(1.29, 103.78)  // Using your default coordinates
             }
             .addOnFailureListener { e ->
-                Log.e(TAG, "Failed to get location", e)
+                Log.e(TAG, "Failed to get location: ${e.message}", e)
                 // Use fallback location
                 hasFetchedBins = true
                 fetchNearbyBins(1.3521, 103.8198)
@@ -173,115 +190,200 @@ class NearByBinFragment : Fragment(R.layout.fragment_near_by_bin), OnMapReadyCal
     private fun fetchNearbyBins(lat: Double, lng: Double) {
         viewLifecycleOwner.lifecycleScope.launch {
             try {
+                Log.d(TAG, "Starting to fetch nearby bins for lat=$lat, lng=$lng")
+
                 val json = withContext(Dispatchers.IO) {
-//                    val url = java.net.URL(
-//                        "http://10.0.2.2:8081/api/bins/nearby?lat=$lat&lng=$lng&radius=3000"
-//                    )
+                    // Use emulator URL (10.0.2.2) for Android Emulator
+                    // Use device URL (192.168.88.4) for physical device
+                    val urlString = "http://192.168.88.4:8082/api/bins/nearby?lat=$lat&lng=$lng&radius=3000"
 
-                    val url = java.net.URL(
-                        "http://192.168.88.4:8081/api/bins/nearby?lat=$lat&lng=$lng&radius=3000"
-                    )
+                    Log.d(TAG, "Fetching from URL: $urlString")
 
+                    val url = java.net.URL(urlString)
                     val connection = url.openConnection() as java.net.HttpURLConnection
-                    connection.requestMethod = "GET"
-                    connection.connectTimeout = 10000
-                    connection.readTimeout = 10000
 
                     try {
-                        val stream = if (connection.responseCode in 200..299) {
+                        connection.requestMethod = "GET"
+                        connection.connectTimeout = 10000
+                        connection.readTimeout = 10000
+
+                        val responseCode = connection.responseCode
+                        Log.d(TAG, "Response code: $responseCode")
+
+                        val stream = if (responseCode in 200..299) {
+                            Log.d(TAG, "###Stream incoming")
                             connection.inputStream
                         } else {
+                            Log.e(TAG, "HTTP Error: $responseCode")
                             connection.errorStream
                         }
 
-                        BufferedReader(InputStreamReader(stream)).use { it.readText() }
+                        val responseText = BufferedReader(InputStreamReader(stream)).use { it.readText() }
+
+                        Log.d(TAG, "Response length: ${responseText.length}")
+
+                        responseText
                     } finally {
                         connection.disconnect()
                     }
                 }
 
                 Log.d(TAG, "Response JSON = $json")
-                parseBinsJson(json)
+
+                // Parse on Main thread
+                withContext(Dispatchers.Main) {
+                    parseBinsJson(json)
+                }
+
             } catch (e: Exception) {
-                // Handle error - maybe show a toast or error message
+                Log.e(TAG, "Error fetching nearby bins: ${e.message}", e)
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(
+                        requireContext(),
+                        "Failed to load nearby bins: ${e.message}",
+                        Toast.LENGTH_LONG
+                    ).show()
+                }
             }
         }
     }
 
     // -----------------------------
-    // Parse Response
+    // Parse Response - FIXED VERSION
     // -----------------------------
     private fun parseBinsJson(json: String) {
         try {
+            val trimmed = json.trim()
+            if (!trimmed.startsWith("[") && !trimmed.startsWith("{")) {
+                Log.e(TAG, "Response is not JSON. First 200 chars: ${trimmed.take(200)}")
+                throw Exception("Invalid response from server (not JSON)")
+            }
+            Log.d(TAG, "Starting to parse JSON...")
+
             val jsonArray = org.json.JSONArray(json)
+            Log.d(TAG, "JSON array length: ${jsonArray.length()}")
+
             val parsedBins = mutableListOf<DropOffLocation>()
 
-
             for (i in 0 until jsonArray.length()) {
-                val obj = jsonArray.getJSONObject(i)
+                try {
+                    val obj = jsonArray.getJSONObject(i)
 
-                parsedBins.add(
-                    DropOffLocation(
-                        id = obj.getLong("id"),
-                        name = obj.getString("name"),
-                        address = obj.getString("address"),
-                        description = obj.getString("description"),
-                        postalCode = obj.getString("postalCode"),
-                        binType = obj.getString("binType"),
-                        status = obj.getBoolean("status"),
-                        latitude = obj.getDouble("latitude"),
-                        longitude = obj.getDouble("longitude"),
-                        distanceMeters = obj.getDouble("distanceMeters")
+                    // CRITICAL FIX: Parse status as STRING first, then convert to boolean
+                    val statusString = obj.optString("status", "ACTIVE")
+                    val statusBoolean = statusString.equals("ACTIVE", ignoreCase = true)
+
+                    // CRITICAL FIX: Handle null distanceMeters
+                    val distance = if (obj.isNull("distanceMeters")) {
+                        0.0
+                    } else {
+                        obj.optDouble("distanceMeters", 0.0)
+                    }
+
+                    val bin = DropOffLocation(
+                        id = obj.optLong("id", -1),
+                        name = obj.optString("name", "Unknown Bin"),
+                        address = obj.optString("address", ""),
+                        description = obj.optString("description", ""),
+                        postalCode = obj.optString("postalCode", ""),
+                        binType = obj.optString("binType", "Unknown"),
+                        status = statusBoolean,  // Use converted boolean
+                        latitude = obj.optDouble("latitude", 0.0),
+                        longitude = obj.optDouble("longitude", 0.0),
+                        distanceMeters = distance  // Use null-safe distance
                     )
-                )
+
+                    parsedBins.add(bin)
+                    Log.d(TAG, "Parsed bin ${i + 1}: ${bin.name} at (${bin.latitude}, ${bin.longitude}), distance=${bin.distanceMeters}m")
+
+                } catch (e: Exception) {
+                    Log.e(TAG, "Error parsing bin at index $i: ${e.message}", e)
+                }
             }
 
-
-            if (!isAdded){
+            if (!isAdded) {
+                Log.w(TAG, "Fragment not added, skipping UI update")
                 return
             }
+
+            Log.d(TAG, "Successfully parsed ${parsedBins.size} bins")
 
             nearbyBins.clear()
             nearbyBins.addAll(parsedBins)
 
+            Log.d(TAG, "Notifying adapter of ${nearbyBins.size} bins")
             adapter?.notifyDataSetChanged()
+
+            Log.d(TAG, "Updating map markers")
             updateMapMarkers(parsedBins)
+
+            // Show success message
+            Toast.makeText(
+                requireContext(),
+                "Found ${parsedBins.size} nearby bins",
+                Toast.LENGTH_SHORT
+            ).show()
+
         } catch (e: Exception) {
+            Log.e(TAG, "Error parsing JSON: ${e.message}", e)
+            Toast.makeText(
+                requireContext(),
+                "Error parsing bins data: ${e.message}",
+                Toast.LENGTH_LONG
+            ).show()
         }
     }
-
 
     // -----------------------------
     // Mark location in map
     // -----------------------------
     private fun updateMapMarkers(bins: List<DropOffLocation>) {
+        Log.d(TAG, "updateMapMarkers called with ${bins.size} bins")
 
         if (!isMapReady) {
-
+            Log.w(TAG, "Map not ready, storing bins for later")
             pendingBins = bins
             return
         }
 
+        if (bins.isEmpty()) {
+            Log.w(TAG, "No bins to display on map")
+            return
+        }
+
+        Log.d(TAG, "Clearing existing markers")
         googleMap.clear()
 
-        bins.forEach { bin ->
+        Log.d(TAG, "Adding ${bins.size} markers to map")
+        bins.forEachIndexed { index, bin ->
+            try {
+                val position = LatLng(bin.latitude, bin.longitude)
+                val distanceText = if (bin.distanceMeters > 0) {
+                    "${bin.distanceMeters.toInt()} m"
+                } else {
+                    "Distance unknown"
+                }
 
-            googleMap.addMarker(
-                MarkerOptions()
-                    .position(LatLng(bin.latitude, bin.longitude))
-                    .title(bin.name)
-                    .snippet("${bin.distanceMeters.toInt()} m")
-            )
+                googleMap.addMarker(
+                    MarkerOptions()
+                        .position(position)
+                        .title(bin.name)
+                        .snippet("${bin.binType} - $distanceText")
+                )
+
+                Log.d(TAG, "Added marker $index: ${bin.name} at $position")
+            } catch (e: Exception) {
+                Log.e(TAG, "Error adding marker for ${bin.name}: ${e.message}", e)
+            }
         }
 
         if (!hasZoomedToBins && bins.isNotEmpty()) {
             val first = bins.first()
+            val position = LatLng(first.latitude, first.longitude)
 
+            Log.d(TAG, "Moving camera to first bin: ${first.name} at $position")
             googleMap.moveCamera(
-                CameraUpdateFactory.newLatLngZoom(
-                    LatLng(first.latitude, first.longitude),
-                    16f
-                )
+                CameraUpdateFactory.newLatLngZoom(position, 16f)
             )
             hasZoomedToBins = true
         }
@@ -299,7 +401,15 @@ class NearByBinFragment : Fragment(R.layout.fragment_near_by_bin), OnMapReadyCal
             grantResults.isNotEmpty() &&
             grantResults[0] == PackageManager.PERMISSION_GRANTED
         ) {
+            Log.d(TAG, "Location permission granted")
             fetchUserLocation()
+        } else {
+            Log.w(TAG, "Location permission denied")
+            Toast.makeText(
+                requireContext(),
+                "Location permission is required to find nearby bins",
+                Toast.LENGTH_LONG
+            ).show()
         }
     }
 
