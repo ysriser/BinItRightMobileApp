@@ -102,8 +102,7 @@ jobs:
 
             adb install apk/app-debug.apk || true
             
-            mvn -f appium-tests/pom.xml clean test \
-            -Dapk.path=$GITHUB_WORKSPACE/apk/app-debug.apk
+            mvn -f appium-tests/pom.xml clean test -Dapk.path=$GITHUB_WORKSPACE/apk/app-debug.apk
 
             
       - name: Upload Appium reports
