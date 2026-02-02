@@ -44,7 +44,7 @@ jobs:
     name: SIT (Appium)
     needs: build
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 45
 
     steps:
       - name: Checkout Appium Tests
@@ -65,40 +65,59 @@ jobs:
           java-version: '21'
           distribution: 'temurin'
 
-      - name: Install Appium
-        run: npm install -g appium
+      
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
 
-      - name: Start Appium Server
+      - name: Install Appium
         run: |
-          appium &
-          sleep 10
+          npm install -g appium
+          appium driver install uiautomator2
+
 
       - name: Start Android Emulator and Run Appium Tests
         uses: reactivecircus/android-emulator-runner@v2
+        env:
+          ANDROID_EMULATOR_WAIT_TIME_BEFORE_KILL: 300
         with:
-          api-level: 33
-          target: google_apis
-          arch: x86_64
-          profile: pixel_5
+          api-level: 29
+          target: default
+          arch: x86
+          profile: pixel
+          emulator-boot-timeout: 900
           emulator-options: >
             -no-window
             -no-audio
             -no-snapshot
-            -no-boot-anim
+            -gpu swiftshader_indirect
           disable-animations: true
           script: |
-            adb wait-for-device
             adb devices
-            adb shell getprop sys.boot_completed
-            cd appium-tests
-            pwd
-            ls -la
-            mvn test -Dapk.path="$GITHUB_WORKSPACE/apk/app-debug.apk"
-
           
+            echo "Starting Appium..."
+            appium --log-level error > appium.log 2>&1 &
+            sleep 20
+
+            adb install apk/app-debug.apk || true
+            
+            mvn -f appium-tests/pom.xml clean test -Dapk.path=$GITHUB_WORKSPACE/apk/app-debug.apk
+
+            
+      - name: Upload Appium reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: appium-logs
+          path: |
+            appium-tests/target/surefire-reports/**
+            appium.log
+
+                    
 
   # ===============================
-  # TAG APK AS PRODUCTION
+  # TAG APK AS PRODUCTION 
   # ===============================
   tag-production:
     name: Tag APK as Production
@@ -109,7 +128,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0   # IMPORTANT: required for tagging
+          fetch-depth: 0   
   
       - name: Configure Git
         run: |
