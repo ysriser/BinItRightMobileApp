@@ -193,10 +193,4 @@
         android:name="iss.nus.edu.sg.webviews.binitrightmobileapp.VideoRecordFragment"
         android:label="Record Video" />
 
-    <fragment
-        android:id="@+id/newsDetailFragment"
-        android:name="iss.nus.edu.sg.webviews.binitrightmobileapp.NewsDetailFragment"
-        android:label="News Detail"
-        tools:layout="@layout/fragment_news_detail" />
-
 </navigation>
