@@ -82,26 +82,27 @@ jobs:
         env:
           ANDROID_EMULATOR_WAIT_TIME_BEFORE_KILL: 300
         with:
-          api-level: 33
+          api-level: 30
           target: google_apis
           arch: x86_64
-          profile: pixel_5
+          profile: pixel_4
+          emulator-boot-timeout: 600
           emulator-options: >
             -no-window
             -no-audio
             -no-snapshot
-            -no-boot-anim
+            
           disable-animations: true
           script: |
-            adb devices
+            echo "Checking emulator boot status..."
+            adb shell getprop sys.boot_completed
           
             echo "Starting Appium..."
             appium --log-level error > appium.log 2>&1 &
-            sleep 15
-            
-            # Wait for emulator and install APK
-            
+            sleep 20
+
             adb install apk/app-debug.apk
+            
             mvn -f appium-tests/pom.xml clean test \
             -Dapk.path=$GITHUB_WORKSPACE/apk/app-debug.apk
 
