@@ -94,10 +94,8 @@ jobs:
             -gpu swiftshader_indirect
           disable-animations: true
           script: |
-            echo "Checking emulator boot status..."
-            until [ "$(adb shell getprop sys.boot_completed | tr -d '\r')" = "1" ]; do
-              sleep 10
-            done
+            echo "Waiting for emulator to boot..."
+            while [ "$(adb shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')" != "1" ]; do sleep 10; done
           
             echo "Starting Appium..."
             appium --log-level error > appium.log 2>&1 &
