@@ -44,7 +44,7 @@ jobs:
     name: SIT (Appium)
     needs: build
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 45
 
     steps:
       - name: Checkout Appium Tests
@@ -65,19 +65,23 @@ jobs:
           java-version: '21'
           distribution: 'temurin'
 
-      - name: Install Appium
-        run: npm install -g appium
+      
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
 
-      - name: Start Appium Server
+      - name: Install Appium + Android driver
         run: |
-          appium &
-          sleep 10
+          npm install -g appium
+          appium driver install uiautomator2
+
 
       - name: Start Android Emulator and Run Appium Tests
         uses: reactivecircus/android-emulator-runner@v2
-        continue-on-error: true   # 👈 THIS IS THE KEY
         env:
-          ANDROID_EMULATOR_WAIT_TIME_BEFORE_KILL: 120
+          ANDROID_EMULATOR_WAIT_TIME_BEFORE_KILL: 300
         with:
           api-level: 33
           target: google_apis
@@ -90,15 +94,28 @@ jobs:
             -no-boot-anim
           disable-animations: true
           script: |
-            adb wait-for-device
-            until [[ "$(adb shell getprop sys.boot_completed | tr -d '\r')" == "1" ]]; do
-            echo "Waiting for emulator boot..."
-            sleep 10
-            done
+            
             adb devices
-            mvn -f appium-tests/pom.xml test -Dapk.path="$GITHUB_WORKSPACE/apk/app-debug.apk"
-            adb kill-server || true
-          
+            adb install -r "$GITHUB_WORKSPACE/apk/app-debug.apk"
+
+            # Start Appium in background
+            appium --log-level error > appium.log 2>&1 &
+            sleep 10
+            curl -sf http://127.0.0.1:4723/status || (echo "Appium not ready"; exit 1)
+
+            # Run the Maven tests (Java suite in separate repo)
+            mvn -f "$GITHUB_WORKSPACE/appium-tests/pom.xml" -B -ntp test -Dapk.path="$GITHUB_WORKSPACE/apk/app-debug.apk"
+
+            
+      - name: Upload Appium reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: appium-logs
+          path: |
+            appium-tests/target/surefire-reports/**
+            appium.log
+
                     
 
   # ===============================
@@ -113,7 +130,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0   # IMPORTANT: required for tagging
+          fetch-depth: 0   
   
       - name: Configure Git
         run: |
