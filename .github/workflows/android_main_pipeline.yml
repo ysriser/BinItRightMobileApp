@@ -75,7 +75,6 @@ jobs:
 
       - name: Start Android Emulator and Run Appium Tests
         uses: reactivecircus/android-emulator-runner@v2
-        continue-on-error: true   # 👈 THIS IS THE KEY
         env:
           ANDROID_EMULATOR_WAIT_TIME_BEFORE_KILL: 120
         with:
