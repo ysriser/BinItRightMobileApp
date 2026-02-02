@@ -82,20 +82,22 @@ jobs:
         env:
           ANDROID_EMULATOR_WAIT_TIME_BEFORE_KILL: 300
         with:
-          api-level: 30
-          target: google_apis
-          arch: x86_64
-          profile: pixel_4
-          emulator-boot-timeout: 600
+          api-level: 29
+          target: default
+          arch: x86
+          profile: pixel
+          emulator-boot-timeout: 900
           emulator-options: >
             -no-window
             -no-audio
             -no-snapshot
-            
+            -gpu swiftshader_indirect
           disable-animations: true
           script: |
             echo "Checking emulator boot status..."
-            adb shell getprop sys.boot_completed
+            until [[ "$(adb shell getprop sys.boot_completed | tr -d '\r')" == "1" ]]; do
+              sleep 10
+            done
           
             echo "Starting Appium..."
             appium --log-level error > appium.log 2>&1 &
