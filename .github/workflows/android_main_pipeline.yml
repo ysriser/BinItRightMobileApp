@@ -95,7 +95,7 @@ jobs:
           disable-animations: true
           script: |
             echo "Checking emulator boot status..."
-            until [[ "$(adb shell getprop sys.boot_completed | tr -d '\r')" == "1" ]]; do
+            until [ "$(adb shell getprop sys.boot_completed | tr -d '\r')" = "1" ]; do
               sleep 10
             done
           
