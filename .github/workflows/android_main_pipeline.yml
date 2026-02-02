@@ -95,7 +95,11 @@ jobs:
           disable-animations: true
           script: |
             echo "Waiting for emulator to boot..."
-            while [ "$(adb shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')" != "1" ]; do sleep 10; done
+            while true; do
+              BOOT_STATUS=$(adb shell getprop sys.boot_completed 2>/dev/null || echo "0")
+              [ "$BOOT_STATUS" = "1" ] && break
+              sleep 10
+            done
           
             echo "Starting Appium..."
             appium --log-level error > appium.log 2>&1 &
