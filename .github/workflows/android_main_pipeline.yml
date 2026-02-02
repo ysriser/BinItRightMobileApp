@@ -70,7 +70,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'npm'
 
       - name: Install Appium
         run: |
@@ -94,15 +93,17 @@ jobs:
             -no-boot-anim
           disable-animations: true
           script: |
+            adb devices
+          
+            echo "Starting Appium..."
             appium --log-level error > appium.log 2>&1 &
+            sleep 15
             
             # Wait for emulator and install APK
-            adb wait-for-device
-            adb install apk-dir/app-debug.apk
             
-            # Run Maven tests
-            # Note: We use -f to point to the pom in the subfolder
-            mvn -f appium-tests/pom.xml clean test -Dapk.path=$GITHUB_WORKSPACE/apk-dir/app-debug.apk
+            adb install apk/app-debug.apk
+            mvn -f appium-tests/pom.xml clean test \
+            -Dapk.path=$GITHUB_WORKSPACE/apk/app-debug.apk
 
             
       - name: Upload Appium reports
