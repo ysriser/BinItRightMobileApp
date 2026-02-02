@@ -72,7 +72,7 @@ jobs:
           node-version: '20'
           cache: 'npm'
 
-      - name: Install Appium + Android driver
+      - name: Install Appium
         run: |
           npm install -g appium
           appium driver install uiautomator2
@@ -94,17 +94,15 @@ jobs:
             -no-boot-anim
           disable-animations: true
           script: |
-            
-            adb devices
-            adb install -r "$GITHUB_WORKSPACE/apk/app-debug.apk"
-
-            # Start Appium in background
             appium --log-level error > appium.log 2>&1 &
-            sleep 10
-            curl -sf http://127.0.0.1:4723/status || (echo "Appium not ready"; exit 1)
-
-            # Run the Maven tests (Java suite in separate repo)
-            mvn -f "$GITHUB_WORKSPACE/appium-tests/pom.xml" -B -ntp test -Dapk.path="$GITHUB_WORKSPACE/apk/app-debug.apk"
+            
+            # Wait for emulator and install APK
+            adb wait-for-device
+            adb install apk-dir/app-debug.apk
+            
+            # Run Maven tests
+            # Note: We use -f to point to the pom in the subfolder
+            mvn -f appium-tests/pom.xml clean test -Dapk.path=$GITHUB_WORKSPACE/apk-dir/app-debug.apk
 
             
       - name: Upload Appium reports
