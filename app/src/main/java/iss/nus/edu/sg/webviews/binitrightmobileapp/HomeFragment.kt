@@ -41,21 +41,13 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
     }
 
     private fun handleLogout() {
-        // 1. Clear the session token
+        // 1. Clear the session token (Consider using a dedicated SessionManager class later!)
         val prefs = requireContext().getSharedPreferences("APP_PREFS", Context.MODE_PRIVATE)
         prefs.edit().remove("TOKEN").apply()
 
-        // 2. Navigate back to Login and clear backstack
-        // The popUpTo ID should be the ID of the home fragment's destination in the nav graph
-        val navOptions = NavOptions.Builder()
-            // In NavOptions, you refer to the fragment's own ID, not an action ID.
-            // Let's assume the ID in your nav_graph.xml is 'homeFragment'.
-            .setPopUpTo(R.id.homeFragment, true)
-            .build()
-
-        // The navigation action ID from home to login.
-        // This must match an <action> tag in your nav_graph.xml
-        findNavController().navigate(R.id.action_homeFragment_to_loginFragment, null, navOptions)
+        // 2. Navigate using the Action ID defined in your XML
+        // This will automatically trigger the popUpTo logic you wrote in the XML
+        findNavController().navigate(R.id.action_nav_home_to_loginFragment)
     }
 
     override fun onDestroyView() {
