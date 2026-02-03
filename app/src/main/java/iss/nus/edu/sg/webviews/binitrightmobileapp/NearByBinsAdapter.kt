@@ -5,7 +5,7 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import iss.nus.edu.sg.webviews.binitrightmobileapp.databinding.ItemRecyclingBinBinding
 import iss.nus.edu.sg.webviews.binitrightmobileapp.databinding.ItemRecyclingBinNoButtonBinding
-import iss.nus.edu.sg.webviews.binitrightmobileapp.model.DropOffLocation
+import iss.nus.edu.sg.webviews.binitrightmobileapp.Model.DropOffLocation
 
 
 class NearByBinsAdapter(
