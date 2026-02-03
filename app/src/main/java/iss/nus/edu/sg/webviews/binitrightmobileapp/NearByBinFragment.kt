@@ -169,7 +169,7 @@ class NearByBinFragment : Fragment(R.layout.fragment_near_by_bin), OnMapReadyCal
 
                 Log.d(TAG, "Got user location: lat=$lat, lng=$lng")
                 hasFetchedBins = true
-                fetchNearbyBins(1.29, 103.78)  // Using your default coordinates
+                fetchNearbyBins(lat, lng)  // Using your default coordinates
             }
             .addOnFailureListener { e ->
                 Log.e(TAG, "Failed to get location: ${e.message}", e)
