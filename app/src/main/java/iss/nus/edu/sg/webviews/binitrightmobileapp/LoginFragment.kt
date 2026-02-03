@@ -83,11 +83,12 @@ class LoginFragment : Fragment(R.layout.fragment_login) {
                     Toast.makeText(requireContext(), "Invalid login", Toast.LENGTH_SHORT).show()
                 }
             } catch (e: Exception) {
-            binding.btnSignIn.isEnabled = true
+                binding.btnSignIn.isEnabled = true
                 Toast.makeText(requireContext(), "Login error: ${e.message}", Toast.LENGTH_LONG).show()
+            }
         }
 
-    }
+
     }
 
     override fun onDestroyView() {
