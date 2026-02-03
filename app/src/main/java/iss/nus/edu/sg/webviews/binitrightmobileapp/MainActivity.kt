@@ -25,12 +25,16 @@ class MainActivity : AppCompatActivity() {
         val navController = navHostFragment.navController
         navController.addOnDestinationChangedListener { _, destination, _ ->
             when (destination.id) {
-                R.id.loginFragment
-                    -> {
+                R.id.loginFragment -> {
+                    binding.bottomNavView.menu.clear() // Clear the items so nothing is "there"
                     binding.bottomNavView.visibility = View.GONE
                 }
 
                 else -> {
+                    // Re-inflate the menu when not on login
+                    if (binding.bottomNavView.menu.size() == 0) {
+                        binding.bottomNavView.inflateMenu(R.menu.bottom_menu)
+                    }
                     binding.bottomNavView.visibility = View.VISIBLE
                 }
             }
