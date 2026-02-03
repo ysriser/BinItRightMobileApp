@@ -1,6 +1,7 @@
 package iss.nus.edu.sg.webviews.binitrightmobileapp
 
 import android.util.Log
+import com.google.gson.GsonBuilder
 import kotlinx.coroutines.delay
 import java.io.File
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
@@ -13,8 +14,11 @@ import java.util.concurrent.TimeUnit
 
 object RetrofitClient {
     // 10.0.2.2 is localhost for Android Emulator
-    private const val BASE_URL = "http://192.168.88.4:8082/"
+    private const val BASE_URL = "http://192.168.88.4:8080/"
 
+    private val gson = GsonBuilder()
+        .setLenient() // This helps with lenient JSON parsing
+        .create()
     private val okHttpClient = OkHttpClient.Builder()
         .connectTimeout(30, TimeUnit.SECONDS)
         .readTimeout(60, TimeUnit.SECONDS)
@@ -25,7 +29,7 @@ object RetrofitClient {
         Retrofit.Builder()
             .baseUrl(BASE_URL)
             .client(okHttpClient)
-            .addConverterFactory(GsonConverterFactory.create())
+            .addConverterFactory(GsonConverterFactory.create(gson))
             .build()
             .create(ApiService::class.java)
     }

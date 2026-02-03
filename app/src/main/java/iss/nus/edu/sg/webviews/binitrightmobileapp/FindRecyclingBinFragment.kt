@@ -142,9 +142,9 @@ class FindRecyclingBinFragment : Fragment(R.layout.fragment_find_recycling_bin),
                 val json = withContext(Dispatchers.IO) {
                     // FIX 1: Build URL properly with proper empty string handling
                     val urlString = if (binType.isEmpty()) {
-                        "http://10.0.2.2:8082/api/bins/all?lat=$lat&lng=$lng"
+                        "http://10.0.2.2:8080/api/bins/all?lat=$lat&lng=$lng"
                     } else {
-                        "http://10.0.2.2:8082/api/bins/all?lat=$lat&lng=$lng&binType=$binType"
+                        "http://10.0.2.2:8080/api/bins/all?lat=$lat&lng=$lng&binType=$binType"
                     }
 
                     val url = URL(urlString)

@@ -190,7 +190,7 @@ class NearByBinFragment : Fragment(R.layout.fragment_near_by_bin), OnMapReadyCal
                 val json = withContext(Dispatchers.IO) {
                     // Use emulator URL (10.0.2.2) for Android Emulator
                     // Use device URL (192.168.88.4) for physical device
-                    val urlString = "http://10.0.2.2:8082/api/bins/nearby?lat=$lat&lng=$lng&radius=3000"
+                    val urlString = "http://10.0.2.2:8080/api/bins/nearby?lat=$lat&lng=$lng&radius=3000"
 
                     Log.d(TAG, "Fetching from URL: $urlString")
 
@@ -203,13 +203,13 @@ class NearByBinFragment : Fragment(R.layout.fragment_near_by_bin), OnMapReadyCal
                         connection.readTimeout = 10000
 
                         val responseCode = connection.responseCode
-                        Log.d(TAG, "Response code: $responseCode")
+                        Log.d(TAG, "##Response code: $responseCode")
 
                         val stream = if (responseCode in 200..299) {
                             Log.d(TAG, "###Stream incoming")
                             connection.inputStream
                         } else {
-                            Log.e(TAG, "HTTP Error: $responseCode")
+                            Log.e(TAG, "##HTTP Error: $responseCode")
                             connection.errorStream
                         }
 

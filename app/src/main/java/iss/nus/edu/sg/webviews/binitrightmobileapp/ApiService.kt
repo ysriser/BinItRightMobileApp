@@ -19,10 +19,15 @@ interface ApiService {
     @POST("api/v1/scan/feedback")
     suspend fun sendFeedback(@Body feedback: FeedbackRequest): Response<Boolean>
 
-    @Multipart
-    @POST("api/checkin/submit")
+
+    @POST("api/checkin")
     suspend fun submitRecycleCheckIn(
-        @Part video: MultipartBody.Part,
-        @Part("metadata") metadata: RequestBody
+        @Body checkInData: CheckInData
     ): Response<CheckInDataResponse>
+
+    // Endpoint for getting pre-signed upload URL
+    @POST("api/videos/presign-upload")
+    suspend fun getPresignedUpload(
+        @Body req: PresignUploadRequest
+    ): Response<PresignUploadResponse>
 }
