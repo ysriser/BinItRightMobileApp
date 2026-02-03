@@ -21,7 +21,7 @@ import androidx.core.app.ActivityCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import iss.nus.edu.sg.webviews.binitrightmobileapp.databinding.FragmentNearByBinBinding
-import iss.nus.edu.sg.webviews.binitrightmobileapp.model.DropOffLocation
+import iss.nus.edu.sg.webviews.binitrightmobileapp.Model.DropOffLocation
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -190,7 +190,7 @@ class NearByBinFragment : Fragment(R.layout.fragment_near_by_bin), OnMapReadyCal
                 val json = withContext(Dispatchers.IO) {
                     // Use emulator URL (10.0.2.2) for Android Emulator
                     // Use device URL (192.168.88.4) for physical device
-                    val urlString = "http://10.0.2.2:8082/api/bins/nearby?lat=$lat&lng=$lng&radius=3000"
+                    val urlString = "http://10.0.2.2:8080/api/bins/nearby?lat=$lat&lng=$lng&radius=3000"
 
                     Log.d(TAG, "Fetching from URL: $urlString")
 
