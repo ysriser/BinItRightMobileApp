@@ -5,6 +5,7 @@ import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.navigation.fragment.NavHostFragment
+import androidx.navigation.ui.setupWithNavController
 
 import iss.nus.edu.sg.webviews.binitrightmobileapp.databinding.ActivityMainBinding
 import iss.nus.edu.sg.webviews.binitrightmobileapp.network.RetrofitClient
@@ -33,21 +34,19 @@ class MainActivity : AppCompatActivity() {
 
             when (destination.id) {
                 R.id.loginFragment -> {
-                    // 1. Clear data to prevent leaks (Good for security)
-                    navBar.menu.clear()
-
-                    // 2. Hide without using View.GONE
-                    navBar.alpha = 0f  // Make it fully transparent
-                    params.height = 0  // Make it take up no space
+                    navBar.menu.clear() // Deletes the buttons and their listeners
+                    navBar.alpha = 0f
+                    params.height = 0
                 }
-
                 else -> {
-                    // 1. Restore the menu
                     if (navBar.menu.size() == 0) {
                         navBar.inflateMenu(R.menu.bottom_menu)
+
+                        // --- CRITICAL FIX ---
+                        // You must re-establish the link after inflating
+                        navBar.setupWithNavController(navController)
                     }
 
-                    // 2. Show the view again
                     navBar.alpha = 1f
                     params.height = ConstraintLayout.LayoutParams.WRAP_CONTENT
                 }
