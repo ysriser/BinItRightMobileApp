@@ -4,7 +4,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F5F7F6"> <RelativeLayout
+    android:background="#F5F7F6">
+    <RelativeLayout
     android:layout_width="match_parent"
     android:layout_height="wrap_content">
 
@@ -13,6 +14,19 @@
         android:layout_width="match_parent"
         android:layout_height="220dp"
         android:background="#00C853" />
+
+        <ImageButton
+            android:id="@+id/btnLogout"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_alignParentEnd="true"
+            android:layout_marginTop="24dp"
+            android:layout_marginEnd="16dp"
+            android:background="?android:attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Logout"
+            android:padding="12dp"
+            android:src="@drawable/outline_logout_24"
+            app:tint="#FFFFFF" />
 
     <LinearLayout
         android:id="@+id/headerTextContainer"
@@ -642,5 +656,6 @@
         </LinearLayout>
 
     </LinearLayout>
+
 </RelativeLayout>
 </androidx.core.widget.NestedScrollView>

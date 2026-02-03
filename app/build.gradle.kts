@@ -53,9 +53,11 @@ dependencies {
     implementation(libs.androidx.activity)
     implementation(libs.androidx.constraintlayout)
 
+    implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
+
     // Material Design
     implementation(libs.material)
-    implementation("com.google.android.material:material:1.11.0")
+
 
     // Navigation
     implementation("androidx.navigation:navigation-fragment-ktx:$nav_version")

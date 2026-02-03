@@ -1,10 +1,12 @@
 package iss.nus.edu.sg.webviews.binitrightmobileapp
 
 import android.os.Bundle
+import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.fragment.NavHostFragment
-import androidx.navigation.ui.setupWithNavController
+
 import iss.nus.edu.sg.webviews.binitrightmobileapp.databinding.ActivityMainBinding
+import iss.nus.edu.sg.webviews.binitrightmobileapp.network.RetrofitClient
 
 class MainActivity : AppCompatActivity() {
 
@@ -13,13 +15,25 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        RetrofitClient.init(applicationContext)
+
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        val navHostFragment = supportFragmentManager
-            .findFragmentById(R.id.nav_host_fragment) as NavHostFragment
+        val navHostFragment =
+            supportFragmentManager.findFragmentById(R.id.nav_host_fragment) as NavHostFragment
         val navController = navHostFragment.navController
+        navController.addOnDestinationChangedListener { _, destination, _ ->
+            when (destination.id) {
+                R.id.loginFragment
+                    -> {
+                    binding.bottomNavView.visibility = View.GONE
+                }
 
-        binding.bottomNavView.setupWithNavController(navController)
+                else -> {
+                    binding.bottomNavView.visibility = View.VISIBLE
+                }
+            }
+        }
     }
 }
