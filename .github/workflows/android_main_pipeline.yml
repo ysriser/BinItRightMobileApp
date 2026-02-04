@@ -100,7 +100,7 @@ jobs:
             appium --log-level error > appium.log 2>&1 &
             sleep 20
 
-            adb install apk/app-debug.apk || true
+            adb install apk/app-test-debug.apk || true
             
             mvn -f appium-tests/pom.xml clean test -Dapk.path=$GITHUB_WORKSPACE/apk/app-test-debug.apk
 
