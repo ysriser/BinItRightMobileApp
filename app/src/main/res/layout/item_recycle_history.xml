@@ -1,0 +1,63 @@
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="12dp"
+    android:backgroundTint="#E8F5E9"
+    android:elevation="6dp"
+    android:radius="14dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="14dp"
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
+
+        <ImageView
+            android:id="@+id/imgCategory"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:scaleType="centerCrop"
+            android:src="@drawable/ic_recycle"
+            />
+
+        <!-- Text -->
+        <LinearLayout
+            android:layout_marginStart="12dp"
+            android:orientation="vertical"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content">
+
+            <TextView
+                android:id="@+id/txtCategory"
+                android:text="Plastic"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:textColor="#1B5E20"
+                android:layout_height="wrap_content"
+                android:layout_width="wrap_content"/>
+
+            <TextView
+                android:id="@+id/txtDate"
+                android:layout_height="wrap_content"
+                android:layout_width="wrap_content"
+                android:text="02 Feb 2026"
+                android:textSize="13sp"
+                android:textColor="#4CAF50"/>
+        </LinearLayout>
+
+        <!-- Quantity -->
+        <TextView
+            android:id="@+id/txtQuantity"
+            android:layout_height="wrap_content"
+            android:layout_width="wrap_content"
+            android:text="×3"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:textColor="#2E7D32"/>
+    </LinearLayout>
+
+</com.google.android.material.card.MaterialCardView>
