@@ -28,16 +28,16 @@ jobs:
           distribution: 'temurin'
           cache: gradle
 
-      - name: Assemble Test APK
+      - name: Assemble Staging APK
         run: |
           ./gradlew assembleStagingDebug \
-            -PTEST_IP="${{ secrets.TEST_IP }}"
+            -PSTAGING_IP="${{ secrets.STAGING_IP }}"
 
-      - name: Upload Test APK
+      - name: Upload Staging APK
         uses: actions/upload-artifact@v4
         with:
-          name: test-apk
-          path: app/build/outputs/apk/staging/debug/app-test-debug.apk
+          name: staging-apk
+          path: app/build/outputs/apk/staging/debug/app-staging-debug.apk
 
   # ===============================
   # SYSTEM INTEGRATION TEST (APPIUM)
@@ -55,10 +55,10 @@ jobs:
           repository: ysriser/BinItRightAppiumScripts
           path: appium-tests
 
-      - name: Download Test APK
+      - name: Download Staging APK
         uses: actions/download-artifact@v4
         with:
-          name: test-apk
+          name: staging-apk
           path: apk
 
       - name: Set up JDK
@@ -102,9 +102,9 @@ jobs:
             appium --log-level error > appium.log 2>&1 &
             sleep 20
 
-            adb install apk/app-test-debug.apk || true
+            adb install apk/app-staging-debug.apk || true
             
-            mvn -f appium-tests/pom.xml clean test -Dapk.path=$GITHUB_WORKSPACE/apk/app-test-debug.apk
+            mvn -f appium-tests/pom.xml clean test -Dapk.path=$GITHUB_WORKSPACE/apk/app-staging-debug.apk
 
             
       - name: Upload Appium reports
