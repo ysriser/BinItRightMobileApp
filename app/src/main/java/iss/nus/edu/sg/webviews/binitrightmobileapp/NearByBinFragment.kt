@@ -53,6 +53,7 @@ class NearByBinFragment : Fragment(R.layout.fragment_near_by_bin), OnMapReadyCal
         _binding = FragmentNearByBinBinding.bind(view)
         locationClient = LocationServices.getFusedLocationProviderClient(requireActivity())
 
+
         retrieveBinType()
         setupMap()
         setupRecyclerView()
