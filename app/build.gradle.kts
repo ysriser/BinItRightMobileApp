@@ -9,6 +9,7 @@ plugins {
 android {
     buildFeatures {
         viewBinding = true
+        buildConfig = true
     }
 
     namespace = "iss.nus.edu.sg.webviews.binitrightmobileapp"
@@ -26,13 +27,38 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
-    buildTypes {
-        release {
+     buildTypes {
+        getByName("debug") {
+            buildConfigField("String", "BASE_URL", "\"http://10.0.2.2:8080\"")
+        }
+        getByName("release") {
             isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            buildConfigField("String", "BASE_URL", "\"https://your-production-api.com\"")
+        }
+    }
+    
+    flavorDimensions += "environment"
+    productFlavors {
+        create("local") {
+            dimension = "environment"
+            buildConfigField("String", "BASE_URL", "\"http://10.0.2.2:8080\"")
+            applicationIdSuffix = ".local" 
+            versionNameSuffix = "-local"
+        }
+        create("test") {
+            dimension = "environment"
+            buildConfigField("String", "BASE_URL", "\" http://159.89.199.107\"")  //  TEST SERVER IP
+            applicationIdSuffix = ".test"
+            versionNameSuffix = "-test"
+        }
+        create("production") {
+            dimension = "environment"
+            buildConfigField("String", "BASE_URL", "\"http://157.245.192.154\"")  // ←  PROD API
+            // No suffix for production
         }
     }
     compileOptions {
