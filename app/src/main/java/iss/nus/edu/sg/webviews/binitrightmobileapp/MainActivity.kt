@@ -28,6 +28,8 @@ class MainActivity : AppCompatActivity() {
         // Fix: You need to define the navController variable
         val navController = navHostFragment.navController
 
+        binding.bottomNavView.setupWithNavController(navController)
+
         navController.addOnDestinationChangedListener { _, destination, _ ->
             val navBar = binding.bottomNavView
             val params = navBar.layoutParams

@@ -2,6 +2,7 @@ package iss.nus.edu.sg.webviews.binitrightmobileapp
 
 import iss.nus.edu.sg.webviews.binitrightmobileapp.Model.LoginResponse
 import iss.nus.edu.sg.webviews.binitrightmobileapp.Model.LoginRequest
+import iss.nus.edu.sg.webviews.binitrightmobileapp.model.RecycleHistoryModel
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
 
@@ -36,6 +37,10 @@ interface ApiService {
         @Part("metadata") metadata: RequestBody
     ): Response<CheckInDataResponse>
 
+    @GET("api/recycle-history/{userId}")
+    suspend fun getRecycleHistory(
+        @Path("userId") userId: Long
+    ): List<RecycleHistoryModel>
     @GET("api/news")
     suspend fun getAllNews(): Response<List<NewsItem>>
 
