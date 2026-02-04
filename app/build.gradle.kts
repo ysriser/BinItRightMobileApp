@@ -26,9 +26,11 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
-     buildTypes {
+    buildTypes {
         getByName("debug") {
-            buildConfigField("String", "BASE_URL", "\"http://10.0.2.2:8080\"")
+            // Pulls LOCALHOST_IP from Gradle properties, else defaults to empty
+            val ip = project.findProperty("LOCALHOST_IP") as String? ?: ""
+            buildConfigField("String", "BASE_URL", "\"http://$ip\"")
         }
         getByName("release") {
             isMinifyEnabled = false
@@ -36,7 +38,9 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
-            buildConfigField("String", "BASE_URL", "\"http://157.245.192.154\"")
+            // Pulls PROD_IP from Gradle properties, else defaults to empty
+            val ip = project.findProperty("PROD_IP") as String? ?: ""
+            buildConfigField("String", "BASE_URL", "\"http://$ip\"")
         }
     }
     
@@ -44,20 +48,27 @@ android {
     productFlavors {
         create("local") {
             dimension = "environment"
-            buildConfigField("String", "BASE_URL", "\"http://10.0.2.2:8080\"")
+            // Looks for LOCALHOST_IP property, defaults to empty string if missing
+            val ip = project.findProperty("LOCALHOST_IP") as String? ?: ""
+            buildConfigField("String", "BASE_URL", "\"http://$ip\"")
+            
             applicationIdSuffix = ".local" 
             versionNameSuffix = "-local"
         }
         create("test") {
             dimension = "environment"
-            buildConfigField("String", "BASE_URL", "\"http://159.89.199.107\"")  //  TEST SERVER IP
+            // Looks for TEST_IP property, defaults to empty string if missing
+            val ip = project.findProperty("TEST_IP") as String? ?: ""
+            buildConfigField("String", "BASE_URL", "\"http://$ip\"")
+            
             applicationIdSuffix = ".test"
             versionNameSuffix = "-test"
         }
         create("production") {
             dimension = "environment"
-            buildConfigField("String", "BASE_URL", "\"http://157.245.192.154\"")  // ←  PROD API
-            // No suffix for production
+            // Looks for PROD_IP property, defaults to empty string if missing
+            val ip = project.findProperty("PROD_IP") as String? ?: ""
+            buildConfigField("String", "BASE_URL", "\"http://$ip\"")
         }
     }
     compileOptions {
