@@ -30,14 +30,14 @@ jobs:
 
       - name: Assemble Test APK
         run: |
-          ./gradlew assembleTestDebug \
+          ./gradlew assembleStagingDebug \
             -PTEST_IP="${{ secrets.TEST_IP }}"
 
       - name: Upload Test APK
         uses: actions/upload-artifact@v4
         with:
           name: test-apk
-          path: app/build/outputs/apk/test/debug/app-test-debug.apk
+          path: app/build/outputs/apk/staging/debug/app-test-debug.apk
 
   # ===============================
   # SYSTEM INTEGRATION TEST (APPIUM)
