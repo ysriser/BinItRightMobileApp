@@ -55,7 +55,7 @@ android {
             applicationIdSuffix = ".local" 
             versionNameSuffix = "-local"
         }
-        create("test") {
+        create("staging") {
             dimension = "environment"
             // Looks for TEST_IP property, defaults to empty string if missing
             val ip = project.findProperty("TEST_IP") as String? ?: ""
