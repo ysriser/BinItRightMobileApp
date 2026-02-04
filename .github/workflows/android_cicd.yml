@@ -24,8 +24,8 @@ jobs:
           java-version: '21'
           distribution: 'temurin'
           cache: gradle
-      - name: Assemble Debug APK
-        run: ./gradlew assembleDebug --no-daemon --build-cache
+      - name: Assemble Local Debug APK
+        run: ./gradlew assembleLocalDebug --no-daemon --build-cache
 
       - name: Save APK for SAST
         uses: actions/upload-artifact@v4
@@ -47,14 +47,14 @@ jobs:
           distribution: 'temurin'
           cache: gradle
       - name: Run JUnit Tests
-        run: ./gradlew testDebugUnitTest
+        run: ./gradlew testLocalDebugUnitTest
 
       - name: Upload Test Results
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: unit-test-results
-          path: app/build/test-results/testDebugUnitTest/
+          path: app/build/test-results/testLocalDebugUnitTest/
 
   # STAGE 3: LINT (Now runs on every check-in)
   lint:
@@ -64,13 +64,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Run Android Lint
-        run: ./gradlew lintDebug
+        run: ./gradlew lintLocalDebug
       - name: Upload Lint Report
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: lint-report
-          path: app/build/reports/lint-results-debug.html
+          path: app/build/reports/lint-results-localDebug.html
 
   # STAGE 4: SCA (Now runs on every check-in)
   sca-scan:
