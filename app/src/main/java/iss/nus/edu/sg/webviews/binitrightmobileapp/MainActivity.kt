@@ -5,6 +5,7 @@ import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.navigation.fragment.NavHostFragment
+import androidx.navigation.ui.setupWithNavController
 
 import iss.nus.edu.sg.webviews.binitrightmobileapp.databinding.ActivityMainBinding
 import iss.nus.edu.sg.webviews.binitrightmobileapp.network.RetrofitClient
@@ -26,6 +27,8 @@ class MainActivity : AppCompatActivity() {
 
         // Fix: You need to define the navController variable
         val navController = navHostFragment.navController
+
+        binding.bottomNavView.setupWithNavController(navController)
 
         navController.addOnDestinationChangedListener { _, destination, _ ->
             val navBar = binding.bottomNavView
