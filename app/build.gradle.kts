@@ -58,11 +58,11 @@ android {
         create("staging") {
             dimension = "environment"
             // Looks for TEST_IP property, defaults to empty string if missing
-            val ip = project.findProperty("TEST_IP") as String? ?: ""
+            val ip = project.findProperty("STAGING_IP") as String? ?: ""
             buildConfigField("String", "BASE_URL", "\"http://$ip\"")
             
-            applicationIdSuffix = ".test"
-            versionNameSuffix = "-test"
+            applicationIdSuffix = ".staging"
+            versionNameSuffix = "-staging"
         }
         create("production") {
             dimension = "environment"
