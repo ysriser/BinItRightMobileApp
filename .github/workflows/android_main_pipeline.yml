@@ -29,7 +29,9 @@ jobs:
           cache: gradle
 
       - name: Assemble Test APK
-        run: ./gradlew assembleTestDebug
+        run: |
+          ./gradlew assembleTestDebug \
+            -PTEST_IP="${{ secrets.TEST_IP }}"
 
       - name: Upload Test APK
         uses: actions/upload-artifact@v4
@@ -130,7 +132,9 @@ jobs:
           cache: gradle
       
       - name: Assemble Production Release APK
-        run: ./gradlew assembleProductionRelease
+        run: |
+          ./gradlew assembleProductionRelease \
+            -PPROD_IP="${{ secrets.PROD_IP }}"
       
       - name: Upload Production APK
         uses: actions/upload-artifact@v4
