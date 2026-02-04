@@ -13,9 +13,8 @@ android {
     }
 
     namespace = "iss.nus.edu.sg.webviews.binitrightmobileapp"
-    compileSdk {
-        version = release(36)
-    }
+    compileSdk = 36
+  
 
     defaultConfig {
         applicationId = "iss.nus.edu.sg.webviews.binitrightmobileapp"
@@ -37,7 +36,7 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
-            buildConfigField("String", "BASE_URL", "\"https://your-production-api.com\"")
+            buildConfigField("String", "BASE_URL", "\"http://157.245.192.154\"")
         }
     }
     
@@ -51,7 +50,7 @@ android {
         }
         create("test") {
             dimension = "environment"
-            buildConfigField("String", "BASE_URL", "\" http://159.89.199.107\"")  //  TEST SERVER IP
+            buildConfigField("String", "BASE_URL", "\"http://159.89.199.107\"")  //  TEST SERVER IP
             applicationIdSuffix = ".test"
             versionNameSuffix = "-test"
         }
