@@ -70,7 +70,22 @@
     <fragment
         android:id="@+id/nav_news"
         android:name="iss.nus.edu.sg.webviews.binitrightmobileapp.NewsFragment"
-        android:label="News" />
+        android:label="News">
+        <action
+            android:id="@+id/action_nav_news_to_newsDetailFragment"
+            app:destination="@id/newsDetailFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/newsDetailFragment"
+        android:name="iss.nus.edu.sg.webviews.binitrightmobileapp.NewsDetailFragment"
+        android:label="Article Details"
+        tools:layout="@layout/fragment_news_detail">
+        <argument
+            android:name="newsId"
+            app:argType="long" />
+    </fragment>
+
 
     <fragment
         android:id="@+id/nav_events"
@@ -85,7 +100,17 @@
     <fragment
         android:id="@+id/nav_profile"
         android:name="iss.nus.edu.sg.webviews.binitrightmobileapp.ProfileFragment"
-        android:label="Profile" />
+        android:label="Profile">
+
+        <action
+            android:id="@+id/action_profile_to_recycleHistory"
+            app:destination="@id/recycleHistoryFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/recycleHistoryFragment"
+        android:name="iss.nus.edu.sg.webviews.binitrightmobileapp.RecycleHistoryFragment"
+        android:label="Recycle History" />
 
     <fragment
         android:id="@+id/scanHomeFragment"

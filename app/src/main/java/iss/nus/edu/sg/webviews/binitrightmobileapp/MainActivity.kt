@@ -28,22 +28,24 @@ class MainActivity : AppCompatActivity() {
         // Fix: You need to define the navController variable
         val navController = navHostFragment.navController
 
+        binding.bottomNavView.setupWithNavController(navController)
+
         navController.addOnDestinationChangedListener { _, destination, _ ->
             val navBar = binding.bottomNavView
             val params = navBar.layoutParams
 
             when (destination.id) {
                 R.id.loginFragment -> {
-                    navBar.menu.clear()
+                    navBar.menu.clear() // Deletes the buttons and their listeners
                     navBar.alpha = 0f
                     params.height = 0
                 }
-
                 else -> {
                     if (navBar.menu.size() == 0) {
                         navBar.inflateMenu(R.menu.bottom_menu)
 
-                        // CRITICAL FIX: Re-bind the navigation logic to the new menu items
+                        // --- CRITICAL FIX ---
+                        // You must re-establish the link after inflating
                         navBar.setupWithNavController(navController)
                     }
 

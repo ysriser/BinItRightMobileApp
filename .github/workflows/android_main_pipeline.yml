@@ -28,14 +28,16 @@ jobs:
           distribution: 'temurin'
           cache: gradle
 
-      - name: Assemble Debug APK
-        run: ./gradlew assembleDebug
+      - name: Assemble Staging APK
+        run: |
+          ./gradlew assembleStagingDebug \
+            -PSTAGING_IP="${{ secrets.STAGING_IP }}"
 
-      - name: Upload APK
+      - name: Upload Staging APK
         uses: actions/upload-artifact@v4
         with:
-          name: release-apk
-          path: app/build/outputs/apk/debug/app-debug.apk
+          name: staging-apk
+          path: app/build/outputs/apk/staging/debug/app-staging-debug.apk
 
   # ===============================
   # SYSTEM INTEGRATION TEST (APPIUM)
@@ -53,10 +55,10 @@ jobs:
           repository: ysriser/BinItRightAppiumScripts
           path: appium-tests
 
-      - name: Download APK
+      - name: Download Staging APK
         uses: actions/download-artifact@v4
         with:
-          name: release-apk
+          name: staging-apk
           path: apk
 
       - name: Set up JDK
@@ -100,9 +102,9 @@ jobs:
             appium --log-level error > appium.log 2>&1 &
             sleep 20
 
-            adb install apk/app-debug.apk || true
+            adb install apk/app-staging-debug.apk || true
             
-            mvn -f appium-tests/pom.xml clean test -Dapk.path=$GITHUB_WORKSPACE/apk/app-debug.apk
+            mvn -f appium-tests/pom.xml clean test -Dapk.path=$GITHUB_WORKSPACE/apk/app-staging-debug.apk
 
             
       - name: Upload Appium reports
@@ -113,15 +115,39 @@ jobs:
           path: |
             appium-tests/target/surefire-reports/**
             appium.log
-
-                    
+  # ===============================
+  # BUILD PRODUCTION APK
+  # ===============================
+  build-production:
+    name: Build Production APK
+    needs: sit-appium
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: gradle
+      
+      - name: Assemble Production Release APK
+        run: |
+          ./gradlew assembleProductionRelease \
+            -PPROD_IP="${{ secrets.PROD_IP }}"
+      
+      - name: Upload Production APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: production-apk
+          path: app/build/outputs/apk/production/release/app-production-release-unsigned.apk                    
 
   # ===============================
   # TAG APK AS PRODUCTION 
   # ===============================
   tag-production:
     name: Tag APK as Production
-    needs: sit-appium
+    needs: build-production
     runs-on: ubuntu-latest
   
     steps:
