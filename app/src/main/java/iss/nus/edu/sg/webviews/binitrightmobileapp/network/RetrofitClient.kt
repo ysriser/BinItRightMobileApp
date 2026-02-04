@@ -25,7 +25,7 @@ object RetrofitClient {
             .build()
 
         api = Retrofit.Builder()
-            .baseUrl("http://10.0.2.2:8080/")
+            .baseUrl(BuildConfig.BASE_URL)
             .client(client)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
