@@ -6,19 +6,24 @@ import android.graphics.Color
 import android.graphics.ColorMatrix
 import android.graphics.ColorMatrixColorFilter
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import coil.load
 import iss.nus.edu.sg.webviews.binitrightmobileapp.databinding.FragmentAchievementDetailBinding
+import kotlinx.coroutines.launch
 
 class AchievementDetailFragment : Fragment() {
 
     private var _binding: FragmentAchievementDetailBinding? = null
     private val binding get() = _binding!!
+
+    private val TAG = "DEBUG_USER"
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -38,14 +43,11 @@ class AchievementDetailFragment : Fragment() {
         val isUnlocked = arguments?.getBoolean("isUnlocked") ?: false
         val dateAchieved = arguments?.getString("dateAchieved")
 
-        val prefs = requireContext().getSharedPreferences("APP_PREFS", Context.MODE_PRIVATE)
-        val userName = prefs.getString("USER_NAME", "Unknown User")
-
         binding.tvDetailName.text = name
         binding.tvDetailDescription.text = description
         binding.tvDetailCriteria.text = criteria
 
-        binding.tvDetailUserName.text = userName
+        binding.tvDetailUserName.text = "Loading..."
 
         binding.ivDetailBadge.load(iconUrl) {
             crossfade(true)
@@ -63,6 +65,8 @@ class AchievementDetailFragment : Fragment() {
             binding.tvDateAchieved.isVisible = true
             binding.tvDateAchieved.text = dateAchieved ?: "Unknown Date"
 
+            fetchUserName(name, description)
+
         } else {
             binding.tvUnlockStatus.text = "LOCKED"
             binding.tvUnlockStatus.setBackgroundColor(Color.parseColor("#78909C"))
@@ -77,14 +81,59 @@ class AchievementDetailFragment : Fragment() {
 
             binding.lblDateAchieved.isVisible = false
             binding.tvDateAchieved.isVisible = false
+
+            binding.tvDetailUserName.text = "-"
         }
 
         binding.btnBack.setOnClickListener {
             findNavController().popBackStack()
         }
+    }
 
-        binding.btnShare.setOnClickListener {
-            shareAchievement(name, description, userName ?: "Me")
+    private fun fetchUserName(achievementName: String, achievementDesc: String) {
+        val prefs = requireContext().getSharedPreferences("APP_PREFS", Context.MODE_PRIVATE)
+        val token = prefs.getString("TOKEN", "") ?: ""
+
+        Log.d(TAG, "Starting to fetch user profile. Token: $token")
+
+        if (token.isEmpty()) {
+            Log.e(TAG, "Error: Token is empty!")
+            binding.tvDetailUserName.text = "Error: No Token"
+            return
+        }
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            try {
+
+                val response = RetrofitClient.instance.getUserProfile("Bearer $token")
+
+                Log.d(TAG, "Response Code: ${response.code()}")
+
+                if (response.isSuccessful && response.body() != null) {
+                    val user = response.body()
+                    Log.d(TAG, "Fetch Success! Username: ${user?.username}")
+
+                    val userName = user?.username ?: "Unknown User"
+                    binding.tvDetailUserName.text = userName
+
+                    binding.btnShare.setOnClickListener {
+                        shareAchievement(achievementName, achievementDesc, userName)
+                    }
+                } else {
+                    Log.e(TAG, "Fetch Failed. Error Body: ${response.errorBody()?.string()}")
+                    binding.tvDetailUserName.text = "Unknown User (Error ${response.code()})"
+                    binding.btnShare.setOnClickListener {
+                        shareAchievement(achievementName, achievementDesc, "Me")
+                    }
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "Exception during fetch: ${e.message}")
+                e.printStackTrace()
+                binding.tvDetailUserName.text = "Network Error"
+                binding.btnShare.setOnClickListener {
+                    shareAchievement(achievementName, achievementDesc, "Me")
+                }
+            }
         }
     }
 

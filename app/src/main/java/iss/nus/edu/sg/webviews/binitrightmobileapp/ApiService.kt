@@ -1,27 +1,31 @@
 package iss.nus.edu.sg.webviews.binitrightmobileapp
 
-import iss.nus.edu.sg.webviews.binitrightmobileapp.Model.LoginResponse
-import iss.nus.edu.sg.webviews.binitrightmobileapp.Model.LoginRequest
+import iss.nus.edu.sg.webviews.binitrightmobileapp.model.LoginResponse
+import iss.nus.edu.sg.webviews.binitrightmobileapp.model.LoginRequest
+import iss.nus.edu.sg.webviews.binitrightmobileapp.model.User
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
-
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.GET
+import retrofit2.http.Header
 import retrofit2.http.Multipart
 import retrofit2.http.POST
 import retrofit2.http.Part
 import retrofit2.http.Path
 
-/**
- * Placeholder for future integration of backend
- */
 interface ApiService {
 
     @POST("api/auth/login")
     suspend fun login(
         @Body request: LoginRequest
     ): Response<LoginResponse>
+
+    @GET("api/auth/profile")
+    suspend fun getUserProfile(
+        @Header("Authorization") token: String
+    ): Response<User>
+
     @Multipart
     @POST("api/v1/scan")
     suspend fun scanImage(@Part image: MultipartBody.Part): Response<ScanResult>
