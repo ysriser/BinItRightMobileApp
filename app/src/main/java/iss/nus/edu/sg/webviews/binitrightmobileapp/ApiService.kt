@@ -41,4 +41,7 @@ interface ApiService {
 
     @GET("api/news/{id}")
     suspend fun getNewsById(@Path("id") id: Long): Response<NewsItem>
+
+    @GET("api/events?filter=upcoming")
+    suspend fun getUpcomingEvents(): Response<List<EventItem>>
 }
