@@ -170,7 +170,7 @@ class NearByBinFragment : Fragment(R.layout.fragment_near_by_bin), OnMapReadyCal
 
                 Log.d(TAG, "Got user location: lat=$lat, lng=$lng")
                 hasFetchedBins = true
-                fetchNearbyBins(1.29, 103.78)  // Using your default coordinates
+                fetchNearbyBins(lat, lng)  // Using your default coordinates
             }
             .addOnFailureListener { e ->
                 Log.e(TAG, "Failed to get location: ${e.message}", e)
@@ -191,7 +191,7 @@ class NearByBinFragment : Fragment(R.layout.fragment_near_by_bin), OnMapReadyCal
                 val json = withContext(Dispatchers.IO) {
                     // Use emulator URL (10.0.2.2) for Android Emulator
                     // Use device URL (192.168.88.4) for physical device
-                    val urlString = "http://10.0.2.2:8080/api/bins/nearby?lat=$lat&lng=$lng&radius=3000"
+                    val urlString = "http://10.0.2.2:8080/api/bins/search?lat=$lat&lng=$lng&radius=3000"
 
                     Log.d(TAG, "Fetching from URL: $urlString")
 
