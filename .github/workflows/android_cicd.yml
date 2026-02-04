@@ -31,7 +31,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: compiled-apk
-          path: app/build/outputs/apk/debug/app-debug.apk
+          path: app/build/outputs/apk/local/debug/app-local-debug.apk
 
   # STAGE 2: UNIT (Always Runs)
   unit-tests:
