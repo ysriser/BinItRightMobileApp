@@ -1,4 +1,4 @@
-package iss.nus.edu.sg.webviews.binitrightmobileapp.model
+package iss.nus.edu.sg.webviews.binitrightmobileapp.Model
 
 data class DropOffLocation(
     val id: Long,
