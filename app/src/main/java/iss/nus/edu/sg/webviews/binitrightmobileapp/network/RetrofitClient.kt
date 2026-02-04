@@ -2,6 +2,7 @@ package iss.nus.edu.sg.webviews.binitrightmobileapp.network
 
 import android.content.Context
 import iss.nus.edu.sg.webviews.binitrightmobileapp.ApiService
+import iss.nus.edu.sg.webviews.binitrightmobileapp.BuildConfig
 import iss.nus.edu.sg.webviews.binitrightmobileapp.Model.AuthInterceptor
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
@@ -25,7 +26,7 @@ object RetrofitClient {
             .build()
 
         api = Retrofit.Builder()
-            .baseUrl("http://10.0.2.2:8080/")
+            .baseUrl(BuildConfig.BASE_URL)
             .client(client)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
