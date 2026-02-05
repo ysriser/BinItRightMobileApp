@@ -43,10 +43,10 @@ interface ApiService {
     suspend fun getPresignedUpload(
         @Body req: PresignUploadRequest
     ): Response<PresignUploadResponse>
-    @GET("api/recycle-history/{userId}")
-    suspend fun getRecycleHistory(
-        @Path("userId") userId: Long
-    ): List<RecycleHistoryModel>
+
+    @GET("api/recycle-history")
+    suspend fun getRecycleHistory(): List<RecycleHistoryModel>
+
     @GET("api/news")
     suspend fun getAllNews(): Response<List<NewsItem>>
 
