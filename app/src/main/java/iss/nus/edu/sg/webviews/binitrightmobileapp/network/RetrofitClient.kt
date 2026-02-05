@@ -1,10 +1,7 @@
 package iss.nus.edu.sg.webviews.binitrightmobileapp.network
 
 import android.content.Context
-import com.google.gson.GsonBuilder
 import iss.nus.edu.sg.webviews.binitrightmobileapp.ApiService
-import iss.nus.edu.sg.webviews.binitrightmobileapp.model.AuthInterceptor
-import iss.nus.edu.sg.webviews.binitrightmobileapp.BuildConfig
 import iss.nus.edu.sg.webviews.binitrightmobileapp.model.AuthInterceptor
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
@@ -21,11 +18,7 @@ object RetrofitClient {
         val logging = HttpLoggingInterceptor()
         logging.level = HttpLoggingInterceptor.Level.BODY
 
-        val gson = GsonBuilder()
-            .setLenient()
-            .create()
-
-        val okHttpClient = OkHttpClient.Builder()
+        val client = OkHttpClient.Builder()
             .addInterceptor(logging)
             .addInterceptor(AuthInterceptor(context))
             .connectTimeout(30, TimeUnit.SECONDS)
@@ -36,10 +29,6 @@ object RetrofitClient {
             .baseUrl(BASE_URL)
             .client(client)
             .addConverterFactory(GsonConverterFactory.create())
-        api = Retrofit.Builder()
-            .baseUrl(BuildConfig.BASE_URL)
-            .client(okHttpClient)
-            .addConverterFactory(GsonConverterFactory.create(gson))
             .build()
 
         api = retrofit.create(ApiService::class.java)

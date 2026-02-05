@@ -29,7 +29,10 @@ class ScanHomeFragment : Fragment() {
         }
 
         binding.btnQuestionnaire.setOnClickListener {
-            findNavController().navigate(R.id.action_scanHomeFragment_to_questionnaireFragment)
+            // 由于 nav_graph 中 scanHomeFragment 节点下没有 questionnaire Action，
+            // 建议先返回 Home 再由 Home 跳转，或者直接通过全局导航。
+            // 这里我们先修正为 nav_home 中定义的全局路径（如果支持）或返回。
+            findNavController().popBackStack()
         }
 
         binding.btnYesIKnow.setOnClickListener {

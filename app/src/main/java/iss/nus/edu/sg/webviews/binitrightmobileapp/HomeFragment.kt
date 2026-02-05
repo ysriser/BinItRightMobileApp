@@ -1,74 +1,64 @@
 package iss.nus.edu.sg.webviews.binitrightmobileapp
 
-import android.os.Bundle
 import android.content.Context
+import android.os.Bundle
+import android.view.LayoutInflater
 import android.view.View
+import android.view.ViewGroup
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import iss.nus.edu.sg.webviews.binitrightmobileapp.databinding.FragmentHomeBinding
 
-class HomeFragment : Fragment(R.layout.fragment_home) {
+class HomeFragment : Fragment() {
+
     private var _binding: FragmentHomeBinding? = null
     private val binding get() = _binding!!
 
-    // Initialize the ViewModel to access achievement data
-    private val achievementViewModel: AchievementViewModel by viewModels()
+    override fun onCreateView(
+        inflater: LayoutInflater, container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        _binding = FragmentHomeBinding.inflate(inflater, container, false)
+        return binding.root
+    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        _binding = FragmentHomeBinding.bind(view)
 
-        // Existing Navigation listeners
-        binding.btnScan.setOnClickListener {
-            findNavController().navigate(R.id.action_home_to_scanItem)
-        }
-
-        binding.btnQuiz.setOnClickListener {
-            findNavController().navigate(R.id.action_home_to_questionnaire)
-        }
-
-        binding.cardFindBins.setOnClickListener {
-            findNavController().navigate(R.id.action_home_to_findRecyclingBinFragment)
+        binding.btnLogout.setOnClickListener {
+            handleLogout()
         }
 
         binding.btnRecycleNow.setOnClickListener {
             findNavController().navigate(R.id.action_home_to_scanHome)
         }
 
-        setupReportIssueButton()
-        // Updated ID to match XML: cardAchievements
         binding.cardAchievements.setOnClickListener {
-            findNavController().navigate(R.id.achievementsFragment)
+            findNavController().navigate(R.id.action_home_to_achievements)
         }
 
-        binding.cardNextMilestone.setOnClickListener {
-            findNavController().navigate(R.id.achievementsFragment)
+        binding.cardFindBins.setOnClickListener {
+            findNavController().navigate(R.id.action_home_to_findRecyclingBinFragment)
+        }
+        
+        binding.btnScan.setOnClickListener {
+            findNavController().navigate(R.id.action_home_to_scanHome)
         }
 
-        binding.btnLogout.setOnClickListener {
-            handleLogout()
+        binding.btnQuiz.setOnClickListener {
+            findNavController().navigate(R.id.action_home_to_questionnaire)
         }
 
-        // Observe achievement list to update the count on the home screen
-        achievementViewModel.achievementList.observe(viewLifecycleOwner) { list ->
-            // Count how many are unlocked
-            val unlockedCount = list.count { it.isUnlocked }
-            binding.tvAchievementsCount.text = unlockedCount.toString()
+        binding.cardReportIssue.setOnClickListener {
+            findNavController().navigate(R.id.action_home_to_reportIssue)
         }
     }
 
-    private fun setupReportIssueButton() {
-        val reportIssueCard = view?.findViewById<View>(R.id.cardReportIssue)
-        reportIssueCard?.setOnClickListener {
-            ReportIssueDialogFragment().show(childFragmentManager, "ReportIssue")
-        }
     private fun handleLogout() {
         val prefs = requireContext().getSharedPreferences("APP_PREFS", Context.MODE_PRIVATE)
-        prefs.edit().remove("TOKEN").apply()
+        prefs.edit().remove("TOKEN").remove("USERNAME").remove("USER_ID").apply()
         findNavController().navigate(R.id.action_nav_home_to_loginFragment)
     }
-
 
     override fun onDestroyView() {
         super.onDestroyView()

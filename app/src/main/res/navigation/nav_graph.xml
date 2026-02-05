@@ -10,7 +10,6 @@
         android:name="iss.nus.edu.sg.webviews.binitrightmobileapp.LoginFragment"
         android:label="Login"
         tools:layout="@layout/fragment_login">
-
         <action
             android:id="@+id/action_loginFragment_to_homeFragment"
             app:destination="@id/nav_home"
@@ -26,45 +25,23 @@
         <action
             android:id="@+id/action_nav_home_to_loginFragment"
             app:destination="@id/loginFragment"
-            app:enterAnim="@anim/nav_default_enter_anim"
-            app:exitAnim="@anim/nav_default_exit_anim"
             app:popUpTo="@id/nav_graph"
             app:popUpToInclusive="true" />
         <action
             android:id="@+id/action_home_to_scanHome"
-            app:destination="@id/scanHomeFragment"
-            app:enterAnim="@anim/nav_default_enter_anim"
-            app:exitAnim="@anim/nav_default_exit_anim"
-            app:popEnterAnim="@anim/nav_default_pop_enter_anim"
-            app:popExitAnim="@anim/nav_default_pop_exit_anim" />
-
-        <action
-            android:id="@+id/action_home_to_scanItem"
-            app:destination="@id/scanItemFragment"
-            app:enterAnim="@anim/nav_default_enter_anim"
-            app:exitAnim="@anim/nav_default_exit_anim"
-            app:popEnterAnim="@anim/nav_default_pop_enter_anim"
-            app:popExitAnim="@anim/nav_default_pop_exit_anim" />
+            app:destination="@id/scanHomeFragment" />
         <action
             android:id="@+id/action_home_to_questionnaire"
-            app:destination="@id/questionnaireFragment"
-            app:enterAnim="@anim/nav_default_enter_anim"
-            app:exitAnim="@anim/nav_default_exit_anim"
-            app:popEnterAnim="@anim/nav_default_pop_enter_anim"
-            app:popExitAnim="@anim/nav_default_pop_exit_anim" />
-
+            app:destination="@id/questionnaireFragment" />
         <action
             android:id="@+id/action_home_to_findRecyclingBinFragment"
-            app:destination="@id/findRecyclingBinFragment"
-            app:enterAnim="@anim/nav_default_enter_anim"
-            app:exitAnim="@anim/nav_default_exit_anim"
-            app:popEnterAnim="@anim/nav_default_pop_enter_anim"
-            app:popExitAnim="@anim/nav_default_pop_exit_anim" />
-
+            app:destination="@id/findRecyclingBinFragment" />
         <action
-            android:id="@+id/action_findRecyclingBinFragment_to_homeFragment"
+            android:id="@+id/action_home_to_achievements"
+            app:destination="@id/achievementsFragment" />
+        <action
+            android:id="@+id/action_home_to_reportIssue"
             app:destination="@id/nav_home" />
-
     </fragment>
 
     <fragment
@@ -86,30 +63,21 @@
             app:argType="long" />
     </fragment>
 
-
     <fragment
         android:id="@+id/nav_events"
         android:name="iss.nus.edu.sg.webviews.binitrightmobileapp.EventsFragment"
         android:label="Events" />
 
     <fragment
-        android:id="@+id/nav_games"
-        android:name="iss.nus.edu.sg.webviews.binitrightmobileapp.GamesFragment"
-        android:label="Games" />
-
-    <fragment
         android:id="@+id/nav_profile"
         android:name="iss.nus.edu.sg.webviews.binitrightmobileapp.ProfileFragment"
         android:label="Profile">
-
         <action
             android:id="@+id/action_profile_to_recycleHistory"
             app:destination="@id/recycleHistoryFragment" />
-
         <action
             android:id="@+id/action_profile_to_avatarCustomizationFragment"
             app:destination="@id/avatarCustomizationFragment" />
-
         <action
             android:id="@+id/action_profile_to_loginFragment"
             app:destination="@id/loginFragment"
@@ -135,20 +103,7 @@
         tools:layout="@layout/fragment_scan_home">
         <action
             android:id="@+id/action_scanHomeFragment_to_scanItemFragment"
-            app:destination="@id/scanItemFragment"
-            app:enterAnim="@anim/nav_default_enter_anim"
-            app:exitAnim="@anim/nav_default_exit_anim"
-            app:popEnterAnim="@anim/nav_default_pop_enter_anim"
-            app:popExitAnim="@anim/nav_default_pop_exit_anim" />
-
-        <action
-            android:id="@+id/action_scanHomeFragment_to_questionnaireFragment"
-            app:destination="@id/questionnaireFragment"
-            app:enterAnim="@anim/nav_default_enter_anim"
-            app:exitAnim="@anim/nav_default_exit_anim"
-            app:popEnterAnim="@anim/nav_default_pop_enter_anim"
-            app:popExitAnim="@anim/nav_default_pop_exit_anim" />
-
+            app:destination="@id/scanItemFragment" />
         <action
             android:id="@+id/action_scanHomeFragment_to_nearByBinFragment"
             app:destination="@id/nearByBinFragment" />
@@ -161,11 +116,7 @@
         tools:layout="@layout/fragment_scan_item">
         <action
             android:id="@+id/action_scanItemFragment_to_scanningResultFragment"
-            app:destination="@id/scanningResultFragment"
-            app:enterAnim="@anim/nav_default_enter_anim"
-            app:exitAnim="@anim/nav_default_exit_anim"
-            app:popEnterAnim="@anim/nav_default_pop_enter_anim"
-            app:popExitAnim="@anim/nav_default_pop_exit_anim" />
+            app:destination="@id/scanningResultFragment" />
     </fragment>
 
     <fragment
@@ -173,14 +124,9 @@
         android:name="iss.nus.edu.sg.webviews.binitrightmobileapp.ScanningResultFragment"
         android:label="Scanning Result"
         tools:layout="@layout/fragment_scanning_result">
-
         <action
             android:id="@+id/action_scanningResultFragment_to_nearbyBinFragment"
-            app:destination="@id/nearByBinFragment"
-            app:enterAnim="@anim/nav_default_enter_anim"
-            app:exitAnim="@anim/nav_default_exit_anim"
-            app:popEnterAnim="@anim/nav_default_pop_enter_anim"
-            app:popExitAnim="@anim/nav_default_pop_exit_anim" />
+            app:destination="@id/nearByBinFragment" />
     </fragment>
 
     <fragment
@@ -190,12 +136,7 @@
         tools:layout="@layout/fragment_questionnaire">
         <action
             android:id="@+id/action_questionnaireFragment_to_questionnaireResultFragment"
-            app:destination="@id/questionnaireResultFragment"
-            app:enterAnim="@anim/nav_default_enter_anim"
-            app:exitAnim="@anim/nav_default_exit_anim"
-            app:popEnterAnim="@anim/nav_default_pop_enter_anim"
-            app:popExitAnim="@anim/nav_default_pop_exit_anim" />
-
+            app:destination="@id/questionnaireResultFragment" />
     </fragment>
 
     <fragment
@@ -204,19 +145,8 @@
         android:label="Result"
         tools:layout="@layout/fragment_questionnaire_result">
         <action
-            android:id="@+id/action_questionnaireResultFragment_to_scanItemFragment"
-            app:destination="@id/scanItemFragment"
-            app:enterAnim="@anim/nav_default_enter_anim"
-            app:exitAnim="@anim/nav_default_exit_anim" />
-
-        <action
             android:id="@+id/action_questionnaireResultFragment_to_nearbyBinFragment"
-            app:destination="@id/nearByBinFragment"
-            app:enterAnim="@anim/nav_default_enter_anim"
-            app:exitAnim="@anim/nav_default_exit_anim"
-            app:popEnterAnim="@anim/nav_default_pop_enter_anim"
-            app:popExitAnim="@anim/nav_default_pop_exit_anim" />
-
+            app:destination="@id/nearByBinFragment" />
     </fragment>
 
     <fragment
@@ -239,11 +169,9 @@
         android:id="@+id/checkInFragment"
         android:name="iss.nus.edu.sg.webviews.binitrightmobileapp.CheckInFragment"
         android:label="Check In">
-
         <action
             android:id="@+id/action_checkIn_to_videoRecord"
             app:destination="@id/videoRecordFragment" />
-
         <action
             android:id="@+id/action_checkInFragment_to_homeFragment"
             app:destination="@id/nav_home" />
@@ -258,21 +186,10 @@
         android:id="@+id/achievementsFragment"
         android:name="iss.nus.edu.sg.webviews.binitrightmobileapp.AchievementsFragment"
         android:label="My Badges"
-        tools:layout="@layout/fragment_achievements" />
-
-    <fragment
-        android:id="@+id/achievementsFragment"
-        android:name="iss.nus.edu.sg.webviews.binitrightmobileapp.AchievementsFragment"
-        android:label="My Badges"
         tools:layout="@layout/fragment_achievements">
-
         <action
             android:id="@+id/action_achievementsFragment_to_achievementDetailFragment"
-            app:destination="@id/achievementDetailFragment"
-            app:enterAnim="@anim/nav_default_enter_anim"
-            app:exitAnim="@anim/nav_default_exit_anim"
-            app:popEnterAnim="@anim/nav_default_pop_enter_anim"
-            app:popExitAnim="@anim/nav_default_pop_exit_anim" />
+            app:destination="@id/achievementDetailFragment" />
     </fragment>
 
     <fragment
