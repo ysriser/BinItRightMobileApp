@@ -11,6 +11,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import iss.nus.edu.sg.webviews.binitrightmobileapp.databinding.ItemEventCardBinding
 import iss.nus.edu.sg.webviews.binitrightmobileapp.databinding.ItemNewsCardBinding
+import iss.nus.edu.sg.webviews.binitrightmobileapp.model.EventItem
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.util.Locale

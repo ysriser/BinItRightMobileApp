@@ -6,6 +6,7 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import iss.nus.edu.sg.webviews.binitrightmobileapp.databinding.ItemNewsCardBinding
+import iss.nus.edu.sg.webviews.binitrightmobileapp.model.NewsItem
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 
