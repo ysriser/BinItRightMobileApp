@@ -9,6 +9,7 @@ import iss.nus.edu.sg.webviews.binitrightmobileapp.model.NewsItem
 import iss.nus.edu.sg.webviews.binitrightmobileapp.model.RecycleHistoryModel
 import iss.nus.edu.sg.webviews.binitrightmobileapp.model.UserAccessory
 import iss.nus.edu.sg.webviews.binitrightmobileapp.model.UserProfile
+import iss.nus.edu.sg.webviews.binitrightmobileapp.model.UserResponse
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
 
@@ -70,4 +71,7 @@ interface ApiService {
 
     @GET("api/summary/profile")
     suspend fun getProfileSummary(): Response<UserProfile>
+
+    @GET("api/user/profile/{id}")
+    suspend fun getUserProfile(@Path("id") userId: Long): Response<UserResponse>
 }
