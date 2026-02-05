@@ -19,22 +19,27 @@ import androidx.navigation.fragment.findNavController
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
-import com.google.gson.Gson
 import iss.nus.edu.sg.webviews.binitrightmobileapp.databinding.FragmentCheckInBinding
+import iss.nus.edu.sg.webviews.binitrightmobileapp.CheckInData
 import iss.nus.edu.sg.webviews.binitrightmobileapp.network.RetrofitClient
+import iss.nus.edu.sg.webviews.binitrightmobileapp.utils.JwtUtils
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import okhttp3.MediaType.Companion.toMediaType
-import okhttp3.MultipartBody
-import okhttp3.RequestBody.Companion.asRequestBody
-import okhttp3.RequestBody.Companion.toRequestBody
 import java.io.File
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 class CheckInFragment : Fragment() {
 
     private val userId: Long by lazy {
         val prefs = requireContext().getSharedPreferences("APP_PREFS", Context.MODE_PRIVATE)
-        prefs.getLong("USER_ID", -1L)
+        val token = prefs.getString("JWT_TOKEN", null)
+        if (token != null) {
+            JwtUtils.getUserIdFromToken(token) ?: -1L
+        } else {
+            -1L
+        }
     }
     private val radius = 100000.0 // meters
 
@@ -92,6 +97,8 @@ class CheckInFragment : Fragment() {
         setupCounter()
         setupChipListeners()
         displayBinInformation()
+
+        Log.d(TAG, "Current User ID: $userId")
     }
 
     private fun retrieveBinInformation() {
@@ -105,8 +112,8 @@ class CheckInFragment : Fragment() {
             selectedBinType = bundle.getString("selectedBinType", "")?:""
 
         } ?: run {
-            binId = 3
-            binName = "Paper"
+            binId = 1
+            binName = "Default Bin"
             binType = "BLUEBIN"
             binLatitude = 1.4689
             binLongitude = 103.8143
@@ -156,7 +163,7 @@ class CheckInFragment : Fragment() {
         }
 
         binding.btnDecrease.setOnClickListener {
-            if (currentCount > 0) { // Prevent going below 0
+            if (currentCount > 0) {
                 currentCount--
                 updateCounterDisplay()
             }
@@ -188,7 +195,7 @@ class CheckInFragment : Fragment() {
                 R.id.chipPaper -> "Paper"
                 R.id.chipGlass -> "Glass"
                 R.id.chipMetal -> "Metal"
-                R.id.chipEWaste -> "Electronic Waste"
+                R.id.chipEWaste -> "E-Waste"
                 R.id.chipLighting -> "Lighting"
                 else -> {
                     ""
@@ -231,25 +238,12 @@ class CheckInFragment : Fragment() {
             ) == PackageManager.PERMISSION_GRANTED -> {
                 checkLocationAndNavigate()
             }
-
-            shouldShowRequestPermissionRationale(
-                Manifest.permission.ACCESS_FINE_LOCATION
-            ) -> {
-                Toast.makeText(
-                    requireContext(),
-                    "Location access is needed to verify your recycling location.",
-                    Toast.LENGTH_SHORT
-                ).show()
-
-                locationPermissionLauncher.launch(
-                    Manifest.permission.ACCESS_FINE_LOCATION
-                )
+            shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_FINE_LOCATION) -> {
+                Toast.makeText(requireContext(), "Location access is needed.", Toast.LENGTH_SHORT).show()
+                locationPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
             }
-
             else -> {
-                locationPermissionLauncher.launch(
-                    Manifest.permission.ACCESS_FINE_LOCATION
-                )
+                locationPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
             }
         }
     }
@@ -260,64 +254,38 @@ class CheckInFragment : Fragment() {
                 Manifest.permission.ACCESS_FINE_LOCATION
             ) != PackageManager.PERMISSION_GRANTED
         ) {
-            Toast.makeText(
-                requireContext(),
-                "Location permission is required to check in.",
-                Toast.LENGTH_SHORT
-            ).show()
+            Toast.makeText(requireContext(), "Location permission required.", Toast.LENGTH_SHORT).show()
             return
         }
 
-        fusedLocationClient.getCurrentLocation(
-            Priority.PRIORITY_HIGH_ACCURACY,
-            null
-        ).addOnSuccessListener { location ->
-            if (location == null) {
-                Toast.makeText(
-                    requireContext(),
-                    "Unable to detect your location. Please try again.",
-                    Toast.LENGTH_SHORT
-                ).show()
-                return@addOnSuccessListener
+        fusedLocationClient.getCurrentLocation(Priority.PRIORITY_HIGH_ACCURACY, null)
+            .addOnSuccessListener { location ->
+                if (location == null) {
+                    Toast.makeText(requireContext(), "Unable to detect location.", Toast.LENGTH_SHORT).show()
+                    return@addOnSuccessListener
+                }
+
+                val isWithinRange = LocationChecker.isWithinRadius(
+                    location.latitude, location.longitude, binLatitude, binLongitude, radius
+                )
+
+                if (isWithinRange) {
+                    val currentValue = binding.tvItemCount.text.toString().toIntOrNull() ?: 0
+                    findNavController().currentBackStackEntry?.savedStateHandle?.set("item_count", currentValue)
+                    findNavController().navigate(R.id.action_checkIn_to_videoRecord)
+                } else {
+                    Toast.makeText(requireContext(), "Must be near the bin.", Toast.LENGTH_SHORT).show()
+                }
             }
-
-            val isWithinRange = LocationChecker.isWithinRadius(
-                location.latitude,
-                location.longitude,
-                binLatitude,
-                binLongitude,
-                radius
-            )
-
-            if (isWithinRange) {
-                val currentValue = binding.tvItemCount.text.toString().toIntOrNull() ?: 0
-                findNavController()
-                    .currentBackStackEntry
-                    ?.savedStateHandle
-                    ?.set("item_count", currentValue)
-
-                findNavController().navigate(R.id.action_checkIn_to_videoRecord)
-            } else {
-                Toast.makeText(
-                    requireContext(),
-                    "You must be near the recycling bin to record a video.",
-                    Toast.LENGTH_SHORT
-                ).show()
-            }
-        }
     }
 
     private fun loadLastRecordedVideo() {
-        val videoDir =
-            requireContext().getExternalFilesDir(Environment.DIRECTORY_MOVIES)
-                ?: run {
-                    updateSubmitButtonState(false)
-                    return
-                }
+        val videoDir = requireContext().getExternalFilesDir(Environment.DIRECTORY_MOVIES) ?: run {
+            updateSubmitButtonState(false)
+            return
+        }
 
-        val lastVideo = videoDir
-            .listFiles { file -> file.extension == "mp4" }
-            ?.maxByOrNull { it.lastModified() }
+        val lastVideo = videoDir.listFiles { file -> file.extension == "mp4" }?.maxByOrNull { it.lastModified() }
 
         if (lastVideo != null) {
             recordedFile = lastVideo
@@ -331,17 +299,10 @@ class CheckInFragment : Fragment() {
 
     override fun onResume() {
         super.onResume()
-
-        val returnedFromRecording = findNavController()
-            .currentBackStackEntry
-            ?.savedStateHandle
-            ?.contains("item_count") == true
-
+        val returnedFromRecording = findNavController().currentBackStackEntry?.savedStateHandle?.contains("item_count") == true
         if (returnedFromRecording) {
-            Log.d(TAG, "onResume - returned from recording, checking for video")
             loadLastRecordedVideo()
         } else {
-            Log.d(TAG, "onResume - fresh entry, keeping button disabled")
             updateSubmitButtonState(false)
         }
     }
@@ -354,79 +315,62 @@ class CheckInFragment : Fragment() {
 
     private fun uploadVideo() {
         val file = recordedFile ?: run {
-            Toast.makeText(
-                requireContext(),
-                "No Video to upload",
-                Toast.LENGTH_SHORT
-            ).show()
+            Toast.makeText(requireContext(), "No Video to upload", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        if (userId == -1L) {
+            showStatus("Error: User not logged in. Please Login first!", isError = true)
             return
         }
 
         val durationSeconds = getVideoDurationSeconds(file)
-        val wasteType = binding.etItemName.text.toString()
+        var wasteType = binding.etItemName.text.toString().trim()
+        if (wasteType.isEmpty()) wasteType = "Paper"
 
-        // 对齐 Master 的 CheckInData 结构: userId(Long), duration(Long), binId(Long), videoKey(String?)
+        val currentTime = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.US).format(Date())
+
+        Log.d(TAG, "Submitting: User=$userId, Bin=$binId, Cat=$wasteType, Time=$currentTime")
+
         val checkInData = CheckInData(
             userId = userId,
             duration = durationSeconds.toLong(),
             binId = binId,
-            wasteCategory = wasteCategory?: wasteType,
+            wasteCategory = wasteCategory ?: wasteType,
             quantity = currentCount,
-            videoKey = null
-        )
-
-        val gson = Gson()
-        val metadataJson = gson.toJson(checkInData)
-
-        val metadataBody = metadataJson.toRequestBody("application/json".toMediaType())
-
-        val videoBody = file.asRequestBody("video/mp4".toMediaType())
-
-        val videoPart = MultipartBody.Part.createFormData(
-            name = "video",
-            filename = file.name,
-            body = videoBody
+            videoKey = file.name,
+            checkInTime = currentTime
         )
 
         lifecycleScope.launch {
             try {
                 updateSubmitButtonState(false)
 
-                val response = RetrofitClient.instance.submitRecycleCheckIn(
-                    video = videoPart,
-                    metadata = metadataBody
-                )
+                val response = RetrofitClient.instance.submitRecycleCheckIn(checkInData)
 
                 if (response.isSuccessful) {
                     val resBody = response.body()
-                    if (resBody != null) {
-                        val message = resBody.responseCode + "\n" + resBody.responseDesc
+                    if (resBody != null && resBody.responseCode == "SUCCESS") {
+                        val message = "SUCCESS\n${resBody.responseDesc}"
                         showStatus(message, isError = false)
 
-                        if (resBody.responseCode == "0000") {
-
-                            checkAndUnlockAchievements()
-                            
-                            delay(1200) // allow user to read success message
-                            findNavController().popBackStack()
-                        } else {
-                            updateSubmitButtonState(true)
-                        }
+                        checkAndUnlockAchievements()
+                        delay(1200)
+                        findNavController().popBackStack()
                     } else {
-                        showStatus("Empty server response", isError = true)
+                        showStatus("Failed: ${resBody?.responseDesc}", isError = true)
                         updateSubmitButtonState(true)
                     }
                 } else {
-                    showStatus(
-                        "Submission failed (${response.code()})",
-                        isError = true
-                    )
+                    val errorBody = response.errorBody()?.string()
+                    Log.e(TAG, "Server Error: $errorBody")
+                    showStatus("Server Error (${response.code()})", isError = true)
                     updateSubmitButtonState(true)
                 }
 
             } catch (e: Exception) {
-                Log.e(TAG, "Upload error", e)
-                showStatus("An error occurred: ${e.message}", isError = true)
+                Log.e(TAG, "Network error", e)
+                showStatus("Network Error: ${e.message}", isError = true)
                 updateSubmitButtonState(true)
             }
         }
@@ -436,8 +380,16 @@ class CheckInFragment : Fragment() {
         lifecycleScope.launch {
             try {
                 RetrofitClient.instance.unlockAchievement(userId, 1L)
+
+                val historyRes = RetrofitClient.instance.getRecycleHistory()
+                if (historyRes.isSuccessful && historyRes.body() != null) {
+                    val historyList = historyRes.body()!!
+                    if (historyList.size >= 10) {
+                        RetrofitClient.instance.unlockAchievement(userId, 2L)
+                    }
+                }
             } catch (e: Exception) {
-                Log.e(TAG, "Achievement unlock failed", e)
+                Log.e(TAG, "Achievement check failed", e)
             }
         }
     }

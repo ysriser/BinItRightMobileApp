@@ -16,6 +16,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import coil.load
 import iss.nus.edu.sg.webviews.binitrightmobileapp.databinding.FragmentAchievementDetailBinding
+import iss.nus.edu.sg.webviews.binitrightmobileapp.utils.JwtUtils
 import kotlinx.coroutines.launch
 
 class AchievementDetailFragment : Fragment() {
@@ -59,7 +60,12 @@ class AchievementDetailFragment : Fragment() {
             binding.btnShare.isEnabled = true
 
             val prefs = requireContext().getSharedPreferences("APP_PREFS", Context.MODE_PRIVATE)
-            val userName = prefs.getString("USERNAME", "Achiever") ?: "Achiever"
+            val token = prefs.getString("TOKEN", "") ?: ""
+            val userName = if (token.isNotEmpty()) {
+                JwtUtils.getUsernameFromToken(token) ?: "Achiever"
+            } else {
+                "Achiever"
+            }
             binding.tvDetailUserName.text = userName
 
             binding.btnShare.setOnClickListener {

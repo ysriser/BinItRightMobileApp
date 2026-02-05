@@ -107,6 +107,9 @@
         <action
             android:id="@+id/action_scanHomeFragment_to_nearByBinFragment"
             app:destination="@id/nearByBinFragment" />
+        <action
+            android:id="@+id/action_scanHomeFragment_to_questionnaire"
+            app:destination="@id/questionnaireFragment" />
     </fragment>
 
     <fragment

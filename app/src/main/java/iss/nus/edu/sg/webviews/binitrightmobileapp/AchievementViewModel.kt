@@ -23,13 +23,26 @@ class AchievementViewModel(application: Application) : AndroidViewModel(applicat
         prefs.getLong("USER_ID", -1L)
     }
 
+    private val fixedAchievements = listOf(
+        Achievement(1, "First Submission", "Submit your first recycling item.", "Recycle 1 item", "https://img.icons8.com/color/96/seed.png"),
+        Achievement(2, "Recycling Master", "Complete 10 recycling submissions.", "Recycle 10 times", "https://img.icons8.com/color/96/recycle-sign.png"),
+        Achievement(3, "Plastic Slayer", "Help keep 50 plastic bottles out of the ocean.", "Recycle 50 Plastic items", "https://img.icons8.com/color/96/plastic.png"),
+        Achievement(4, "The 100 Club", "A true eco-warrior legend.", "Earn 100 points in total", "https://img.icons8.com/color/96/trophy.png"),
+        Achievement(5, "The Collector", "Save up your rewards points.", "Hold 5000 points", "https://img.icons8.com/color/96/hamster.png"),
+        Achievement(6, "Rising Star", "Advance your environmental impact rank.", "Reach Rank 2", "https://img.icons8.com/color/96/upgrade.png"),
+        Achievement(7, "Early Bird", "Complete a check-in early in the morning.", "Check-in 06:00-08:00", "https://img.icons8.com/color/96/sun.png"),
+        Achievement(8, "Night Owl", "Contribute to recycling late at night.", "Recycle after 22:00", "https://img.icons8.com/color/96/owl.png"),
+        Achievement(9, "Eagle Eye", "Help maintain the community's bins.", "Report 1 Issue", "https://img.icons8.com/color/96/visible.png"),
+        Achievement(10, "First Pot of Gold", "Redeem your points for a reward.", "Redeem 1 Reward", "https://img.icons8.com/color/96/coins.png")
+    )
+
     init {
         fetchAchievements()
     }
 
     fun fetchAchievements() {
         if (userId == -1L) {
-            loadMockData()
+            _achievementList.value = fixedAchievements
             return
         }
 
@@ -38,40 +51,26 @@ class AchievementViewModel(application: Application) : AndroidViewModel(applicat
             try {
                 val response = RetrofitClient.instance.getAchievementsWithStatus(userId)
                 if (response.isSuccessful && response.body() != null) {
-                    _achievementList.value = response.body()
+                    val remoteData = response.body()!!
+                    val remoteIds = remoteData.filter { it.isUnlocked }.map { it.id }.toSet()
+                    
+                    val mergedList = fixedAchievements.map { ach ->
+                        if (remoteIds.contains(ach.id)) {
+                            ach.copy(isUnlocked = true)
+                        } else {
+                            ach
+                        }
+                    }
+                    _achievementList.value = mergedList
                 } else {
-                    loadMockData()
+                    _achievementList.value = fixedAchievements
                 }
             } catch (e: Exception) {
                 e.printStackTrace()
-                loadMockData()
+                _achievementList.value = fixedAchievements
             } finally {
                 _isLoading.value = false
             }
         }
-    }
-
-    private fun loadMockData() {
-        val mockData = listOf(
-            Achievement(
-                id = 1,
-                name = "First Submission",
-                description = "Submit your first recycling item to earn this badge.",
-                criteria = "Recycle 1 item",
-                badgeIconUrl = "https://img.icons8.com/color/96/seed.png",
-                isUnlocked = true,
-                dateAchieved = null
-            ),
-            Achievement(
-                id = 2,
-                name = "Plastic Slayer",
-                description = "You have kept 50 plastic bottles out of the ocean.",
-                criteria = "Recycle 50 Plastic items",
-                badgeIconUrl = "https://img.icons8.com/color/96/plastic.png",
-                isUnlocked = true,
-                dateAchieved = null
-            )
-        )
-        _achievementList.value = mockData
     }
 }

@@ -2,7 +2,6 @@ package iss.nus.edu.sg.webviews.binitrightmobileapp
 
 import iss.nus.edu.sg.webviews.binitrightmobileapp.model.*
 import okhttp3.MultipartBody
-import okhttp3.RequestBody
 import retrofit2.Response
 import retrofit2.http.*
 
@@ -21,11 +20,9 @@ interface ApiService {
     @POST("api/v1/scan/feedback")
     suspend fun sendFeedback(@Body feedback: FeedbackRequest): Response<Boolean>
 
-    @Multipart
-    @POST("api/checkin/submit")
+    @POST("api/checkin")
     suspend fun submitRecycleCheckIn(
-        @Part video: MultipartBody.Part,
-        @Part("metadata") metadata: RequestBody
+        @Body checkInData: CheckInData
     ): Response<CheckInDataResponse>
 
     @GET("api/news")
@@ -38,10 +35,13 @@ interface ApiService {
     @GET("api/achievements/user/{userId}")
     suspend fun getAchievementsWithStatus(@Path("userId") userId: Long): Response<List<Achievement>>
 
-    @POST("api/achievements/unlock")
-    suspend fun unlockAchievement(@Query("userId") userId: Long, @Query("achievementId") achievementId: Long): Response<Unit>
+    @POST("api/achievements/unlock/{userId}/{achievementId}")
+    suspend fun unlockAchievement(
+        @Path("userId") userId: Long,
+        @Path("achievementId") achievementId: Long
+    ): Response<Unit>
 
-    // --- Master Branch Additions (Aligned with current model package) ---
+    // --- Master Branch Additions ---
     @GET("api/avatar/accessories")
     suspend fun getMyAccessories(): Response<List<UserAccessory>>
 

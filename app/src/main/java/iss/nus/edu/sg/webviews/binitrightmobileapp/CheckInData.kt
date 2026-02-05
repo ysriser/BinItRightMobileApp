@@ -6,5 +6,6 @@ data class CheckInData(
     val binId: Long,
     val wasteCategory: String,
     val quantity: Int,
-    val videoKey: String?
+    val videoKey: String?,
+    val checkInTime: String
 )
