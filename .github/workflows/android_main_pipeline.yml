@@ -148,6 +148,7 @@ jobs:
     name: Tag APK as Production
     needs: build-production
     runs-on: ubuntu-latest
+    environment: production
     permissions:
       contents: write
 
