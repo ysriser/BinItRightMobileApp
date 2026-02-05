@@ -35,7 +35,7 @@ import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.asRequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
 import retrofit2.http.Multipart
-import iss.nus.edu.sg.webviews.binitrightmobileapp.RetrofitClient
+import iss.nus.edu.sg.webviews.binitrightmobileapp.network.RetrofitClient
 
 
 class VideoRecordFragment : Fragment() {

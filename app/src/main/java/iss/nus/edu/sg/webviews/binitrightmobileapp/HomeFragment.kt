@@ -34,21 +34,16 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
             findNavController().navigate(R.id.action_home_to_scanHome)
         }
 
-        // Logout listener MUST be inside onViewCreated
-        binding.btnLogout.setOnClickListener {
-            handleLogout()
+        setupReportIssueButton()
+    }
+
+    private fun setupReportIssueButton() {
+        val reportIssueCard = view?.findViewById<View>(R.id.cardReportIssue)
+        reportIssueCard?.setOnClickListener {
+            ReportIssueDialogFragment().show(childFragmentManager, "ReportIssue")
         }
     }
 
-    private fun handleLogout() {
-        // 1. Clear the session token (Consider using a dedicated SessionManager class later!)
-        val prefs = requireContext().getSharedPreferences("APP_PREFS", Context.MODE_PRIVATE)
-        prefs.edit().remove("TOKEN").apply()
-
-        // 2. Navigate using the Action ID defined in your XML
-        // This will automatically trigger the popUpTo logic you wrote in the XML
-        findNavController().navigate(R.id.action_nav_home_to_loginFragment)
-    }
 
     override fun onDestroyView() {
         super.onDestroyView()

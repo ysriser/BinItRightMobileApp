@@ -10,6 +10,7 @@
     <uses-permission android:name="android.permission.INTERNET" />
 
     <application
+        android:name=".BinItRightApplication"
         android:networkSecurityConfig="@xml/network_security_config"
         android:allowBackup="false"
         android:enableOnBackInvokedCallback="true"

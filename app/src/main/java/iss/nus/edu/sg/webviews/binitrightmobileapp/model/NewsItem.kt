@@ -1,4 +1,4 @@
-package iss.nus.edu.sg.webviews.binitrightmobileapp
+package iss.nus.edu.sg.webviews.binitrightmobileapp.model
 
 data class NewsItem(
     val newsId: Long,
