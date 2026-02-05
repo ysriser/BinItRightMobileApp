@@ -20,7 +20,7 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
 import iss.nus.edu.sg.todo.samplebin.FindBinsAdapter
 import iss.nus.edu.sg.webviews.binitrightmobileapp.databinding.FragmentFindRecyclingBinBinding
-import iss.nus.edu.sg.webviews.binitrightmobileapp.model.DropOffLocation
+import iss.nus.edu.sg.webviews.binitrightmobileapp.Model.DropOffLocation
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -142,9 +142,9 @@ class FindRecyclingBinFragment : Fragment(R.layout.fragment_find_recycling_bin),
                 val json = withContext(Dispatchers.IO) {
                     // FIX 1: Build URL properly with proper empty string handling
                     val urlString = if (binType.isEmpty()) {
-                        "http://10.0.2.2:8082/api/bins/all?lat=$lat&lng=$lng"
+                        "http://10.0.2.2:8080/api/bins/search?lat=$lat&lng=$lng"
                     } else {
-                        "http://10.0.2.2:8082/api/bins/all?lat=$lat&lng=$lng&binType=$binType"
+                        "http://10.0.2.2:8080/api/bins/search?lat=$lat&lng=$lng&binType=$binType"
                     }
 
                     val url = URL(urlString)

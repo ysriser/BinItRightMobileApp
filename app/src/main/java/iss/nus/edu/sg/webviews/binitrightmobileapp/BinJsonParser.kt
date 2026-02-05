@@ -1,7 +1,7 @@
 package iss.nus.edu.sg.webviews.binitrightmobileapp
 
 import com.google.gson.Gson
-import iss.nus.edu.sg.webviews.binitrightmobileapp.model.DropOffLocation
+import iss.nus.edu.sg.webviews.binitrightmobileapp.Model.DropOffLocation
 
 /**
  * Simple JSON parser for recycling bin lists.

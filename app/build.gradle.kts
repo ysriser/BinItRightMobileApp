@@ -1,17 +1,20 @@
+import org.gradle.kotlin.dsl.implementation
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
+    id("androidx.navigation.safeargs.kotlin")
 }
 
 android {
     buildFeatures {
         viewBinding = true
+        buildConfig = true
     }
 
     namespace = "iss.nus.edu.sg.webviews.binitrightmobileapp"
-    compileSdk {
-        version = release(36)
-    }
+    compileSdk = 36
+  
 
     defaultConfig {
         applicationId = "iss.nus.edu.sg.webviews.binitrightmobileapp"
@@ -24,15 +27,52 @@ android {
     }
 
     buildTypes {
-        release {
+        getByName("debug") {
+            // Pulls LOCALHOST_IP from Gradle properties, else defaults to empty
+            val ip = project.findProperty("LOCALHOST_IP") as String? ?: ""
+            buildConfigField("String", "BASE_URL", "\"http://$ip\"")
+        }
+        getByName("release") {
             isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            // Pulls PROD_IP from Gradle properties, else defaults to empty
+            val ip = project.findProperty("PROD_IP") as String? ?: ""
+            buildConfigField("String", "BASE_URL", "\"http://$ip\"")
+        }
+    }
+    
+    flavorDimensions += "environment"
+    productFlavors {
+        create("local") {
+            dimension = "environment"
+            // Looks for LOCALHOST_IP property, defaults to empty string if missing
+            val ip = project.findProperty("LOCALHOST_IP") as String? ?: ""
+            buildConfigField("String", "BASE_URL", "\"http://$ip\"")
+            
+            applicationIdSuffix = ".local" 
+            versionNameSuffix = "-local"
+        }
+        create("staging") {
+            dimension = "environment"
+            // Looks for TEST_IP property, defaults to empty string if missing
+            val ip = project.findProperty("STAGING_IP") as String? ?: ""
+            buildConfigField("String", "BASE_URL", "\"http://$ip\"")
+            
+            applicationIdSuffix = ".staging"
+            versionNameSuffix = "-staging"
+        }
+        create("production") {
+            dimension = "environment"
+            // Looks for PROD_IP property, defaults to empty string if missing
+            val ip = project.findProperty("PROD_IP") as String? ?: ""
+            buildConfigField("String", "BASE_URL", "\"http://$ip\"")
         }
     }
     compileOptions {
+        isCoreLibraryDesugaringEnabled = true
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
@@ -53,9 +93,31 @@ dependencies {
     implementation(libs.androidx.activity)
     implementation(libs.androidx.constraintlayout)
 
+    implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
+
+    // Navigation and Safe Args
+    implementation("androidx.navigation:navigation-fragment-ktx:2.8.5")
+    implementation("androidx.navigation:navigation-ui-ktx:2.8.5")
+
+    // Retrofit & Networking
+    implementation("com.squareup.retrofit2:retrofit:2.11.0")
+    implementation("com.squareup.retrofit2:converter-gson:2.11.0")
+
+    // OkHttp (Required for JWT Interceptors)
+    implementation("com.squareup.okhttp3:okhttp:4.12.0")
+    implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
+
+    // Image Loading (For those Unsplash recycling images)
+    implementation("com.github.bumptech.glide:glide:4.16.0")
+
+    // Kotlin Coroutines for non-blocking API calls
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
+
     // Material Design
     implementation(libs.material)
-    implementation("com.google.android.material:material:1.11.0")
+    
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.4")
+
 
     // Navigation
     implementation("androidx.navigation:navigation-fragment-ktx:$nav_version")
