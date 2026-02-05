@@ -32,9 +32,10 @@ class CheckInFragment : Fragment() {
     private var userId: Long = -1L // Default value
     private val radius = 100000.0 // meters
 
-    private var binId: Long = -1
+    private var binId: String = ""
     private var binName: String = ""
     private var binAddress: String = ""
+    private var wasteType: String = ""
     private var binType: String = ""
     private var binLatitude: Double = 0.0
     private var binLongitude: Double = 0.0
@@ -115,7 +116,7 @@ class CheckInFragment : Fragment() {
     private fun retrieveBinInformation() {
 
         arguments?.let { bundle ->
-            binId = bundle.getLong("binId", -1)
+            binId = bundle.getString("binId", "")
             binName = bundle.getString("binName", "") ?: ""
             binAddress = bundle.getString("binAddress", "") ?: ""
             binType = bundle.getString("binType", "") ?: ""
@@ -124,12 +125,14 @@ class CheckInFragment : Fragment() {
             selectedBinType = bundle.getString("selectedBinType", "")?:""
 
         } ?: run {
-            binId = 3
+            binId = ""
             binName = "Paper"
             binType = "BLUEBIN"
             binLatitude = 1.4689
             binLongitude = 103.8143
         }
+
+        Log.d(TAG, "###bin:${binId}")
     }
 
     private fun displayBinInformation() {
@@ -137,9 +140,6 @@ class CheckInFragment : Fragment() {
         binding.apply {
             tvLocationName.text = binName.ifEmpty { "Recycling Bin" }
             tvLocationAddress.text = binAddress.ifEmpty { "Location not available" }
-
-            val itemTypeText = formatBinType(binType)
-            etItemName.setText(itemTypeText)
         }
     }
 
@@ -205,19 +205,17 @@ class CheckInFragment : Fragment() {
                 }
 
                 val checkedId = checkedIds.first()
-                val selectedText = when (checkedId) {
+                wasteType = when (checkedId) {
                     R.id.chipPlastic -> "Plastic"
                     R.id.chipPaper -> "Paper"
                     R.id.chipGlass -> "Glass"
                     R.id.chipMetal -> "Metal"
-                    R.id.chipEWaste -> "Electronic Waste"
-                    R.id.chipLighting -> "Lighting"
+                    R.id.chipEWaste -> "E-Waste"
+                    R.id.chipTextiles -> "Textile"
                     else -> {
                         ""
                     }
                 }
-
-                binding.etItemName.setText(selectedText)
             }
 
         } catch (e: Exception) {
@@ -465,7 +463,6 @@ class CheckInFragment : Fragment() {
     // Upload video and submit (for quantity > 10)
     private fun uploadVideoAndSubmit(file: File) {
         val durationSeconds = getVideoDurationSeconds(file)
-        val wasteType = binding.etItemName.text.toString()
 
         updateSubmitButtonState(false)
         showStatus("Requesting upload permission...", isError = false)
@@ -552,12 +549,12 @@ class CheckInFragment : Fragment() {
             userId = userId,
             duration = durationSeconds.toLong(),
             binId = binId,
-            wasteCategory = wasteCategory ?: binding.etItemName.text.toString(),
+            wasteCategory = wasteType,
             quantity = currentCount,
             videoKey = videoKey
         )
 
-        Log.d(ContentValues.TAG, "####User ID submitted: $userId")
+        Log.d(ContentValues.TAG, "####Bin ID submitted: ${binId}")
 
 
         val response = RetrofitClient.apiService().submitRecycleCheckIn(checkInData)

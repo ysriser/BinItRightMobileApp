@@ -1,7 +1,7 @@
 package iss.nus.edu.sg.webviews.binitrightmobileapp.model
 
 data class DropOffLocation(
-    val id: Long,
+    val id: String,
     val name: String,
     val address: String,
     val postalCode: String,
