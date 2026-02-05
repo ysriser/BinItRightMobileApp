@@ -31,8 +31,7 @@ jobs:
 
       - name: Assemble Staging APK
         run: |
-          ./gradlew assembleStagingDebug \
-            -PSTAGING_IP="${{ secrets.STAGING_IP }}"
+          ./gradlew assembleStagingDebug -PSTAGING_URL="${{ secrets.STAGING_URL }}"
 
       - name: Upload Staging APK
         uses: actions/upload-artifact@v4
@@ -68,7 +67,7 @@ jobs:
           java-version: '21'
           distribution: 'temurin'
 
-      
+
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
@@ -107,7 +106,7 @@ jobs:
             
             mvn -f appium-tests/pom.xml clean test -Dapk.path=$GITHUB_WORKSPACE/apk/app-staging-debug.apk
 
-            
+
       - name: Upload Appium reports
         if: always()
         uses: actions/upload-artifact@v4
@@ -131,15 +130,19 @@ jobs:
           java-version: '21'
           distribution: 'temurin'
           cache: gradle
-      
+
       - name: Assemble Production Release APK
         run: |
-          ./gradlew assembleProductionRelease \
-            -PPROD_IP="${{ secrets.PROD_IP }}"
+          ./gradlew assembleProductionRelease -PPROD_URL="${{ secrets.PROD_URL }}"
 
- 
+      - name: Upload Production APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: production-apk
+          path: app/build/outputs/apk/production/release/app-production-release-unsigned.apk
+
   # ===============================
-  # TAG APK AS PRODUCTION 
+  # TAG APK AS PRODUCTION
   # ===============================
   tag-production:
     name: Tag APK as Production
@@ -147,11 +150,11 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
-  
+
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 0   
+          fetch-depth: 0
 
       - name: Calculate Version
         id: calc
@@ -171,7 +174,7 @@ jobs:
           TAG="${BASE}${NEXT}"
           echo "NEW_TAG=$TAG" >> $GITHUB_ENV
           echo "Next version: $TAG"
-        
+
       - name: Tag Commit
         run: |
           git config user.name "github-actions"
