@@ -111,20 +111,22 @@ class NearByBinFragment : Fragment(R.layout.fragment_near_by_bin), OnMapReadyCal
             navigateToCheckIn(selectedBin)
         }
         binding.binsRecyclerView.adapter = adapter
-        Log.d(TAG, "RecyclerView setup complete")
+
     }
 
     private fun navigateToCheckIn(bin: DropOffLocation) {
         Log.d(TAG, "Navigating to check-in for bin: ${bin.name}")
 
         val bundle = Bundle().apply {
-            putLong("binId", bin.id)
+            putString("binId", bin.id)
             putString("binName", bin.name)
             putString("binAddress", bin.address)
             putString("binType", bin.binType)
             putDouble("binLatitude", bin.latitude)
             putDouble("binLongitude", bin.longitude)
         }
+
+        Log.d(TAG, "###SelectedBin:${bin.id}")
 
         // Pass the scanned bin type if it exists
         selectedBinType?.let {
@@ -170,7 +172,7 @@ class NearByBinFragment : Fragment(R.layout.fragment_near_by_bin), OnMapReadyCal
 
                 Log.d(TAG, "Got user location: lat=$lat, lng=$lng")
                 hasFetchedBins = true
-                fetchNearbyBins(1.29, 103.78)  // Using your default coordinates
+                fetchNearbyBins(lat, lng)  // Using your default coordinates
             }
             .addOnFailureListener { e ->
                 Log.e(TAG, "Failed to get location: ${e.message}", e)
@@ -273,7 +275,7 @@ class NearByBinFragment : Fragment(R.layout.fragment_near_by_bin), OnMapReadyCal
                     }
 
                     val bin = DropOffLocation(
-                        id = obj.optLong("id", -1),
+                        id = obj.optString("id", ""),
                         name = obj.optString("name", "Unknown Bin"),
                         address = obj.optString("address", ""),
                         description = obj.optString("description", ""),
