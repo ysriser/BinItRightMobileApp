@@ -1,6 +1,6 @@
 package iss.nus.edu.sg.webviews.binitrightmobileapp
 
-import iss.nus.edu.sg.webviews.binitrightmobileapp.BuildConfig
+
 import android.util.Log
 import kotlinx.coroutines.delay
 import java.io.File
