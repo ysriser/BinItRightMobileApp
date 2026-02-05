@@ -9,16 +9,21 @@ plugins {
 
 // Define the helper function at the top level of the script
 fun getSecret(key: String): String {
+    // 1. Check for command line property (-PSTAGING_URL=...)
+    val projectProp = project.findProperty(key)?.toString()
+    if (!projectProp.isNullOrBlank()) return projectProp
+
+    // 2. Check local.properties (mostly for local development)
     val localProperties = Properties()
     val localPropertiesFile = rootProject.file("local.properties")
     if (localPropertiesFile.exists()) {
         localPropertiesFile.inputStream().use { localProperties.load(it) }
+        val localProp = localProperties.getProperty(key)
+        if (!localProp.isNullOrBlank()) return localProp
     }
 
-    // Priority: 1. Command line (-P) | 2. local.properties | 3. Fallback
-    return project.findProperty(key)?.toString()
-        ?: localProperties.getProperty(key)
-        ?: "0.0.0.0"
+    // 3. Fallback
+    return "0.0.0.0"
 }
 
 android {
