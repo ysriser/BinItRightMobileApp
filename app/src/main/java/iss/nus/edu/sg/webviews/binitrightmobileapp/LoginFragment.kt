@@ -9,7 +9,7 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
-import iss.nus.edu.sg.webviews.binitrightmobileapp.Model.LoginRequest
+import iss.nus.edu.sg.webviews.binitrightmobileapp.model.LoginRequest
 import iss.nus.edu.sg.webviews.binitrightmobileapp.databinding.FragmentLoginBinding
 import kotlinx.coroutines.launch
 

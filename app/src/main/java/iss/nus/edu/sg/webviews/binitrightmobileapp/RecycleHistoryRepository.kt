@@ -5,9 +5,7 @@ import iss.nus.edu.sg.webviews.binitrightmobileapp.network.RetrofitClient
 
 class RecycleHistoryRepository {
 
-    suspend fun getHistory(userId: Long): List<RecycleHistoryModel> {
-        return RetrofitClient
-            .apiService()
-            .getRecycleHistory(userId)
+    suspend fun getHistory(): List<RecycleHistoryModel> {
+        return RetrofitClient.apiService().getRecycleHistory()
     }
 }
