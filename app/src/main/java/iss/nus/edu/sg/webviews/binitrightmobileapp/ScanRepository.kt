@@ -196,7 +196,7 @@ class HybridScanRepository(
         val isRecyclable = when(tier1.category.lowercase()) {
              "plastic", "metal", "glass", "paper" -> true
              else -> false
-        }
+         }
         return ScanResult(
             category = tier1.category.replaceFirstChar { it.uppercase() },
             recyclable = isRecyclable,
