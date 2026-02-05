@@ -1,7 +1,10 @@
 package iss.nus.edu.sg.webviews.binitrightmobileapp
 
 import android.Manifest
+import android.content.ContentValues
+import android.content.Context
 import android.content.pm.PackageManager
+import android.graphics.Color
 import android.media.MediaMetadataRetriever
 import android.os.Bundle
 import android.os.Environment
@@ -18,19 +21,15 @@ import androidx.navigation.fragment.findNavController
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
-import com.google.gson.Gson
 import iss.nus.edu.sg.webviews.binitrightmobileapp.databinding.FragmentCheckInBinding
+import iss.nus.edu.sg.webviews.binitrightmobileapp.network.RetrofitClient
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import okhttp3.MediaType.Companion.toMediaType
-import okhttp3.MultipartBody
-import okhttp3.RequestBody.Companion.asRequestBody
-import okhttp3.RequestBody.Companion.toRequestBody
 import java.io.File
 
 class CheckInFragment : Fragment() {
 
-    private val userId = 1
+    private var userId: Long = -1L // Default value
     private val radius = 100000.0 // meters
 
     private var binId: Long = -1
@@ -42,10 +41,9 @@ class CheckInFragment : Fragment() {
     private var selectedBinType: String? = null
     private var wasteCategory: String? = null
     private var currentCount = 0
-
     private var _binding: FragmentCheckInBinding? = null
     private val binding get() = _binding!!
-
+    private var isSubmitted = false
     private var recordedFile: File? = null
     private lateinit var fusedLocationClient: FusedLocationProviderClient
 
@@ -83,6 +81,10 @@ class CheckInFragment : Fragment() {
 
         try {
             super.onViewCreated(view, savedInstanceState)
+
+            // Retrieve userId from SharedPreferences
+            val prefs = requireContext().getSharedPreferences("APP_PREFS", Context.MODE_PRIVATE)
+            userId = prefs.getLong("USER_ID", -1L)
 
             // Clear any previous recorded video
             recordedFile = null
@@ -149,6 +151,7 @@ class CheckInFragment : Fragment() {
             else -> ""
         }
     }
+
     private fun setupButtons() {
         binding.btnBackHome.setOnClickListener {
             findNavController().navigate(R.id.action_checkInFragment_to_homeFragment)
@@ -162,8 +165,10 @@ class CheckInFragment : Fragment() {
             requestPermissionNeeded()
         }
 
+        // Use validation logic instead of direct upload
         binding.btnSubmit.setOnClickListener {
-            uploadVideo()
+            disableRecordVideo()
+            handleSubmitWithValidation()
         }
     }
 
@@ -174,7 +179,7 @@ class CheckInFragment : Fragment() {
         }
 
         binding.btnDecrease.setOnClickListener {
-            if (currentCount > 0) { // Prevent going below 0
+            if (currentCount > 0) {
                 currentCount--
                 updateCounterDisplay()
             }
@@ -341,6 +346,9 @@ class CheckInFragment : Fragment() {
     }
 
     private fun loadLastRecordedVideo() {
+
+        if (isSubmitted) return
+
         val videoDir =
             requireContext().getExternalFilesDir(Environment.DIRECTORY_MOVIES)
                 ?: run {
@@ -365,6 +373,12 @@ class CheckInFragment : Fragment() {
     override fun onResume() {
         super.onResume()
 
+        if (isSubmitted) {
+            // HARD LOCK UI after success
+            updateSubmitButtonState(false)
+            disableRecordVideo()
+            return
+        }
         // Only check for video if we just came back from recording
         // (the savedStateHandle will have item_count if we recorded)
         val returnedFromRecording = findNavController()
@@ -392,87 +406,187 @@ class CheckInFragment : Fragment() {
         }
     }
 
-    private fun uploadVideo() {
-        val file = recordedFile ?: run {
-            Toast.makeText(
-                requireContext(),
-                "No Video to upload",
-                Toast.LENGTH_SHORT
-            ).show()
+    private fun disableRecordVideo() {
+        binding.btnRecordVideo.isEnabled = false
+        binding.btnRecordVideo.isClickable = false
+
+        // Visual clarity
+        binding.btnRecordVideo.alpha = 1f
+        binding.btnRecordVideo.text = "VIDEO SUBMITTED"
+
+        // Force readable colors
+        binding.btnRecordVideo.setBackgroundColor(
+            ContextCompat.getColor(requireContext(), R.color.light_red_disabled)
+        )
+        binding.btnRecordVideo.setTextColor(Color.WHITE)
+    }
+
+    private fun enableRecordVideo() {
+        binding.btnRecordVideo.isEnabled = true
+        binding.btnRecordVideo.isClickable = true
+        binding.btnRecordVideo.alpha = 1f
+        binding.btnRecordVideo.text = "RECORD VIDEO"
+        binding.btnRecordVideo.setBackgroundColor(
+            ContextCompat.getColor(requireContext(), android.R.color.holo_blue_dark)
+        )
+        binding.btnRecordVideo.setTextColor(Color.WHITE)
+    }
+
+    // Validation orchestration function
+    private fun handleSubmitWithValidation() {
+        val quantity = currentCount
+        val file = recordedFile
+
+        // Quantity > 10 → video mandatory
+        if (quantity > 10) {
+            if (file == null) {
+                showStatus("Video required for quantity > 10", isError = true)
+                enableRecordVideo()
+                return
+            }
+            uploadVideoAndSubmit(file)
             return
         }
 
+        // Quantity <= 10 → check duration
+        val durationSeconds = file?.let { getVideoDurationSeconds(it) } ?: 0
+
+        if (durationSeconds > 5) {
+            submitWithoutVideo(durationSeconds)
+        } else {
+            showStatus(
+                "Invalid check-in: duration must be more than 5 seconds",
+                isError = true
+            )
+            enableRecordVideo()
+        }
+    }
+
+    // Upload video and submit (for quantity > 10)
+    private fun uploadVideoAndSubmit(file: File) {
         val durationSeconds = getVideoDurationSeconds(file)
         val wasteType = binding.etItemName.text.toString()
 
-        val checkInData = CheckInData(
-            userId = userId,
-            recordedAt = System.currentTimeMillis(),
-            duration = durationSeconds,
-            binId = binId.toInt(),
-            wasteCategory = wasteCategory?: wasteType, // Use scanned type if available, otherwise use selected type
-            quantity = currentCount
-        )
+        updateSubmitButtonState(false)
+        showStatus("Requesting upload permission...", isError = false)
 
-        val gson = Gson()
-        val metadataJson = gson.toJson(checkInData)
-
-        // Convert Json String to OkHttp RequestBody
-        val metadataBody = metadataJson.toRequestBody("application/json".toMediaType())
-
-        // Convert videoFile to OkHttp RequestBody for Http upload
-        val videoBody = file.asRequestBody("video/mp4".toMediaType())
-
-        val videoPart = MultipartBody.Part.createFormData(
-            name = "video",
-            filename = file.name,
-            body = videoBody
-        )
-
-        // Upload
         lifecycleScope.launch {
             try {
-                // Disable button during upload
-                updateSubmitButtonState(false)
-
-                val response = RetrofitClient.instance.submitRecycleCheckIn(
-                    video = videoPart,
-                    metadata = metadataBody
+                // Step 1: Request pre-signed upload URL from backend
+                val presignResponse = RetrofitClient.apiService().getPresignedUpload(
+                    PresignUploadRequest(userId = userId.toLong())
                 )
 
-                if (response.isSuccessful) {
-                    val resBody = response.body()
-                    if (resBody != null) {
-                        val message = resBody.responseCode + "\n" + resBody.responseDesc
-                        showStatus(message, isError = false)
-
-                        if (resBody.responseCode == "0000") {
-                            delay(1200) // allow user to read success message
-                            findNavController().popBackStack()
-                        } else {
-                            // Re-enable if submission failed
-                            updateSubmitButtonState(true)
-                        }
-                    } else {
-                        showStatus("Empty server response", isError = true)
-                        updateSubmitButtonState(true)
-                    }
-                } else {
-                    showStatus(
-                        "Submission failed (${response.code()})",
-                        isError = true
-                    )
+                if (!presignResponse.isSuccessful || presignResponse.body() == null) {
+                    showStatus("Failed to get upload permission", isError = true)
                     updateSubmitButtonState(true)
+                    enableRecordVideo()
+                    return@launch
                 }
+
+                val presignData = presignResponse.body()!!
+                Log.d(TAG, "Got pre-signed URL for key: ${presignData.objectKey}")
+
+                // Step 2: Upload video directly to Spaces
+                showStatus("Uploading video...", isError = false)
+
+                val uploadSuccess = VideoUploader.uploadVideoToSpaces(
+                    file = file,
+                    presignedUrl = presignData.uploadUrl,
+                    onProgress = { progress ->
+                        lifecycleScope.launch {
+                            showStatus("Uploading: $progress%", isError = false)
+                        }
+                    }
+                )
+
+                if (!uploadSuccess) {
+                    showStatus("Video upload failed", isError = true)
+                    updateSubmitButtonState(true)
+                    enableRecordVideo()
+                    return@launch
+                }
+
+                Log.d(TAG, "Video uploaded successfully")
+
+                // Step 3: Submit check-in metadata WITH video key
+                submitCheckIn(
+                    durationSeconds = durationSeconds,
+                    videoKey = presignData.objectKey
+                )
 
             } catch (e: Exception) {
                 Log.e(TAG, "Upload error", e)
-                showStatus(
-                    "Network error. Please try again.",
-                    isError = true
+                showStatus("Error: ${e.message}", isError = true)
+                updateSubmitButtonState(true)
+                enableRecordVideo()
+            }
+        }
+    }
+
+    // Submit WITHOUT video (valid low-quantity case)
+    private fun submitWithoutVideo(durationSeconds: Int) {
+        updateSubmitButtonState(false)
+        showStatus("Submitting check-in...", isError = false)
+
+        lifecycleScope.launch {
+            try {
+                submitCheckIn(
+                    durationSeconds = durationSeconds,
+                    videoKey = null
                 )
+            } catch (e: Exception) {
+                Log.e(TAG, "Submission error", e)
+                showStatus("Submission failed: ${e.message}", isError = true)
                 updateSubmitButtonState(true)
             }
+        }
+    }
+
+    // Centralized submission (clean & reusable)
+    private suspend fun submitCheckIn(
+        durationSeconds: Int,
+        videoKey: String?
+    ) {
+        val checkInData = CheckInData(
+            userId = userId,
+            duration = durationSeconds.toLong(),
+            binId = binId,
+            wasteCategory = wasteCategory ?: binding.etItemName.text.toString(),
+            quantity = currentCount,
+            videoKey = videoKey
+        )
+
+        Log.d(ContentValues.TAG, "####User ID submitted: $userId")
+
+
+        val response = RetrofitClient.apiService().submitRecycleCheckIn(checkInData)
+
+        if (response.isSuccessful) {
+            updateSubmitButtonState(false)
+            disableRecordVideo()
+            val resBody = response.body()
+            if (resBody != null) {
+                val message = resBody.responseCode + "\n" + resBody.responseDesc
+                showStatus(message, isError = false)
+
+                if (resBody.responseCode == "0000") {
+                    isSubmitted = true
+                    delay(1200)
+                    findNavController().popBackStack()
+                } else {
+                    updateSubmitButtonState(true)
+                    enableRecordVideo()
+                }
+            } else {
+                showStatus("Empty server response", isError = true)
+                updateSubmitButtonState(true)
+                enableRecordVideo()
+            }
+        } else {
+            showStatus("Submission failed (${response.code()})", isError = true)
+            updateSubmitButtonState(true)
+            enableRecordVideo()
         }
     }
 

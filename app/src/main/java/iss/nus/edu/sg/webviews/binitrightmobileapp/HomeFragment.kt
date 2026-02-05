@@ -34,6 +34,14 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
             findNavController().navigate(R.id.action_home_to_scanHome)
         }
 
+        setupReportIssueButton()
+    }
+
+    private fun setupReportIssueButton() {
+        val reportIssueCard = view?.findViewById<View>(R.id.cardReportIssue)
+        reportIssueCard?.setOnClickListener {
+            ReportIssueDialogFragment().show(childFragmentManager, "ReportIssue")
+        }
     }
 
 
