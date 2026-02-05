@@ -79,27 +79,46 @@ class FakeScanRepository : ScanRepository {
 
 
 class RealScanRepository : ScanRepository {
-    override suspend fun scanImage(imageFile: File): Result<ScanResult> {
+    override suspend fun scanImage(imageFile: File, forceTier2: Boolean, onStatusUpdate: (String) -> Unit): Result<ScanResult> {
         return try {
             val requestFile = imageFile.asRequestBody("image/*".toMediaTypeOrNull())
             val body = MultipartBody.Part.createFormData("image", imageFile.name, requestFile)
-            val response = RetrofitClient.instance.scanImage(body)
+            val response = RetrofitClient.apiService().scanImage(body)
             if (response.isSuccessful && response.body() != null) {
-                Result.success(response.body()!!)
+                val scanResponse = response.body()!!
+                if (scanResponse.data?.final != null) {
+                    // Logic duplicated from HybridScanRepository for robustness
+                    val final = scanResponse.data.final
+                    val determinedBinType = if (final.category.startsWith("E-waste - ", true)) "EWaste"
+                                            else if (final.category.startsWith("Textile - ", true)) "Textile"
+                                            else if (final.category.startsWith("Lighting - ", true)) "Lamp"
+                                            else if (final.recyclable) "BlueBin" else "General"
+
+                    Result.success(ScanResult(
+                        category = final.category,
+                        recyclable = final.recyclable,
+                        confidence = final.confidence,
+                        instruction = final.instruction,
+                        instructions = final.instructions,
+                        binType = determinedBinType
+                        // Ignoring other fields for now
+                    ))
+                } else {
+                     Result.failure(Exception("Server returned no final data"))
+                }
             } else {
                 Result.failure(Exception("Network error: ${response.code()}"))
             }
         } catch (e: Exception) {
-            // Fallback to fake for prototype robustness if real fails (optional logic, but per user request "fallback to FakeScanRepository")
-            // "if it fails, fallback to FakeScanRepository and mark in logs."
+            // Fallback to fake for prototype robustness if real fails
             Log.e("RealScanRepository", "Failed to scan, falling back to mock", e)
-            FakeScanRepository().scanImage(imageFile)
+            FakeScanRepository().scanImage(imageFile, forceTier2, onStatusUpdate)
         }
     }
 
     override suspend fun sendFeedback(feedback: FeedbackRequest): Result<Boolean> {
          return try {
-            val response = RetrofitClient.instance.sendFeedback(feedback)
+            val response = RetrofitClient.apiService().sendFeedback(feedback)
             if (response.isSuccessful && response.body() != null) {
                 Result.success(response.body()!!)
             } else {
@@ -196,7 +215,7 @@ class HybridScanRepository(
             val tier1Json = gson.toJson(tier1Result)
             val tier1Part = MultipartBody.Part.createFormData("tier1", tier1Json)
 
-            val response = RetrofitClient.instance.scanImage(body, tier1Part)
+            val response = RetrofitClient.apiService().scanImage(body, tier1Part)
 
             if (response.isSuccessful && response.body() != null) {
                 val scanResponse = response.body()!!
@@ -219,6 +238,9 @@ class HybridScanRepository(
     }
 
     private fun mapFinalToScanResult(final: FinalResult): ScanResult {
+        // User Requirement: Bin type logic must be on Android client
+        val determinedBinType = determineBinType(final.category, final.recyclable)
+        
         return ScanResult(
             category = final.category,
             recyclable = final.recyclable,
@@ -226,9 +248,9 @@ class HybridScanRepository(
             instruction = final.instruction,
             instructions = final.instructions,
             disposalMethod = final.disposal_method,
-            categoryId = final.category_id,
-            binType = final.bin_type,
-            rationaleTags = final.rationale_tags
+            categoryId = final.category_id, // Likely null or ignored
+            binType = determinedBinType,
+            rationaleTags = final.rationale_tags // Likely null or ignored
         )
     }
 
@@ -236,16 +258,29 @@ class HybridScanRepository(
         val isRecyclable = when(tier1.category.lowercase()) {
              "plastic", "metal", "glass", "paper" -> true
              else -> false
-         }
+        }
+        val categoryName = tier1.category.replaceFirstChar { it.uppercase() }
+        val determinedBinType = determineBinType(categoryName, isRecyclable)
+
         return ScanResult(
-            category = tier1.category.replaceFirstChar { it.uppercase() },
+            category = categoryName,
             recyclable = isRecyclable,
             confidence = tier1.confidence,
             instruction = if (isRecyclable) "Recycle in Blue Bin" else "Check local guidelines",
             instructions = listOf("Generated from Tier 1"),
             categoryId = "tier1.${tier1.category}",
-            binType = if (isRecyclable) "blue" else "general"
+            binType = determinedBinType
         )
+    }
+    
+    // Centralized Bin Logic
+    private fun determineBinType(category: String, isRecyclable: Boolean): String {
+        return when {
+            category.startsWith("E-waste - ", ignoreCase = true) -> "EWaste"
+            category.startsWith("Textile - ", ignoreCase = true) -> "Textile"
+            category.startsWith("Lighting - ", ignoreCase = true) -> "Lamp" // Added for consistency with existing UI logic
+            else -> if (isRecyclable) "BlueBin" else "General"
+        }
     }
 
     override suspend fun sendFeedback(feedback: FeedbackRequest): Result<Boolean> {

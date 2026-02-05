@@ -78,18 +78,23 @@ class ImageClassifier(private val context: Context) {
             val top1Label = labels[top1Index]
             val top1Confidence = probabilities[top1Index]
 
-            // Escalation Logic (Simple heuristic)
-            // Escalate if:
-            // 1. Label is "other_uncertain"
-            // 2. Confidence is low (< 0.6)
-            // 3. Margin between top1 and top2 is small (< 0.1)
+            // Escalation Logic (Updated v0.1 Spec)
+            val defaultConfThreshold = 0.70f
+            val highConfThreshold = 0.80f // Higher threshold for tricky categories
+            val marginThreshold = 0.05f
+
+            val confThreshold = when (top1Label.lowercase()) {
+                "glass", "plastic" -> highConfThreshold
+                else -> defaultConfThreshold
+            }
+            
             val margin = if (probabilities.size > 1) {
                 probabilities[top3Indices[0]] - probabilities[top3Indices[1]]
             } else {
                 1.0f
             }
 
-            val escalate = top1Label == "other_uncertain" || top1Confidence < 0.60f || margin < 0.1f
+            val escalate = top1Label == "other_uncertain" || top1Confidence < confThreshold || margin < marginThreshold
 
             return Tier1Result(
                 category = top1Label,

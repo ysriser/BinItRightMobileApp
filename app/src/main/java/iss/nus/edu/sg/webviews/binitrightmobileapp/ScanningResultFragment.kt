@@ -81,7 +81,10 @@ class ScanningResultFragment : Fragment() {
         }
     }
 
+    private var currentScanResult: ScanResult? = null
+
     private fun displayResult(scanResult: ScanResult) {
+        currentScanResult = scanResult
         binding.tvCategory.text = scanResult.category
 
         if (scanResult.recyclable) {
@@ -119,6 +122,10 @@ class ScanningResultFragment : Fragment() {
 
 
 
+    private fun mappingCategory(fullCategory: String): String {
+        return fullCategory
+    }
+
     private fun setupListeners() {
         binding.btnScanAgain.setOnClickListener {
             findNavController().popBackStack()
@@ -133,17 +140,10 @@ class ScanningResultFragment : Fragment() {
 
         binding.btnRecycle.setOnClickListener {
             // Get the scanned item type
-            val scannedCategory = binding.tvCategory.text.toString() // e.g., "Paper"
+            val scannedCategory = mappingCategory(currentScanResult?.category ?: "")
+            // Use the bin type determined by the Repository/Logic
+            val binType = currentScanResult?.binType ?: ""
 
-            // Map the scanned category to match database bin types
-            val binType = when (scannedCategory.uppercase()) {
-                "PAPER", "CARDBOARD", "NEWSPAPER" -> "BlueBin"
-                "ELECTRONIC", "ELECTRONICS", "E-WASTE", "EWASTE" -> "EWaste"
-                "LIGHTING", "LAMP", "LIGHT", "BULB" -> "Lamp"
-                else -> {
-                    ""
-                }
-            }
             val bundle = Bundle().apply {
                 putString("selectedBinType", binType)
                 putString("wasteCategory", scannedCategory)
