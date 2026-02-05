@@ -21,7 +21,7 @@ import androidx.core.app.ActivityCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import iss.nus.edu.sg.webviews.binitrightmobileapp.databinding.FragmentNearByBinBinding
-import iss.nus.edu.sg.webviews.binitrightmobileapp.Model.DropOffLocation
+import iss.nus.edu.sg.webviews.binitrightmobileapp.model.DropOffLocation
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
