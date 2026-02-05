@@ -82,6 +82,7 @@ android {
 }
 
 dependencies {
+    implementation(libs.androidx.ink.geometry)
     val cameraxVersion = "1.3.1"
     val nav_version = "2.8.5"
     val retrofitVersion = "2.11.0"
