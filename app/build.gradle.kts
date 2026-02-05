@@ -1,9 +1,24 @@
 import org.gradle.kotlin.dsl.implementation
+import java.util.Properties
 
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     id("androidx.navigation.safeargs.kotlin")
+}
+
+// Define the helper function at the top level of the script
+fun getSecret(key: String): String {
+    val localProperties = Properties()
+    val localPropertiesFile = rootProject.file("local.properties")
+    if (localPropertiesFile.exists()) {
+        localPropertiesFile.inputStream().use { localProperties.load(it) }
+    }
+
+    // Priority: 1. Command line (-P) | 2. local.properties | 3. Fallback
+    return project.findProperty(key)?.toString()
+        ?: localProperties.getProperty(key)
+        ?: "0.0.0.0"
 }
 
 android {
@@ -26,51 +41,28 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
-    buildTypes {
-        getByName("debug") {
-            // Pulls LOCALHOST_IP from Gradle properties, else defaults to empty
-            val ip = project.findProperty("LOCALHOST_IP") as String? ?: ""
-            buildConfigField("String", "BASE_URL", "\"http://$ip\"")
-        }
-        getByName("release") {
-            isMinifyEnabled = false
-            proguardFiles(
-                getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
-            )
-            // Pulls PROD_IP from Gradle properties, else defaults to empty
-            val ip = project.findProperty("PROD_IP") as String? ?: ""
-            buildConfigField("String", "BASE_URL", "\"http://$ip\"")
-        }
+    buildFeatures {
+        buildConfig = true
     }
-    
-    flavorDimensions += "environment"
+
+    flavorDimensions.add("env")
     productFlavors {
         create("local") {
-            dimension = "environment"
-            // Looks for LOCALHOST_IP property, defaults to empty string if missing
-            val ip = project.findProperty("LOCALHOST_IP") as String? ?: ""
-            buildConfigField("String", "BASE_URL", "\"http://$ip\"")
-            
-            applicationIdSuffix = ".local" 
-            versionNameSuffix = "-local"
-        }
+            dimension = "env"
+            val ip = getSecret("LOCAL_IP") // 10.0.2.2
+            buildConfigField("String", "BASE_URL", "\"http://$ip:8080/\"") }
         create("staging") {
-            dimension = "environment"
-            // Looks for TEST_IP property, defaults to empty string if missing
-            val ip = project.findProperty("STAGING_IP") as String? ?: ""
-            buildConfigField("String", "BASE_URL", "\"http://$ip\"")
-            
-            applicationIdSuffix = ".staging"
-            versionNameSuffix = "-staging"
-        }
+            dimension = "env"
+            val domain = getSecret("STAGING_URL") // e.g., staging.yourdomain.me
+            // Now we include the ports explicitly with https
+            buildConfigField("String", "BASE_URL", "\"https://$domain:8080/\"") }
         create("production") {
-            dimension = "environment"
-            // Looks for PROD_IP property, defaults to empty string if missing
-            val ip = project.findProperty("PROD_IP") as String? ?: ""
-            buildConfigField("String", "BASE_URL", "\"http://$ip\"")
+            dimension = "env"
+            val domain = getSecret("PROD_URL") // e.g., api.yourdomain.me
+            buildConfigField("String", "BASE_URL", "\"https://$domain:8080/\"")
         }
     }
+
     compileOptions {
         isCoreLibraryDesugaringEnabled = true
         sourceCompatibility = JavaVersion.VERSION_11
