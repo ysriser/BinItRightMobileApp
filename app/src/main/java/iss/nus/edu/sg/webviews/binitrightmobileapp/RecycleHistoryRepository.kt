@@ -7,7 +7,7 @@ class RecycleHistoryRepository {
 
     suspend fun getHistory(userId: Long): List<RecycleHistoryModel> {
         return RetrofitClient
-            .apiService()
+            .instance  // Changed from apiService() to instance
             .getRecycleHistory(userId)
     }
 }

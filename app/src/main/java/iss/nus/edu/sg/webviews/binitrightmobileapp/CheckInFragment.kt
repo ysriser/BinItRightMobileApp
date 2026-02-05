@@ -1,6 +1,8 @@
 package iss.nus.edu.sg.webviews.binitrightmobileapp
 
 import android.Manifest
+import android.content.ContentValues
+import android.content.Context
 import android.content.pm.PackageManager
 import android.graphics.Color
 import android.media.MediaMetadataRetriever
@@ -20,13 +22,14 @@ import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
 import iss.nus.edu.sg.webviews.binitrightmobileapp.databinding.FragmentCheckInBinding
+import iss.nus.edu.sg.webviews.binitrightmobileapp.network.RetrofitClient
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.io.File
 
 class CheckInFragment : Fragment() {
 
-    private val userId: Long = 3
+    private var userId: Long = -1L // Default value
     private val radius = 100000.0 // meters
 
     private var binId: Long = -1
@@ -38,10 +41,9 @@ class CheckInFragment : Fragment() {
     private var selectedBinType: String? = null
     private var wasteCategory: String? = null
     private var currentCount = 0
-
     private var _binding: FragmentCheckInBinding? = null
     private val binding get() = _binding!!
-
+    private var isSubmitted = false
     private var recordedFile: File? = null
     private lateinit var fusedLocationClient: FusedLocationProviderClient
 
@@ -79,6 +81,10 @@ class CheckInFragment : Fragment() {
 
         try {
             super.onViewCreated(view, savedInstanceState)
+
+            // Retrieve userId from SharedPreferences
+            val prefs = requireContext().getSharedPreferences("APP_PREFS", Context.MODE_PRIVATE)
+            userId = prefs.getLong("USER_ID", -1L)
 
             // Clear any previous recorded video
             recordedFile = null
@@ -340,6 +346,9 @@ class CheckInFragment : Fragment() {
     }
 
     private fun loadLastRecordedVideo() {
+
+        if (isSubmitted) return
+
         val videoDir =
             requireContext().getExternalFilesDir(Environment.DIRECTORY_MOVIES)
                 ?: run {
@@ -364,6 +373,12 @@ class CheckInFragment : Fragment() {
     override fun onResume() {
         super.onResume()
 
+        if (isSubmitted) {
+            // HARD LOCK UI after success
+            updateSubmitButtonState(false)
+            disableRecordVideo()
+            return
+        }
         // Only check for video if we just came back from recording
         // (the savedStateHandle will have item_count if we recorded)
         val returnedFromRecording = findNavController()
@@ -542,15 +557,21 @@ class CheckInFragment : Fragment() {
             videoKey = videoKey
         )
 
+        Log.d(ContentValues.TAG, "####User ID submitted: $userId")
+
+
         val response = RetrofitClient.instance.submitRecycleCheckIn(checkInData)
 
         if (response.isSuccessful) {
+            updateSubmitButtonState(false)
+            disableRecordVideo()
             val resBody = response.body()
             if (resBody != null) {
                 val message = resBody.responseCode + "\n" + resBody.responseDesc
                 showStatus(message, isError = false)
 
                 if (resBody.responseCode == "0000") {
+                    isSubmitted = true
                     delay(1200)
                     findNavController().popBackStack()
                 } else {

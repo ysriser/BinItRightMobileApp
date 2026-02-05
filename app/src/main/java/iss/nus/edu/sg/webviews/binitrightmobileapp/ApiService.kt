@@ -1,5 +1,7 @@
 package iss.nus.edu.sg.webviews.binitrightmobileapp
 
+import iss.nus.edu.sg.webviews.binitrightmobileapp.model.IssueCreateRequest
+import iss.nus.edu.sg.webviews.binitrightmobileapp.model.IssueResponse
 import iss.nus.edu.sg.webviews.binitrightmobileapp.model.LoginResponse
 import iss.nus.edu.sg.webviews.binitrightmobileapp.model.LoginRequest
 import iss.nus.edu.sg.webviews.binitrightmobileapp.model.RecycleHistoryModel
@@ -48,4 +50,9 @@ interface ApiService {
     @GET("api/news")
     suspend fun getAllNews(): Response<List<NewsItem>>
 
+    @POST("api/issues")
+    suspend fun createIssue(@Body request: IssueCreateRequest): Response<IssueResponse>
+
+    @GET("api/events?filter=upcoming")
+    suspend fun getUpcomingEvents(): Response<List<EventItem>>
 }

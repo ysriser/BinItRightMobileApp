@@ -38,6 +38,15 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         binding.btnLogout.setOnClickListener {
             handleLogout()
         }
+
+        setupReportIssueButton()
+    }
+
+    private fun setupReportIssueButton() {
+        val reportIssueCard = view?.findViewById<View>(R.id.cardReportIssue)
+        reportIssueCard?.setOnClickListener {
+            ReportIssueDialogFragment().show(childFragmentManager, "ReportIssue")
+        }
     }
 
     private fun handleLogout() {

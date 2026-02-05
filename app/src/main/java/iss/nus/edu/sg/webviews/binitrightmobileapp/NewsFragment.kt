@@ -8,8 +8,9 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import iss.nus.edu.sg.webviews.binitrightmobileapp.databinding.FragmentNewsBinding
-import iss.nus.edu.sg.webviews.binitrightmobileapp.network.RetrofitClient
 import kotlinx.coroutines.launch
+import iss.nus.edu.sg.webviews.binitrightmobileapp.network.RetrofitClient
+
 
 class NewsFragment : Fragment(R.layout.fragment_news) {
 
@@ -43,7 +44,7 @@ class NewsFragment : Fragment(R.layout.fragment_news) {
         viewLifecycleOwner.lifecycleScope.launch {
             try {
                 // RetrofitClient already has the AuthInterceptor attached
-                val response = RetrofitClient.apiService().getAllNews()
+                val response = RetrofitClient.instance.getAllNews()
 
                 if (response.isSuccessful) {
                     response.body()?.let { list ->

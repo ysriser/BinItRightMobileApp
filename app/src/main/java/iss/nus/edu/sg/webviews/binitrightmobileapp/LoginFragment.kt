@@ -1,16 +1,19 @@
 package iss.nus.edu.sg.webviews.binitrightmobileapp
 
+import android.content.ContentValues.TAG
 import android.content.Context
 import android.os.Bundle
+import android.util.Log
 import androidx.fragment.app.Fragment
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
 import android.widget.Toast
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import iss.nus.edu.sg.webviews.binitrightmobileapp.model.LoginRequest
+import iss.nus.edu.sg.webviews.binitrightmobileapp.model.LoginResponse
 import iss.nus.edu.sg.webviews.binitrightmobileapp.databinding.FragmentLoginBinding
+import iss.nus.edu.sg.webviews.binitrightmobileapp.network.RetrofitClient
+import iss.nus.edu.sg.webviews.binitrightmobileapp.utils.JwtUtils
 import kotlinx.coroutines.launch
 
 
@@ -70,13 +73,26 @@ class LoginFragment : Fragment(R.layout.fragment_login) {
                     Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show()
 
                     if (success) {
+                        val prefs = requireContext()
+                            .getSharedPreferences("APP_PREFS", Context.MODE_PRIVATE)
+                            .edit()
+
                         body?.token?.let { token ->
-                            requireContext()
-                                .getSharedPreferences("APP_PREFS", Context.MODE_PRIVATE)
-                                .edit()
-                                .putString("TOKEN", token)
-                                .apply()
+                            prefs.putString("TOKEN", token)
                         }
+
+                        body?.token?.let { token ->
+
+                            prefs.putString("TOKEN", token)
+
+                            val userId = JwtUtils.getUserIdFromToken(token)
+                            userId?.let {
+                                prefs.putLong("USER_ID", it)
+                                Log.d(TAG, "####Current user ID: $it")
+                            }
+                        }
+
+                        prefs.apply()
                         findNavController().navigate(R.id.action_loginFragment_to_homeFragment)
                     }
                 } else {
