@@ -53,6 +53,7 @@ class NearByBinFragment : Fragment(R.layout.fragment_near_by_bin), OnMapReadyCal
         _binding = FragmentNearByBinBinding.bind(view)
         locationClient = LocationServices.getFusedLocationProviderClient(requireActivity())
 
+
         retrieveBinType()
         setupMap()
         setupRecyclerView()
@@ -169,7 +170,7 @@ class NearByBinFragment : Fragment(R.layout.fragment_near_by_bin), OnMapReadyCal
 
                 Log.d(TAG, "Got user location: lat=$lat, lng=$lng")
                 hasFetchedBins = true
-                fetchNearbyBins(lat, lng)  // Using your default coordinates
+                fetchNearbyBins(1.29, 103.78)  // Using your default coordinates
             }
             .addOnFailureListener { e ->
                 Log.e(TAG, "Failed to get location: ${e.message}", e)
@@ -203,13 +204,13 @@ class NearByBinFragment : Fragment(R.layout.fragment_near_by_bin), OnMapReadyCal
                         connection.readTimeout = 10000
 
                         val responseCode = connection.responseCode
-                        Log.d(TAG, "Response code: $responseCode")
+                        Log.d(TAG, "##Response code: $responseCode")
 
                         val stream = if (responseCode in 200..299) {
                             Log.d(TAG, "###Stream incoming")
                             connection.inputStream
                         } else {
-                            Log.e(TAG, "HTTP Error: $responseCode")
+                            Log.e(TAG, "##HTTP Error: $responseCode")
                             connection.errorStream
                         }
 
