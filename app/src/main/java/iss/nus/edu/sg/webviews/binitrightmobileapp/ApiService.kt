@@ -6,7 +6,7 @@ import iss.nus.edu.sg.webviews.binitrightmobileapp.model.LoginResponse
 import iss.nus.edu.sg.webviews.binitrightmobileapp.model.LoginRequest
 import iss.nus.edu.sg.webviews.binitrightmobileapp.model.RecycleHistoryModel
 import okhttp3.MultipartBody
-
+import okhttp3.RequestBody
 
 import retrofit2.Response
 import retrofit2.http.Body
