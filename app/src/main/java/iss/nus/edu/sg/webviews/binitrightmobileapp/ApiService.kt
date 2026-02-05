@@ -11,7 +11,9 @@ import iss.nus.edu.sg.webviews.binitrightmobileapp.model.NewsItem
 import iss.nus.edu.sg.webviews.binitrightmobileapp.model.RecycleHistoryModel
 import iss.nus.edu.sg.webviews.binitrightmobileapp.model.UserAccessory
 import iss.nus.edu.sg.webviews.binitrightmobileapp.model.UserProfile
+import iss.nus.edu.sg.webviews.binitrightmobileapp.model.UserResponse
 import okhttp3.MultipartBody
+import okhttp3.RequestBody
 
 import retrofit2.Response
 import retrofit2.http.Body
@@ -54,9 +56,6 @@ interface ApiService {
     @GET("api/news")
     suspend fun getAllNews(): Response<List<NewsItem>>
 
-    @GET("api/news/{id}")
-    suspend fun getNewsById(@Path("id") id: Long): Response<NewsItem>
-
     @POST("api/issues")
     suspend fun createIssue(@Body request: IssueCreateRequest): Response<IssueResponse>
 
@@ -85,4 +84,3 @@ interface ApiService {
 
 
 }
-

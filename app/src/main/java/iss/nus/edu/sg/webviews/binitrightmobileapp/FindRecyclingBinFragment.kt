@@ -192,7 +192,7 @@ class FindRecyclingBinFragment : Fragment(R.layout.fragment_find_recycling_bin),
                     val obj = jsonArray.getJSONObject(i)
 
                     val bin = DropOffLocation(
-                        id = obj.optLong("id", -1),
+                        id = obj.optString("id", ""),
                         name = obj.optString("name", "Unknown Bin"),
                         address = obj.optString("address", ""),
                         description = obj.optString("description", ""),
