@@ -20,7 +20,7 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
 import iss.nus.edu.sg.todo.samplebin.FindBinsAdapter
 import iss.nus.edu.sg.webviews.binitrightmobileapp.databinding.FragmentFindRecyclingBinBinding
-import iss.nus.edu.sg.webviews.binitrightmobileapp.Model.DropOffLocation
+import iss.nus.edu.sg.webviews.binitrightmobileapp.model.DropOffLocation
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
