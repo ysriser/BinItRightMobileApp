@@ -1,5 +1,7 @@
 package iss.nus.edu.sg.webviews.binitrightmobileapp
 
+import iss.nus.edu.sg.webviews.binitrightmobileapp.model.RedeemResponse
+import iss.nus.edu.sg.webviews.binitrightmobileapp.model.Accessory
 import iss.nus.edu.sg.webviews.binitrightmobileapp.model.IssueCreateRequest
 import iss.nus.edu.sg.webviews.binitrightmobileapp.model.IssueResponse
 import iss.nus.edu.sg.webviews.binitrightmobileapp.model.LoginResponse
@@ -10,7 +12,6 @@ import iss.nus.edu.sg.webviews.binitrightmobileapp.model.RecycleHistoryModel
 import iss.nus.edu.sg.webviews.binitrightmobileapp.model.UserAccessory
 import iss.nus.edu.sg.webviews.binitrightmobileapp.model.UserProfile
 import okhttp3.MultipartBody
-import okhttp3.RequestBody
 
 import retrofit2.Response
 import retrofit2.http.Body
@@ -70,4 +71,13 @@ interface ApiService {
 
     @GET("api/summary/profile")
     suspend fun getProfileSummary(): Response<UserProfile>
+
+    @GET("/api/reward-shop/items")
+    suspend fun getRewardShopItems(): Response<List<Accessory>>
+
+    @POST("/api/reward-shop/redeem/{accessoriesId}")
+    suspend fun redeemRewardShopItem(
+        @Path("accessoriesId") accessoriesId: Long
+    ): Response<RedeemResponse>
 }
+
