@@ -473,7 +473,7 @@ class CheckInFragment : Fragment() {
         lifecycleScope.launch {
             try {
                 // Step 1: Request pre-signed upload URL from backend
-                val presignResponse = RetrofitClient.instance.getPresignedUpload(
+                val presignResponse = RetrofitClient.apiService().getPresignedUpload(
                     PresignUploadRequest(userId = userId.toLong())
                 )
 
@@ -560,7 +560,7 @@ class CheckInFragment : Fragment() {
         Log.d(ContentValues.TAG, "####User ID submitted: $userId")
 
 
-        val response = RetrofitClient.instance.submitRecycleCheckIn(checkInData)
+        val response = RetrofitClient.apiService().submitRecycleCheckIn(checkInData)
 
         if (response.isSuccessful) {
             updateSubmitButtonState(false)

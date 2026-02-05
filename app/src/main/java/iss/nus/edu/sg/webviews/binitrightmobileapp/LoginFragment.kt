@@ -61,7 +61,7 @@ class LoginFragment : Fragment(R.layout.fragment_login) {
 
         viewLifecycleOwner.lifecycleScope.launch {
             try {
-                val api = RetrofitClient.instance
+                val api = RetrofitClient.apiService()
                 android.util.Log.d("LOGIN_DATA", "Sending: $username and $password")
                 val response = api.login(LoginRequest(username, password))
 

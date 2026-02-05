@@ -34,11 +34,6 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
             findNavController().navigate(R.id.action_home_to_scanHome)
         }
 
-        // Logout listener MUST be inside onViewCreated
-        binding.btnLogout.setOnClickListener {
-            handleLogout()
-        }
-
         setupReportIssueButton()
     }
 

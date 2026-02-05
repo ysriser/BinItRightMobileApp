@@ -61,7 +61,7 @@ class EventsFragment : Fragment() {
         viewLifecycleOwner.lifecycleScope.launch {
             try {
                 // RetrofitClient already has the AuthInterceptor attached
-                val response = RetrofitClient.instance.getUpcomingEvents()
+                val response = RetrofitClient.apiService().getUpcomingEvents()
 
                 if (response.isSuccessful) {
                     response.body()?.let { list ->

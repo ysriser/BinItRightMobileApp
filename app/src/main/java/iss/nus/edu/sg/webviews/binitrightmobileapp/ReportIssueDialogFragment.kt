@@ -108,7 +108,7 @@ class ReportIssueDialogFragment : DialogFragment() {
 
                 android.util.Log.d("ISSUE_DEBUG", "Submitting issue: $request")
 
-                val api = RetrofitClient.instance
+                val api = RetrofitClient.apiService()
                 val response = api.createIssue(request)
 
                 android.util.Log.d(TAG, "Response code: ${response.code()}")

@@ -44,7 +44,7 @@ class NewsFragment : Fragment(R.layout.fragment_news) {
         viewLifecycleOwner.lifecycleScope.launch {
             try {
                 // RetrofitClient already has the AuthInterceptor attached
-                val response = RetrofitClient.instance.getAllNews()
+                val response = RetrofitClient.apiService().getAllNews()
 
                 if (response.isSuccessful) {
                     response.body()?.let { list ->

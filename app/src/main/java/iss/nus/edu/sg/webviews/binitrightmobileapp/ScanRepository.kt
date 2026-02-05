@@ -3,7 +3,7 @@ package iss.nus.edu.sg.webviews.binitrightmobileapp
 import android.content.Context
 import android.util.Log
 import com.google.gson.GsonBuilder
-import iss.nus.edu.sg.webviews.binitrightmobileapp.Model.AuthInterceptor
+import iss.nus.edu.sg.webviews.binitrightmobileapp.model.AuthInterceptor
 import iss.nus.edu.sg.webviews.binitrightmobileapp.network.RetrofitClient
 import kotlinx.coroutines.delay
 import java.io.File
@@ -80,7 +80,7 @@ class RealScanRepository : ScanRepository {
         return try {
             val requestFile = imageFile.asRequestBody("image/*".toMediaTypeOrNull())
             val body = MultipartBody.Part.createFormData("image", imageFile.name, requestFile)
-            val response = RetrofitClient.instance.scanImage(body)
+            val response = RetrofitClient.apiService().scanImage(body)
             if (response.isSuccessful && response.body() != null) {
                 Result.success(response.body()!!)
             } else {
@@ -96,7 +96,7 @@ class RealScanRepository : ScanRepository {
 
     override suspend fun sendFeedback(feedback: FeedbackRequest): Result<Boolean> {
          return try {
-            val response = RetrofitClient.instance.sendFeedback(feedback)
+            val response = RetrofitClient.apiService().sendFeedback(feedback)
             if (response.isSuccessful && response.body() != null) {
                 Result.success(response.body()!!)
             } else {

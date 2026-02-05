@@ -32,8 +32,8 @@ object RetrofitClient {
 
         api = Retrofit.Builder()
             .baseUrl(BuildConfig.BASE_URL)
-            .client(client)
-            .addConverterFactory(GsonConverterFactory.create())
+            .client(okHttpClient)
+            .addConverterFactory(GsonConverterFactory.create(gson))
             .build()
             .create(ApiService::class.java)
     }
