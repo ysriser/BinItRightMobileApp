@@ -1,17 +1,54 @@
 package iss.nus.edu.sg.webviews.binitrightmobileapp
 
+import android.app.Application
+import android.content.Context
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import iss.nus.edu.sg.webviews.binitrightmobileapp.model.Achievement
+import iss.nus.edu.sg.webviews.binitrightmobileapp.network.RetrofitClient
+import kotlinx.coroutines.launch
 
-class AchievementViewModel : ViewModel() {
+class AchievementViewModel(application: Application) : AndroidViewModel(application) {
 
     private val _achievementList = MutableLiveData<List<Achievement>>()
     val achievementList: LiveData<List<Achievement>> = _achievementList
 
+    private val _isLoading = MutableLiveData<Boolean>()
+    val isLoading: LiveData<Boolean> = _isLoading
+
+    private val userId: Long by lazy {
+        val prefs = getApplication<Application>().getSharedPreferences("APP_PREFS", Context.MODE_PRIVATE)
+        prefs.getLong("USER_ID", -1L)
+    }
+
     init {
-        loadMockData()
+        fetchAchievements()
+    }
+
+    fun fetchAchievements() {
+        if (userId == -1L) {
+            loadMockData()
+            return
+        }
+
+        viewModelScope.launch {
+            _isLoading.value = true
+            try {
+                val response = RetrofitClient.instance.getAchievementsWithStatus(userId)
+                if (response.isSuccessful && response.body() != null) {
+                    _achievementList.value = response.body()
+                } else {
+                    loadMockData()
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+                loadMockData()
+            } finally {
+                _isLoading.value = false
+            }
+        }
     }
 
     private fun loadMockData() {
@@ -23,7 +60,7 @@ class AchievementViewModel : ViewModel() {
                 criteria = "Recycle 1 item",
                 badgeIconUrl = "https://img.icons8.com/color/96/seed.png",
                 isUnlocked = true,
-                dateAchieved = "2026-01-15"
+                dateAchieved = null
             ),
             Achievement(
                 id = 2,
@@ -32,24 +69,6 @@ class AchievementViewModel : ViewModel() {
                 criteria = "Recycle 50 Plastic items",
                 badgeIconUrl = "https://img.icons8.com/color/96/plastic.png",
                 isUnlocked = true,
-                dateAchieved = "2026-02-01"
-            ),
-            Achievement(
-                id = 3,
-                name = "E-Waste Expert",
-                description = "Safely disposed of electronic components.",
-                criteria = "Recycle 10 E-Waste items",
-                badgeIconUrl = "https://img.icons8.com/color/96/electronics.png",
-                isUnlocked = false,
-                dateAchieved = null
-            ),
-            Achievement(
-                id = 4,
-                name = "The 100 Club",
-                description = "A true eco-warrior legend.",
-                criteria = "Earn 100 points in total",
-                badgeIconUrl = "https://img.icons8.com/color/96/trophy.png",
-                isUnlocked = false,
                 dateAchieved = null
             )
         )

@@ -3,6 +3,7 @@ package iss.nus.edu.sg.webviews.binitrightmobileapp
 import iss.nus.edu.sg.webviews.binitrightmobileapp.model.LoginResponse
 import iss.nus.edu.sg.webviews.binitrightmobileapp.model.LoginRequest
 import iss.nus.edu.sg.webviews.binitrightmobileapp.model.User
+import iss.nus.edu.sg.webviews.binitrightmobileapp.model.Achievement
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
 import retrofit2.Response
@@ -13,6 +14,7 @@ import retrofit2.http.Multipart
 import retrofit2.http.POST
 import retrofit2.http.Part
 import retrofit2.http.Path
+import retrofit2.http.Query
 
 interface ApiService {
 
@@ -45,4 +47,15 @@ interface ApiService {
 
     @GET("api/news/{id}")
     suspend fun getNewsById(@Path("id") id: Long): Response<NewsItem>
+    
+    @GET("api/achievements/user/{userId}")
+    suspend fun getAchievementsWithStatus(
+        @Path("userId") userId: Long
+    ): Response<List<Achievement>>
+
+    @POST("api/achievements/unlock")
+    suspend fun unlockAchievement(
+        @Query("userId") userId: Long,
+        @Query("achievementId") achievementId: Long
+    ): Response<Unit>
 }

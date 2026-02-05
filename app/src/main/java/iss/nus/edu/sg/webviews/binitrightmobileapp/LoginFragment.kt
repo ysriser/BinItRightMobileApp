@@ -70,13 +70,14 @@ class LoginFragment : Fragment(R.layout.fragment_login) {
                     Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show()
 
                     if (success) {
-                        body?.token?.let { token ->
-                            requireContext()
-                                .getSharedPreferences("APP_PREFS", Context.MODE_PRIVATE)
-                                .edit()
-                                .putString("TOKEN", token)
-                                .apply()
-                        }
+                        requireContext()
+                            .getSharedPreferences("APP_PREFS", Context.MODE_PRIVATE)
+                            .edit()
+                            .putString("TOKEN", body?.token)
+                            .putString("USERNAME", body?.username)
+                            .putLong("USER_ID", body?.userId ?: -1)
+                            .apply()
+
                         findNavController().navigate(R.id.action_loginFragment_to_homeFragment)
                     }
                 } else {

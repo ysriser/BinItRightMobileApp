@@ -139,22 +139,6 @@
                     android:textColor="#78909C"/>
 
                 <TextView
-                    android:id="@+id/lblDateAchieved"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="16dp"
-                    android:text="📅 Date Achieved"
-                    android:textColor="#37474F"
-                    android:textStyle="bold"/>
-                <TextView
-                    android:id="@+id/tvDateAchieved"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="4dp"
-                    android:text="2026-02-04"
-                    android:textColor="#78909C"/>
-
-                <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="16dp"

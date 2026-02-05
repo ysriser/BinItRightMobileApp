@@ -1,6 +1,7 @@
 package iss.nus.edu.sg.webviews.binitrightmobileapp
 
 import android.Manifest
+import android.content.Context
 import android.content.pm.PackageManager
 import android.media.MediaMetadataRetriever
 import android.os.Bundle
@@ -30,7 +31,10 @@ import java.io.File
 
 class CheckInFragment : Fragment() {
 
-    private val userId = 1
+    private val userId: Long by lazy {
+        val prefs = requireContext().getSharedPreferences("APP_PREFS", Context.MODE_PRIVATE)
+        prefs.getLong("USER_ID", -1L)
+    }
     private val radius = 100000.0 // meters
 
     private var binId: Long = -1
@@ -189,6 +193,10 @@ class CheckInFragment : Fragment() {
                 currentCount = it
                 updateCounterDisplay()
             }
+    }
+
+    private fun updateCounterDisplay() {
+        binding.tvItemCount.text = currentCount.toString()
     }
 
     private fun setupChipListeners() {
@@ -406,7 +414,7 @@ class CheckInFragment : Fragment() {
         val wasteType = binding.etItemName.text.toString()
 
         val checkInData = CheckInData(
-            userId = userId,
+            userId = userId.toInt(),
             recordedAt = System.currentTimeMillis(),
             duration = durationSeconds,
             binId = binId.toInt(),
@@ -443,10 +451,14 @@ class CheckInFragment : Fragment() {
                 if (response.isSuccessful) {
                     val resBody = response.body()
                     if (resBody != null) {
-                        val message = resBody.responseCode + "\n" + resBody.responseDesc
+                        val message = resBody.responseCode + ""
+" + resBody.responseDesc"
                         showStatus(message, isError = false)
 
                         if (resBody.responseCode == "0000") {
+
+                            checkAndUnlockAchievements()
+                            
                             delay(1200) // allow user to read success message
                             findNavController().popBackStack()
                         } else {
@@ -467,46 +479,40 @@ class CheckInFragment : Fragment() {
 
             } catch (e: Exception) {
                 Log.e(TAG, "Upload error", e)
-                showStatus(
-                    "Network error. Please try again.",
-                    isError = true
-                )
+                showStatus("An error occurred: ${e.message}", isError = true)
                 updateSubmitButtonState(true)
             }
         }
     }
 
-    private fun showStatus(message: String, isError: Boolean = false) {
-        binding.tvStatusMessage.apply {
-            text = message
-            setTextColor(
-                ContextCompat.getColor(
-                    requireContext(),
-                    if (isError) android.R.color.holo_red_dark
-                    else android.R.color.holo_green_dark
-                )
-            )
-            visibility = View.VISIBLE
+    private fun checkAndUnlockAchievements() {
+        // 1: First Submission
+        // 7: Recycling Master (10 submissions)
+        
+        lifecycleScope.launch {
+            try {
+                RetrofitClient.instance.unlockAchievement(userId, 1L)
+                // RetrofitClient.instance.unlockAchievement(userId, 7L)
+            } catch (e: Exception) {
+                Log.e(TAG, "Achievement unlock failed", e)
+            }
         }
     }
 
-    private fun getVideoDurationSeconds(videoFile: File): Int {
-        val retriever = MediaMetadataRetriever()
+    private fun getVideoDurationSeconds(file: File): Int {
         return try {
-            retriever.setDataSource(videoFile.absolutePath)
-
-            val durationMs =
-                retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)
-                    ?.toLongOrNull() ?: 0L
-
-            (durationMs / 1000).toInt()
-        } finally {
+            val retriever = MediaMetadataRetriever()
+            retriever.setDataSource(file.absolutePath)
+            val time = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)
             retriever.release()
+            (time?.toLong() ?: 0L).toInt() / 1000
+        } catch (e: Exception) {
+            0
         }
     }
 
-    fun updateCounterDisplay() {
-        binding.tvItemCount.text = currentCount.toString()
+    private fun showStatus(message: String, isError: Boolean) {
+        Toast.makeText(requireContext(), message, Toast.LENGTH_LONG).show()
     }
 
     override fun onDestroyView() {
