@@ -6,7 +6,7 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import iss.nus.edu.sg.webviews.binitrightmobileapp.databinding.ItemFindRecyclingBinBinding
-import iss.nus.edu.sg.webviews.binitrightmobileapp.Model.DropOffLocation
+import iss.nus.edu.sg.webviews.binitrightmobileapp.model.DropOffLocation
 
 class FindBinsAdapter(
     private val bins: List<DropOffLocation>
