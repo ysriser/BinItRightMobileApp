@@ -41,15 +41,14 @@ class ImageClassifier(private val context: Context) {
         }
     }
 
-    fun classify(bitmap: Bitmap): String {
-        if (ortSession == null) return "Error: Model not initialized"
+    fun classify(bitmap: Bitmap): Tier1Result {
+        if (ortSession == null) return Tier1Result("error", 0f, emptyList(), true)
 
         try {
             // 1. Preprocess
             val floatBuffer = preprocess(bitmap)
 
             // 2. Create Input Tensor
-            // Shape: [1, 3, 224, 224]
             val inputName = ortSession?.inputNames?.iterator()?.next() ?: "input"
             val shape = longArrayOf(1, 3, 224, 224)
             val inputTensor = OnnxTensor.createTensor(ortEnvironment, floatBuffer, shape)
@@ -58,25 +57,65 @@ class ImageClassifier(private val context: Context) {
             val results = ortSession?.run(mapOf(inputName to inputTensor))
             
             // 4. Postprocess
-            // output shape is typically [1, num_classes]
-            // We assume the first output is the one we want
             val outputTensor = results?.get(0)?.value as Array<FloatArray>
             val logits = outputTensor[0]
             
-            val predictedIndex = getMaxIndex(logits)
+            inputTensor.close()
+
+            // Calculate Softmax
+            val probabilities = softmax(logits)
             
-            inputTensor.close() // Close tensor to free memory
-            
-            // Ensure index is within bounds
-            if (predictedIndex >= 0 && predictedIndex < labels.size) {
-                 return labels[predictedIndex]
+            // Get Top 3
+            val top3Indices = getTopKIndices(probabilities, 3)
+            val top3 = top3Indices.map { index ->
+                mapOf(
+                    "label" to labels[index],
+                    "p" to probabilities[index]
+                )
             }
-            return "other_uncertain"
+            
+            val top1Index = top3Indices[0]
+            val top1Label = labels[top1Index]
+            val top1Confidence = probabilities[top1Index]
+
+            // Escalation Logic (Simple heuristic)
+            // Escalate if:
+            // 1. Label is "other_uncertain"
+            // 2. Confidence is low (< 0.6)
+            // 3. Margin between top1 and top2 is small (< 0.1)
+            val margin = if (probabilities.size > 1) {
+                probabilities[top3Indices[0]] - probabilities[top3Indices[1]]
+            } else {
+                1.0f
+            }
+
+            val escalate = top1Label == "other_uncertain" || top1Confidence < 0.60f || margin < 0.1f
+
+            return Tier1Result(
+                category = top1Label,
+                confidence = top1Confidence,
+                top3 = top3,
+                escalate = escalate
+            )
 
         } catch (e: Exception) {
             Log.e("ImageClassifier", "Error during classification", e)
-            return "Error: ${e.message}"
+             return Tier1Result("error", 0f, emptyList(), true)
         }
+    }
+
+    private fun softmax(logits: FloatArray): FloatArray {
+        val maxLogit = logits.maxOrNull() ?: 0f
+        val exp = logits.map { kotlin.math.exp(it - maxLogit) }
+        val sumExp = exp.sum()
+        return exp.map { (it / sumExp) }.toFloatArray()
+    }
+
+    private fun getTopKIndices(array: FloatArray, k: Int): List<Int> {
+        return array.withIndex()
+            .sortedByDescending { it.value }
+            .take(k)
+            .map { it.index }
     }
 
     private fun preprocess(bitmap: Bitmap): FloatBuffer {

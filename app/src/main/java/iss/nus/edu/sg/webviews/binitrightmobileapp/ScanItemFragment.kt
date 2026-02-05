@@ -76,6 +76,10 @@ class ScanItemFragment : Fragment() {
         binding.btnClose.setOnClickListener {
             findNavController().popBackStack(R.id.nav_home, false)
         }
+        
+        binding.switchDebug.setOnCheckedChangeListener { _, isChecked ->
+            viewModel.toggleDebugMode(isChecked)
+        }
 
         setupObservers()
     }
@@ -120,6 +124,10 @@ class ScanItemFragment : Fragment() {
     }
 
     private fun setupObservers() {
+        viewModel.scanningStatus.observe(viewLifecycleOwner) { status ->
+             binding.tvScanProgress.text = status
+        }
+
         viewModel.scanResult.observe(viewLifecycleOwner) { result ->
             if (result == null) return@observe
 
