@@ -1,6 +1,6 @@
 package iss.nus.edu.sg.webviews.binitrightmobileapp.model
 
-data class RecycleHistoryModel(
+data class RecycleHistoryModel (
     val categoryName: String,
     val categoryIcon: String,
     val date: String,

@@ -14,10 +14,10 @@ class RecycleHistoryViewModel : ViewModel() {
     private val _history = MutableLiveData<List<RecycleHistoryModel>>()
     val history: LiveData<List<RecycleHistoryModel>> = _history
 
-    fun loadHistory(userId: Long = 1L) {
+    fun loadHistory() {
         viewModelScope.launch {
             try {
-                _history.value = repo.getHistory(userId)
+                _history.value = repo.getHistory()
             } catch (e: Exception) {
                 e.printStackTrace()
             }
