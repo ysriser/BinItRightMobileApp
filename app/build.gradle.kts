@@ -9,12 +9,12 @@ plugins {
 android {
     buildFeatures {
         viewBinding = true
+        buildConfig = true
     }
 
     namespace = "iss.nus.edu.sg.webviews.binitrightmobileapp"
-    compileSdk {
-        version = release(36)
-    }
+    compileSdk = 36
+  
 
     defaultConfig {
         applicationId = "iss.nus.edu.sg.webviews.binitrightmobileapp"
@@ -27,15 +27,52 @@ android {
     }
 
     buildTypes {
-        release {
+        getByName("debug") {
+            // Pulls LOCALHOST_IP from Gradle properties, else defaults to empty
+            val ip = project.findProperty("LOCALHOST_IP") as String? ?: ""
+            buildConfigField("String", "BASE_URL", "\"http://$ip\"")
+        }
+        getByName("release") {
             isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            // Pulls PROD_IP from Gradle properties, else defaults to empty
+            val ip = project.findProperty("PROD_IP") as String? ?: ""
+            buildConfigField("String", "BASE_URL", "\"http://$ip\"")
+        }
+    }
+    
+    flavorDimensions += "environment"
+    productFlavors {
+        create("local") {
+            dimension = "environment"
+            // Looks for LOCALHOST_IP property, defaults to empty string if missing
+            val ip = project.findProperty("LOCALHOST_IP") as String? ?: ""
+            buildConfigField("String", "BASE_URL", "\"http://$ip\"")
+            
+            applicationIdSuffix = ".local" 
+            versionNameSuffix = "-local"
+        }
+        create("staging") {
+            dimension = "environment"
+            // Looks for TEST_IP property, defaults to empty string if missing
+            val ip = project.findProperty("STAGING_IP") as String? ?: ""
+            buildConfigField("String", "BASE_URL", "\"http://$ip\"")
+            
+            applicationIdSuffix = ".staging"
+            versionNameSuffix = "-staging"
+        }
+        create("production") {
+            dimension = "environment"
+            // Looks for PROD_IP property, defaults to empty string if missing
+            val ip = project.findProperty("PROD_IP") as String? ?: ""
+            buildConfigField("String", "BASE_URL", "\"http://$ip\"")
         }
     }
     compileOptions {
+        isCoreLibraryDesugaringEnabled = true
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
@@ -45,6 +82,7 @@ android {
 }
 
 dependencies {
+    implementation(libs.androidx.ink.geometry)
     val cameraxVersion = "1.3.1"
     val nav_version = "2.8.5"
     val retrofitVersion = "2.11.0"
@@ -78,6 +116,8 @@ dependencies {
 
     // Material Design
     implementation(libs.material)
+    
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.4")
 
 
     // Navigation

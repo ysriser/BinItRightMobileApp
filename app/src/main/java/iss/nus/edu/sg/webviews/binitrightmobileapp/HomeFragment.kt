@@ -19,6 +19,7 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         super.onViewCreated(view, savedInstanceState)
         _binding = FragmentHomeBinding.bind(view)
 
+        // Existing Navigation listeners
         binding.btnScan.setOnClickListener {
             findNavController().navigate(R.id.action_home_to_scanItem)
         }
@@ -35,6 +36,7 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
             findNavController().navigate(R.id.action_home_to_scanHome)
         }
 
+        setupReportIssueButton()
         // Updated ID to match XML: cardAchievements
         binding.cardAchievements.setOnClickListener {
             findNavController().navigate(R.id.achievementsFragment)
@@ -56,11 +58,17 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         }
     }
 
+    private fun setupReportIssueButton() {
+        val reportIssueCard = view?.findViewById<View>(R.id.cardReportIssue)
+        reportIssueCard?.setOnClickListener {
+            ReportIssueDialogFragment().show(childFragmentManager, "ReportIssue")
+        }
     private fun handleLogout() {
         val prefs = requireContext().getSharedPreferences("APP_PREFS", Context.MODE_PRIVATE)
         prefs.edit().remove("TOKEN").apply()
         findNavController().navigate(R.id.action_nav_home_to_loginFragment)
     }
+
 
     override fun onDestroyView() {
         super.onDestroyView()

@@ -20,6 +20,7 @@ gson = "2.10.1"
 coroutinesTest = "1.8.1"
 archCoreTesting = "2.2.0"
 robolectric = "4.11.1"
+inkGeometry = "1.0.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -47,6 +48,7 @@ coil = { group = "io.coil-kt", name = "coil", version.ref = "coil" }
 coroutines-test = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-test", version.ref = "coroutinesTest" }
 androidx-arch-core-testing = { group = "androidx.arch.core", name = "core-testing", version.ref = "archCoreTesting" }
 robolectric = { group = "org.robolectric", name = "robolectric", version.ref = "robolectric" }
+androidx-ink-geometry = { group = "androidx.ink", name = "ink-geometry", version.ref = "inkGeometry" }
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }

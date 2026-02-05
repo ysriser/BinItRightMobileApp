@@ -1,35 +1,54 @@
 package iss.nus.edu.sg.webviews.binitrightmobileapp
 
+import android.content.Context
 import android.util.Log
+import com.google.gson.GsonBuilder
+import iss.nus.edu.sg.webviews.binitrightmobileapp.model.AuthInterceptor
+import iss.nus.edu.sg.webviews.binitrightmobileapp.network.RetrofitClient
 import kotlinx.coroutines.delay
 import java.io.File
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.asRequestBody
 import okhttp3.OkHttpClient
+import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.util.concurrent.TimeUnit
-
-object RetrofitClient {
-    // 10.0.2.2 is localhost for Android Emulator
-    private const val BASE_URL = "http://10.0.2.2:8080/"
-
-    private val okHttpClient = OkHttpClient.Builder()
-        .connectTimeout(30, TimeUnit.SECONDS)
-        .readTimeout(60, TimeUnit.SECONDS)
-        .writeTimeout(60, TimeUnit.SECONDS)
-        .build()
-
-    val instance: ApiService by lazy {
-        Retrofit.Builder()
-            .baseUrl(BASE_URL)
-            .client(okHttpClient)
-            .addConverterFactory(GsonConverterFactory.create())
-            .build()
-            .create(ApiService::class.java)
-    }
-}
+//
+//object RetrofitClient {
+//    private const val BASE_URL = "http://10.0.2.2:8080/"
+//
+//    private lateinit var apiServiceInstance: ApiService
+//
+//    fun init(context: Context) {
+//        val logging = HttpLoggingInterceptor().apply {
+//            level = HttpLoggingInterceptor.Level.BODY
+//        }
+//
+//        val gson = GsonBuilder()
+//            .setLenient()
+//            .create()
+//
+//        val okHttpClient = OkHttpClient.Builder()
+//            .addInterceptor(logging)
+//            .addInterceptor(AuthInterceptor(context.applicationContext))
+//            .connectTimeout(30, TimeUnit.SECONDS)
+//            .readTimeout(60, TimeUnit.SECONDS)
+//            .writeTimeout(60, TimeUnit.SECONDS)
+//            .build()
+//
+//        apiServiceInstance = Retrofit.Builder()
+//            .baseUrl(BASE_URL)
+//            .client(okHttpClient)
+//            .addConverterFactory(GsonConverterFactory.create(gson))
+//            .build()
+//            .create(ApiService::class.java)
+//    }
+//
+//    val instance: ApiService
+//        get() = apiServiceInstance
+//}
 
 interface ScanRepository {
     suspend fun scanImage(imageFile: File): Result<ScanResult>
@@ -61,7 +80,7 @@ class RealScanRepository : ScanRepository {
         return try {
             val requestFile = imageFile.asRequestBody("image/*".toMediaTypeOrNull())
             val body = MultipartBody.Part.createFormData("image", imageFile.name, requestFile)
-            val response = RetrofitClient.instance.scanImage(body)
+            val response = RetrofitClient.apiService().scanImage(body)
             if (response.isSuccessful && response.body() != null) {
                 Result.success(response.body()!!)
             } else {
@@ -77,7 +96,7 @@ class RealScanRepository : ScanRepository {
 
     override suspend fun sendFeedback(feedback: FeedbackRequest): Result<Boolean> {
          return try {
-            val response = RetrofitClient.instance.sendFeedback(feedback)
+            val response = RetrofitClient.apiService().sendFeedback(feedback)
             if (response.isSuccessful && response.body() != null) {
                 Result.success(response.body()!!)
             } else {
