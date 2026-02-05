@@ -2,8 +2,8 @@ package iss.nus.edu.sg.webviews.binitrightmobileapp.network
 
 import android.content.Context
 import iss.nus.edu.sg.webviews.binitrightmobileapp.ApiService
-import iss.nus.edu.sg.webviews.binitrightmobileapp.model.AuthInterceptor
 import iss.nus.edu.sg.webviews.binitrightmobileapp.BuildConfig
+import iss.nus.edu.sg.webviews.binitrightmobileapp.model.AuthInterceptor
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit

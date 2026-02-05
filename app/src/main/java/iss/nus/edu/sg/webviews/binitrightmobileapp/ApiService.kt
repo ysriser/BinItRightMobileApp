@@ -53,4 +53,16 @@ interface ApiService {
 
     @GET("api/events?filter=upcoming")
     suspend fun getUpcomingEvents(): Response<List<EventItem>>
+
+    @GET("api/user-accessories/my-items")
+    suspend fun getMyAccessories(): Response<List<UserAccessory>>
+
+    @POST("api/user-accessories/equip/{id}")
+    suspend fun equipAccessory(@Path("id") accessoryId: Long): Response<Void>
+
+    @POST("api/user-accessories/unequip/{id}")
+    suspend fun unequipAccessory(@Path("id") id: Long): Response<Void>
+
+    @GET("api/summary/profile")
+    suspend fun getProfileSummary(): Response<UserProfile>
 }
