@@ -55,11 +55,11 @@ android {
             dimension = "env"
             val domain = getSecret("STAGING_URL") // e.g., staging.yourdomain.me
             // Now we include the ports explicitly with https
-            buildConfigField("String", "BASE_URL", "\"https://$domain:8080/\"") }
+            buildConfigField("String", "BASE_URL", "\"https://$domain/\"") }
         create("production") {
             dimension = "env"
             val domain = getSecret("PROD_URL") // e.g., api.yourdomain.me
-            buildConfigField("String", "BASE_URL", "\"https://$domain:8080/\"")
+            buildConfigField("String", "BASE_URL", "\"https://$domain/\"")
         }
     }
 
