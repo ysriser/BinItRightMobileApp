@@ -54,6 +54,9 @@ interface ApiService {
     @GET("api/news")
     suspend fun getAllNews(): Response<List<NewsItem>>
 
+    @GET("api/news/{id}")
+    suspend fun getNewsById(@Path("id") id: Long): Response<NewsItem>
+
     @POST("api/issues")
     suspend fun createIssue(@Body request: IssueCreateRequest): Response<IssueResponse>
 
@@ -79,5 +82,7 @@ interface ApiService {
     suspend fun redeemRewardShopItem(
         @Path("accessoriesId") accessoriesId: Long
     ): Response<RedeemResponse>
+
+
 }
 
