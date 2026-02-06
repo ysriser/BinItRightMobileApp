@@ -27,8 +27,8 @@ class AchievementViewModel(application: Application) : AndroidViewModel(applicat
     private val fixedAchievements = listOf(
         Achievement(1L, "First Submission", "Submit your first recycling item.", "Recycle 1 item", "https://img.icons8.com/color/96/seed.png"),
         Achievement(2L, "Recycling Master", "Complete 10 recycling submissions.", "Recycle 10 times", "https://img.icons8.com/color/96/recycle-sign.png"),
-        Achievement(3L, "Plastic Slayer", "Help keep 50 plastic bottles out of the ocean.", "Recycle 50 Plastic items", "https://img.icons8.com/color/96/plastic.png"),
-        Achievement(4L, "The 100 Club", "A true eco-warrior legend.", "Earn 100 points in total", "https://img.icons8.com/color/96/trophy.png"),
+        Achievement(3L, "Eco Enthusiast", "Maintain your dedication with 50 submissions.", "Recycle 50 times", "https://img.icons8.com/color/96/medal.png"),
+        Achievement(4L, "Green Legend", "A monumental 100 recycling submissions!", "Recycle 100 times", "https://img.icons8.com/color/96/trophy.png"),
         Achievement(5L, "The Collector", "Save up your rewards points.", "Hold 5000 points", "https://img.icons8.com/color/96/hamster.png"),
         Achievement(6L, "Rising Star", "Advance your environmental impact rank.", "Reach Rank 2", "https://img.icons8.com/color/96/upgrade.png"),
         Achievement(7L, "Early Bird", "Complete a check-in early in the morning.", "Check-in 06:00-08:00", "https://img.icons8.com/color/96/sun.png"),
