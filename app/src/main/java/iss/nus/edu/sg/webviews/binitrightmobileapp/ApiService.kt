@@ -52,11 +52,19 @@ data class FinalResult(
     val instructions: List<String> = emptyList()
 )
 
+data class Tier2Error(
+    val http_status: String? = null,
+    val code: String? = null,
+    val message: String? = null
+)
+
 data class Meta(
     val schema_version: String? = null,
     val force_cloud: Boolean? = null,
     val tier2_provider_attempted: String? = null,
-    val tier2_provider_used: String? = null
+    val tier2_provider_used: String? = null,
+    val tier2_provider: String? = null,
+    val tier2_error: Tier2Error? = null
 )
 
 interface ApiService {

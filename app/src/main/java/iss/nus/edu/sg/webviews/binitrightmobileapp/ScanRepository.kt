@@ -80,7 +80,7 @@ class RealScanRepository : ScanRepository {
                 val scanResponse = response.body()!!
                 val final = scanResponse.data?.final
                 if (scanResponse.status == "success" && final != null) {
-                    Result.success(mapFinalToScanResult(final))
+                    Result.success(mapFinalToScanResult(final, scanResponse.data?.meta))
                 } else {
                     Result.failure(Exception("Server returned no final data"))
                 }
@@ -111,7 +111,7 @@ class RealScanRepository : ScanRepository {
         }
     }
 
-    private fun mapFinalToScanResult(final: FinalResult): ScanResult {
+    private fun mapFinalToScanResult(final: FinalResult, meta: Meta?): ScanResult {
         val fallbackInstructions = if (final.recyclable) {
             listOf("Clean and dry the item.", "Place it in the blue recycling bin.")
         } else {
@@ -130,7 +130,8 @@ class RealScanRepository : ScanRepository {
             confidence = final.confidence,
             instruction = final.instruction,
             instructions = finalInstructions,
-            binType = determineBinType(final.category, final.recyclable)
+            binType = determineBinType(final.category, final.recyclable),
+            debugMessage = buildTier2DebugMessage(meta)
         )
     }
 
@@ -249,7 +250,7 @@ class HybridScanRepository(
                 val scanResponse = response.body()!!
                 val final = scanResponse.data?.final
                 if (scanResponse.status == "success" && final != null) {
-                    Result.success(mapFinalToScanResult(final))
+                    Result.success(mapFinalToScanResult(final, scanResponse.data?.meta))
                 } else {
                     Result.failure(Exception("Server returned error: ${scanResponse.message}"))
                 }
@@ -266,7 +267,7 @@ class HybridScanRepository(
         }
     }
 
-    private fun mapFinalToScanResult(final: FinalResult): ScanResult {
+    private fun mapFinalToScanResult(final: FinalResult, meta: Meta?): ScanResult {
         val fallbackInstructions = if (final.recyclable) {
             listOf("Clean and dry the item.", "Place it in the blue recycling bin.")
         } else {
@@ -285,7 +286,8 @@ class HybridScanRepository(
             confidence = final.confidence,
             instruction = final.instruction,
             instructions = finalInstructions,
-            binType = determineBinType(final.category, final.recyclable)
+            binType = determineBinType(final.category, final.recyclable),
+            debugMessage = buildTier2DebugMessage(meta)
         )
     }
 
@@ -331,6 +333,25 @@ class HybridScanRepository(
     }
 }
 
+private fun buildTier2DebugMessage(meta: Meta?): String? {
+    if (meta == null) {
+        return null
+    }
+
+    val attempted = meta.tier2_provider_attempted?.trim()?.lowercase()
+    val used = meta.tier2_provider_used?.trim()?.lowercase()
+
+    if (attempted == "openai" && used == "openai") {
+        return "Tier2 provider: openai"
+    }
+
+    if (attempted == "openai" && used == "mock") {
+        val errorCode = meta.tier2_error?.code?.takeIf { it.isNotBlank() } ?: "unknown"
+        return "Tier2 fallback to mock ($errorCode)"
+    }
+
+    return null
+}
 private fun createImageUploadPart(imageFile: File): MultipartBody.Part {
     val uploadBytes = compressImageForUpload(imageFile)
     val requestBody = uploadBytes.toRequestBody("image/jpeg".toMediaTypeOrNull())

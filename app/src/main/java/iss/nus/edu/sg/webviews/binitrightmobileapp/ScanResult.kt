@@ -12,7 +12,8 @@ data class ScanResult(
     val disposalMethod: String? = null, // Optional
     val categoryId: String? = null, // Recommended
     val binType: String? = null, // Optional
-    val rationaleTags: List<String> = emptyList() // Optional
+    val rationaleTags: List<String> = emptyList(), // Optional
+    val debugMessage: String? = null // Debug info (provider/fallback), optional
 ) : java.io.Serializable
 
 data class Tier1Result(

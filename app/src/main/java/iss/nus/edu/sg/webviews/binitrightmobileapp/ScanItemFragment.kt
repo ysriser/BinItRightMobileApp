@@ -137,6 +137,10 @@ class ScanItemFragment : Fragment() {
             result.onSuccess { scanResult ->
                 stopScanUI()
 
+                if (binding.switchDebug.isChecked && !scanResult.debugMessage.isNullOrBlank()) {
+                    Toast.makeText(requireContext(), scanResult.debugMessage, Toast.LENGTH_SHORT).show()
+                }
+
                 val bundle = Bundle().apply {
                     putString("imageUri", lastCapturedUri?.toString())
                     putSerializable("scanResult", scanResult)
