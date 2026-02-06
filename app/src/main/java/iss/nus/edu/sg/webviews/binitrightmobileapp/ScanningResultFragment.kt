@@ -164,11 +164,10 @@ class ScanningResultFragment : Fragment() {
 
     private fun mappingCategory(fullCategory: String): String {
         val trimmed = fullCategory.trim()
-        val separatorIndex = trimmed.indexOf(" - ")
-        return if (separatorIndex > 0) {
-            trimmed.substring(0, separatorIndex).trim()
-        } else {
-            trimmed
+        return when {
+            trimmed.startsWith("E-waste - ", ignoreCase = true) -> "E-waste"
+            trimmed.startsWith("Textile - ", ignoreCase = true) -> "Textile"
+            else -> trimmed
         }
     }
 
