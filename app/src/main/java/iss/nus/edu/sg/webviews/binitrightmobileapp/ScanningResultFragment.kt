@@ -85,45 +85,72 @@ class ScanningResultFragment : Fragment() {
 
     private fun displayResult(scanResult: ScanResult) {
         currentScanResult = scanResult
-        binding.tvCategory.text = scanResult.category
+        binding.tvCategory.text = mappingCategory(scanResult.category)
 
         if (scanResult.recyclable) {
-            binding.tvBadge.text = "♻ Recyclable"
-            binding.tvBadge.setTextColor(androidx.core.content.ContextCompat.getColor(requireContext(), android.R.color.holo_green_dark))
-            binding.tvBadge.setBackgroundResource(R.drawable.bg_badge_recyclable) // Ensure this exists or use tint
+            binding.tvBadge.text = "Recyclable"
+            binding.tvBadge.setTextColor(
+                androidx.core.content.ContextCompat.getColor(requireContext(), android.R.color.holo_green_dark)
+            )
+            binding.tvBadge.setBackgroundResource(R.drawable.bg_badge_recyclable)
 
             binding.ivSuccess.setImageResource(R.drawable.ic_check_circle_24)
-            binding.ivSuccess.setColorFilter(androidx.core.content.ContextCompat.getColor(requireContext(), android.R.color.holo_green_dark))
+            binding.ivSuccess.setColorFilter(
+                androidx.core.content.ContextCompat.getColor(requireContext(), android.R.color.holo_green_dark)
+            )
 
-            binding.tvDescriptionWait.text = "Great news! This item can be recycled. ✨"
-            binding.tvDescriptionWait.setTextColor(androidx.core.content.ContextCompat.getColor(requireContext(), android.R.color.holo_green_dark))
+            binding.tvDescriptionWait.text = "Great news! This item can be recycled."
+            binding.tvDescriptionWait.setTextColor(
+                androidx.core.content.ContextCompat.getColor(requireContext(), android.R.color.holo_green_dark)
+            )
         } else {
             binding.tvBadge.text = "Not Recyclable"
-            // Use a darker gray or red for non-recyclable
-            binding.tvBadge.setTextColor(androidx.core.content.ContextCompat.getColor(requireContext(), android.R.color.holo_red_dark))
-            // binding.tvBadge.setBackgroundResource(...) // Optional
+            binding.tvBadge.setTextColor(
+                androidx.core.content.ContextCompat.getColor(requireContext(), android.R.color.holo_red_dark)
+            )
 
-            // Change icon to 'Cancel' or similar
-            binding.ivSuccess.setImageResource(R.drawable.ic_close_24) // Reusing existing close icon if available, or just check-circle with red tint
-            binding.ivSuccess.setColorFilter(androidx.core.content.ContextCompat.getColor(requireContext(), android.R.color.holo_red_dark))
+            binding.ivSuccess.setImageResource(R.drawable.ic_close_24)
+            binding.ivSuccess.setColorFilter(
+                androidx.core.content.ContextCompat.getColor(requireContext(), android.R.color.holo_red_dark)
+            )
 
             binding.tvDescriptionWait.text = "This item cannot be recycled."
-            binding.tvDescriptionWait.setTextColor(androidx.core.content.ContextCompat.getColor(requireContext(), android.R.color.holo_red_dark))
+            binding.tvDescriptionWait.setTextColor(
+                androidx.core.content.ContextCompat.getColor(requireContext(), android.R.color.holo_red_dark)
+            )
         }
         binding.tvBadge.isVisible = true
 
-        // Overwrite description if instruction exists
         if (!scanResult.instruction.isNullOrBlank()) {
             binding.tvDescriptionWait.text = scanResult.instruction
         } else if (scanResult.instructions.isNotEmpty()) {
-            binding.tvDescriptionWait.text = scanResult.instructions.mapIndexed { index, tip -> "${index + 1}. $tip" }.joinToString("\n")
+            binding.tvDescriptionWait.text = scanResult.instructions.first()
+        }
+
+        val steps = if (scanResult.instructions.isNotEmpty()) {
+            scanResult.instructions
+        } else if (!scanResult.instruction.isNullOrBlank()) {
+            listOf(scanResult.instruction)
+        } else {
+            emptyList()
+        }
+
+        binding.tvInstructionTitle.text = "How to dispose:"
+        binding.tvInstructionSteps.text = if (steps.isNotEmpty()) {
+            steps.mapIndexed { index, tip -> "${index + 1}. $tip" }.joinToString("\n")
+        } else {
+            "1. Follow local disposal guidance"
         }
     }
 
-
-
     private fun mappingCategory(fullCategory: String): String {
-        return fullCategory
+        val trimmed = fullCategory.trim()
+        val separatorIndex = trimmed.indexOf(" - ")
+        return if (separatorIndex > 0) {
+            trimmed.substring(0, separatorIndex).trim()
+        } else {
+            trimmed
+        }
     }
 
     private fun setupListeners() {
@@ -133,7 +160,7 @@ class ScanningResultFragment : Fragment() {
 
         binding.btnNotNow.setOnClickListener {
             // Navigate home or exit
-            // 修复这里：将 R.id.homeFragment 改为 R.id.nav_home
+            // Navigate to Home
             findNavController().popBackStack(R.id.nav_home, false)
 
         }
