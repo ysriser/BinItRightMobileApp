@@ -12,32 +12,31 @@ class FindBinsAdapter(
     private val bins: List<DropOffLocation>
 ) : RecyclerView.Adapter<FindBinsAdapter.ViewHolder>() {
 
-    inner class ViewHolder(private val binding: ItemFindRecyclingBinBinding) : RecyclerView.ViewHolder(binding.root) {
+    inner class ViewHolder(private val binding: ItemFindRecyclingBinBinding) :
+        RecyclerView.ViewHolder(binding.root) {
 
         fun bind(bin: DropOffLocation) {
             binding.txtName.text = bin.name
             binding.txtAddress.text = bin.address
-            binding.txtDistance.text =
-                "%.1f km away".format(bin.distanceMeters / 1000)
-
+            binding.txtDistance.text = "%.1f km away".format(bin.distanceMeters / 1000)
             binding.txtHours.text = "Open 24/7"
 
-            binding.txtType.text = when (bin.binType) {
+            binding.txtType.text = when (bin.binType.uppercase()) {
                 "BLUEBIN" -> "General"
                 "EWASTE" -> "E-Waste"
-                "LAMP" -> "Lighting"
+                "LIGHTING", "LAMP" -> "Lighting"
                 else -> bin.binType
             }
 
             binding.btnDirections.setOnClickListener {
-                val uri =
-                    Uri.parse("google.navigation:q=${bin.latitude},${bin.longitude}")
+                val uri = Uri.parse("google.navigation:q=${bin.latitude},${bin.longitude}")
                 val intent = Intent(Intent.ACTION_VIEW, uri).apply {
                     setPackage("com.google.android.apps.maps")
                 }
                 it.context.startActivity(intent)
             }
-        }}
+        }
+    }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val binding = ItemFindRecyclingBinBinding.inflate(
@@ -53,5 +52,4 @@ class FindBinsAdapter(
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         holder.bind(bins[position])
     }
-
 }

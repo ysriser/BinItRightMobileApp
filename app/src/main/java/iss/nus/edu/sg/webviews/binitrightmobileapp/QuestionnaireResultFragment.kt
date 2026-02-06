@@ -17,7 +17,8 @@ class QuestionnaireResultFragment : Fragment() {
     private val binding get() = _binding!!
 
     override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
+        inflater: LayoutInflater,
+        container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentQuestionnaireResultBinding.inflate(inflater, container, false)
@@ -43,21 +44,22 @@ class QuestionnaireResultFragment : Fragment() {
         binding.tvExplanation.text = outcome.explanation
         binding.tvExplanationDetail.text = "Certainty: ${outcome.certainty}"
 
-        // Tips
-        // Instructions / Tips Logic
         if (!outcome.instruction.isNullOrBlank()) {
             binding.tvTips.text = outcome.instruction
         } else {
-            // Fallback to Instructions (formerly Tips) - Numbered list
-            val tipsText = outcome.tips.mapIndexed { index, tip -> "${index + 1}. $tip" }.joinToString("\n")
+            val tipsText = outcome.tips
+                .mapIndexed { index, tip -> "${index + 1}. $tip" }
+                .joinToString("\n")
             binding.tvTips.text = tipsText
         }
 
-        // Logic based on Certainty and Label
-        val certainty = try { Certainty.valueOf(outcome.certainty) } catch (e: Exception) { Certainty.LOW }
+        val certainty = try {
+            Certainty.valueOf(outcome.certainty)
+        } catch (e: Exception) {
+            Certainty.LOW
+        }
         val isRecyclable = outcome.disposalLabel.equals("Recyclable", ignoreCase = true)
 
-        // Reset Icon/Badge to base logic (Type-based) first
         if (isRecyclable) {
             binding.tvBadge.setBackgroundResource(R.drawable.bg_badge_recyclable)
             binding.tvBadge.background.setTint(Color.parseColor("#E8F5E9"))
@@ -65,7 +67,6 @@ class QuestionnaireResultFragment : Fragment() {
             binding.ivSuccess.setImageResource(R.drawable.ic_check_circle_24)
             binding.ivSuccess.setColorFilter(Color.parseColor("#00C853"))
         } else {
-            // Default for non-recyclable or unsure
             binding.tvBadge.setBackgroundResource(R.drawable.bg_badge_recyclable)
             binding.tvBadge.background.setTint(Color.parseColor("#EEEEEE"))
             binding.tvBadge.setTextColor(Color.parseColor("#616161"))
@@ -73,37 +74,25 @@ class QuestionnaireResultFragment : Fragment() {
             binding.ivSuccess.setColorFilter(Color.parseColor("#757575"))
 
             if (!outcome.disposalLabel.equals("Not sure", ignoreCase = true)) {
-                // Explicit non-recyclable/special
                 binding.ivSuccess.setImageResource(R.drawable.ic_error_24)
                 binding.ivSuccess.setColorFilter(Color.parseColor("#D32F2F"))
             }
         }
 
-        // Apply Color Coding to INFO CARD AREA (Background & Texts)
         when (certainty) {
             Certainty.HIGH -> {
-                if (isRecyclable) {
-                    // High Certainty Recyclable -> Green Card
-                    binding.cardInfo.setCardBackgroundColor(Color.parseColor("#E8F5E9")) // Light Green
-                    binding.tvExplanation.setTextColor(Color.parseColor("#1B5E20"))
-                    binding.tvExplanationDetail.setTextColor(Color.parseColor("#2E7D32"))
-                } else {
-                    // High Certainty Non-Recyclable -> Same Green Card
-                    binding.cardInfo.setCardBackgroundColor(Color.parseColor("#E8F5E9")) // Light Green
-                    binding.tvExplanation.setTextColor(Color.parseColor("#1B5E20"))
-                    binding.tvExplanationDetail.setTextColor(Color.parseColor("#2E7D32"))
-                }
+                binding.cardInfo.setCardBackgroundColor(Color.parseColor("#E8F5E9"))
+                binding.tvExplanation.setTextColor(Color.parseColor("#1B5E20"))
+                binding.tvExplanationDetail.setTextColor(Color.parseColor("#2E7D32"))
             }
             Certainty.MEDIUM -> {
-                // Medium -> Blue Card
-                binding.cardInfo.setCardBackgroundColor(Color.parseColor("#E3F2FD")) // Light Blue
+                binding.cardInfo.setCardBackgroundColor(Color.parseColor("#E3F2FD"))
                 binding.tvExplanation.setTextColor(Color.parseColor("#0D47A1"))
                 binding.tvExplanationDetail.setTextColor(Color.parseColor("#1565C0"))
             }
             Certainty.LOW -> {
-                // Low -> Yellow Card
-                binding.cardInfo.setCardBackgroundColor(Color.parseColor("#FFFDE7")) // Light Yellow
-                binding.tvExplanation.setTextColor(Color.parseColor("#F57F17")) // Darker Yellow text for contrast
+                binding.cardInfo.setCardBackgroundColor(Color.parseColor("#FFFDE7"))
+                binding.tvExplanation.setTextColor(Color.parseColor("#F57F17"))
                 binding.tvExplanationDetail.setTextColor(Color.parseColor("#F9A825"))
             }
         }
@@ -112,9 +101,11 @@ class QuestionnaireResultFragment : Fragment() {
     private fun setupListeners() {
         binding.btnScanAgain.text = "Do another questionnaire?"
         binding.btnScanAgain.setOnClickListener {
-             // Pop back to start of questionnaire
-             findNavController().popBackStack(R.id.scanHomeFragment, false)
-             findNavController().navigate(R.id.action_scanHomeFragment_to_questionnaireFragment)
+            val navController = findNavController()
+            val popped = navController.popBackStack(R.id.questionnaireFragment, false)
+            if (!popped) {
+                navController.navigate(R.id.questionnaireFragment)
+            }
         }
         binding.btnScanAgain.setIconResource(R.drawable.ic_refresh_24)
 
@@ -123,17 +114,15 @@ class QuestionnaireResultFragment : Fragment() {
         }
 
         binding.btnRecycle.setOnClickListener {
-            // Get the scanned item type
-            val itemType = binding.tvCategory.text.toString() // e.g., "Paper"
+            val itemType = binding.tvCategory.text.toString()
 
             val binType = when (itemType.uppercase()) {
                 "RECYCLABLE ITEM" -> "BlueBin"
                 "ELECTRONIC", "ELECTRONICS", "E-WASTE", "EWASTE" -> "EWaste"
                 "LIGHTING", "LAMP", "LIGHT", "BULB" -> "Lamp"
-                else -> {
-                    ""
-                }
+                else -> ""
             }
+
             val bundle = Bundle().apply {
                 putString("selectedBinType", binType)
                 putString("wasteCategory", itemType)
