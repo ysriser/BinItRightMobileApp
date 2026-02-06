@@ -1,6 +1,7 @@
 package iss.nus.edu.sg.webviews.binitrightmobileapp
 
 import android.Manifest
+import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.util.Log
@@ -20,6 +21,7 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
 import iss.nus.edu.sg.webviews.binitrightmobileapp.databinding.FragmentNearByBinBinding
 import iss.nus.edu.sg.webviews.binitrightmobileapp.model.DropOffLocation
+import iss.nus.edu.sg.webviews.binitrightmobileapp.network.RetrofitClient
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -170,115 +172,26 @@ class NearByBinFragment : Fragment(R.layout.fragment_near_by_bin), OnMapReadyCal
     private fun fetchNearbyBins(lat: Double, lng: Double) {
         viewLifecycleOwner.lifecycleScope.launch {
             try {
-                val json = withContext(Dispatchers.IO) {
-                    val normalizedBinType = normalizeBinType(selectedBinType)
-                    val urlString = buildBinsSearchUrl(lat, lng, normalizedBinType)
+                Log.d(TAG, "Fetching bins via Retrofit for lat=$lat, lng=$lng")
 
-                    Log.d(TAG, "Fetching bins URL: $urlString")
+                // Retrofit does the background work and parsing for you
+                val bins = RetrofitClient.apiService().getNearbyBins(lat, lng, 3000)
 
-                    val connection = java.net.URL(urlString).openConnection() as java.net.HttpURLConnection
-                    try {
-                        connection.requestMethod = "GET"
-                        connection.connectTimeout = 10000
-                        connection.readTimeout = 10000
+                Log.d(TAG, "Successfully fetched ${bins.size} bins")
 
-                        val responseCode = connection.responseCode
-                        val stream = if (responseCode in 200..299) {
-                            connection.inputStream
-                        } else {
-                            Log.e(TAG, "Bins API error: $responseCode")
-                            connection.errorStream
-                        }
+                // Update UI on the main thread
+                nearbyBins.clear()
+                nearbyBins.addAll(bins)
+                adapter?.notifyDataSetChanged()
+                updateMapMarkers(bins)
 
-                        BufferedReader(InputStreamReader(stream)).use { it.readText() }
-                    } finally {
-                        connection.disconnect()
-                    }
-                }
-
-                parseBinsJson(json)
             } catch (e: Exception) {
-                Log.e(TAG, "Error fetching nearby bins: ${e.message}", e)
+                Log.e(TAG, "Retrofit Error: ${e.message}", e)
+                // Handle error (e.g., show a Toast)
             }
         }
     }
 
-    private fun buildBinsSearchUrl(lat: Double, lng: Double, normalizedBinType: String?): String {
-        val base = BuildConfig.BASE_URL.trimEnd('/')
-        val query = if (normalizedBinType.isNullOrBlank()) {
-            "lat=$lat&lng=$lng&radius=3000"
-        } else {
-            "lat=$lat&lng=$lng&radius=3000&binType=$normalizedBinType"
-        }
-        return "$base/api/bins/search?$query"
-    }
-
-    private fun normalizeBinType(raw: String?): String? {
-        if (raw.isNullOrBlank()) {
-            return null
-        }
-
-        val value = raw.trim().uppercase()
-        return when {
-            value.contains("BLUE") -> "BLUEBIN"
-            value.contains("LIGHT") || value.contains("LAMP") -> "Lighting"
-            value.contains("EWASTE") || value.contains("E-WASTE") -> "EWaste"
-            else -> null
-        }
-    }
-
-    private fun parseBinsJson(json: String) {
-        try {
-            val trimmed = json.trim()
-            if (!trimmed.startsWith("[") && !trimmed.startsWith("{")) {
-                Log.e(TAG, "Bins response is not valid JSON")
-                return
-            }
-
-            val jsonArray = org.json.JSONArray(json)
-            val parsedBins = mutableListOf<DropOffLocation>()
-
-            for (i in 0 until jsonArray.length()) {
-                try {
-                    val obj = jsonArray.getJSONObject(i)
-
-                    val statusString = obj.optString("status", "ACTIVE")
-                    val statusBoolean = statusString.equals("ACTIVE", ignoreCase = true)
-                    val distance = if (obj.isNull("distanceMeters")) 0.0 else obj.optDouble("distanceMeters", 0.0)
-
-                    val bin = DropOffLocation(
-                        id = obj.optString("id", ""),
-                        name = obj.optString("name", "Unknown Bin"),
-                        address = obj.optString("address", ""),
-                        description = obj.optString("description", ""),
-                        postalCode = obj.optString("postalCode", ""),
-                        binType = obj.optString("binType", "Unknown"),
-                        status = statusBoolean,
-                        latitude = obj.optDouble("latitude", 0.0),
-                        longitude = obj.optDouble("longitude", 0.0),
-                        distanceMeters = distance
-                    )
-
-                    parsedBins.add(bin)
-                } catch (e: Exception) {
-                    Log.e(TAG, "Failed to parse bin at index $i: ${e.message}", e)
-                }
-            }
-
-            if (!isAdded) {
-                return
-            }
-
-            nearbyBins.clear()
-            nearbyBins.addAll(parsedBins)
-            adapter?.notifyDataSetChanged()
-            updateMapMarkers(parsedBins)
-
-            Log.d(TAG, "Parsed bins: ${parsedBins.size}")
-        } catch (e: Exception) {
-            Log.e(TAG, "Error parsing bins JSON: ${e.message}", e)
-        }
-    }
 
     private fun updateMapMarkers(bins: List<DropOffLocation>) {
         if (!isMapReady) {
