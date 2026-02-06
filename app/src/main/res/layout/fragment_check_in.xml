@@ -255,10 +255,18 @@
                         style="@style/Widget.MaterialComponents.Chip.Choice"/>
 
                     <com.google.android.material.chip.Chip
-                        android:id="@+id/chipTextiles"
+                        android:id="@+id/chipLighting"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Textiles"
+                        android:text="Lighting"
+                        android:checkable="true"
+                        style="@style/Widget.MaterialComponents.Chip.Choice"/>
+
+                    <com.google.android.material.chip.Chip
+                        android:id="@+id/chipOthers"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Others"
                         android:checkable="true"
                         style="@style/Widget.MaterialComponents.Chip.Choice"/>
 
@@ -431,3 +439,5 @@
 
     </LinearLayout>
 </ScrollView>
+
+

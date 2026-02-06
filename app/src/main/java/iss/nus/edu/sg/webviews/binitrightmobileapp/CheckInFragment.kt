@@ -98,13 +98,13 @@ class CheckInFragment : Fragment() {
             // Initialize submit button as disabled
             updateSubmitButtonState(false)
 
-            retrieveScannedBinType()
-
             setupButtons()
 
             setupCounter()
 
             setupChipListeners()
+
+            retrieveScannedBinType()
 
             displayBinInformation()
 
@@ -122,7 +122,8 @@ class CheckInFragment : Fragment() {
             binType = bundle.getString("binType", "") ?: ""
             binLatitude = bundle.getDouble("binLatitude", 0.0)
             binLongitude = bundle.getDouble("binLongitude", 0.0)
-            selectedBinType = bundle.getString("selectedBinType", "")?:""
+            selectedBinType = bundle.getString("selectedBinType", "") ?: ""
+            wasteCategory = bundle.getString("wasteCategory") ?: bundle.getString("scannedCategory")
 
         } ?: run {
             binId = ""
@@ -199,26 +200,25 @@ class CheckInFragment : Fragment() {
     private fun setupChipListeners() {
 
         try {
-            binding.cgItemType.setOnCheckedStateChangeListener { group, checkedIds ->
+            binding.cgItemType.setOnCheckedStateChangeListener { _, checkedIds ->
                 if (checkedIds.isEmpty()) {
                     return@setOnCheckedStateChangeListener
                 }
 
                 val checkedId = checkedIds.first()
                 wasteType = when (checkedId) {
-                    R.id.chipPlastic -> "Plastic"
-                    R.id.chipPaper -> "Paper"
-                    R.id.chipGlass -> "Glass"
-                    R.id.chipMetal -> "Metal"
-                    R.id.chipEWaste -> "E-Waste"
-                    R.id.chipTextiles -> "Textile"
-                    else -> {
-                        ""
-                    }
+                    R.id.chipPlastic -> WasteCategoryMapper.TYPE_PLASTIC
+                    R.id.chipPaper -> WasteCategoryMapper.TYPE_PAPER
+                    R.id.chipGlass -> WasteCategoryMapper.TYPE_GLASS
+                    R.id.chipMetal -> WasteCategoryMapper.TYPE_METAL
+                    R.id.chipEWaste -> WasteCategoryMapper.TYPE_EWASTE
+                    R.id.chipLighting -> WasteCategoryMapper.TYPE_LIGHTING
+                    R.id.chipOthers -> WasteCategoryMapper.TYPE_OTHERS
+                    else -> ""
                 }
             }
 
-        } catch (e: Exception) {
+        } catch (_: Exception) {
         }
     }
 
@@ -396,11 +396,43 @@ class CheckInFragment : Fragment() {
     private fun retrieveScannedBinType() {
         arguments?.let { bundle ->
             selectedBinType = bundle.getString("selectedBinType")
-            if (selectedBinType != null) {
-            } else {
-            }
+            wasteCategory = bundle.getString("wasteCategory") ?: bundle.getString("scannedCategory")
         } ?: run {
             selectedBinType = null
+            wasteCategory = null
+        }
+
+        applyDefaultWasteTypeSelection()
+    }
+
+    private fun applyDefaultWasteTypeSelection() {
+        val mappedWasteType = if (!wasteCategory.isNullOrBlank()) {
+            WasteCategoryMapper.mapCategoryToWasteType(wasteCategory)
+        } else {
+            mapBinTypeToWasteType(selectedBinType)
+        }
+
+        wasteType = mappedWasteType
+
+        val chipId = when (mappedWasteType) {
+            WasteCategoryMapper.TYPE_PLASTIC -> R.id.chipPlastic
+            WasteCategoryMapper.TYPE_PAPER -> R.id.chipPaper
+            WasteCategoryMapper.TYPE_GLASS -> R.id.chipGlass
+            WasteCategoryMapper.TYPE_METAL -> R.id.chipMetal
+            WasteCategoryMapper.TYPE_EWASTE -> R.id.chipEWaste
+            WasteCategoryMapper.TYPE_LIGHTING -> R.id.chipLighting
+            else -> R.id.chipOthers
+        }
+
+        binding.cgItemType.check(chipId)
+    }
+
+    private fun mapBinTypeToWasteType(binType: String?): String {
+        return when (binType?.trim()?.uppercase()) {
+            "EWASTE", "E-WASTE" -> WasteCategoryMapper.TYPE_EWASTE
+            "LIGHTING", "LAMP" -> WasteCategoryMapper.TYPE_LIGHTING
+            "BLUEBIN" -> WasteCategoryMapper.TYPE_PLASTIC
+            else -> WasteCategoryMapper.TYPE_OTHERS
         }
     }
 
@@ -435,7 +467,7 @@ class CheckInFragment : Fragment() {
         val quantity = currentCount
         val file = recordedFile
 
-        // Quantity > 10 â†’ video mandatory
+        // Quantity > 10 â†?video mandatory
         if (quantity > 10) {
             if (file == null) {
                 showStatus("Video required for quantity > 10", isError = true)
@@ -446,7 +478,7 @@ class CheckInFragment : Fragment() {
             return
         }
 
-        // Quantity <= 10 â†’ check duration
+        // Quantity <= 10 â†?check duration
         val durationSeconds = file?.let { getVideoDurationSeconds(it) } ?: 0
 
         if (durationSeconds > 5) {
@@ -625,3 +657,6 @@ class CheckInFragment : Fragment() {
         _binding = null
     }
 }
+
+
+

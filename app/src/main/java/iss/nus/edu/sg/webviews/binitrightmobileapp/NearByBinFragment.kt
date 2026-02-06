@@ -1,7 +1,6 @@
 package iss.nus.edu.sg.webviews.binitrightmobileapp
 
 import android.Manifest
-import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.util.Log
@@ -22,11 +21,6 @@ import com.google.android.gms.maps.model.MarkerOptions
 import iss.nus.edu.sg.webviews.binitrightmobileapp.databinding.FragmentNearByBinBinding
 import iss.nus.edu.sg.webviews.binitrightmobileapp.model.DropOffLocation
 import iss.nus.edu.sg.webviews.binitrightmobileapp.network.RetrofitClient
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import java.io.BufferedReader
-import java.io.InputStreamReader
 
 class NearByBinFragment : Fragment(R.layout.fragment_near_by_bin), OnMapReadyCallback {
 
@@ -67,7 +61,6 @@ class NearByBinFragment : Fragment(R.layout.fragment_near_by_bin), OnMapReadyCal
 
     private fun retrieveScanArguments() {
         arguments?.let { bundle ->
-            // Keep both keys for backward compatibility.
             selectedBinType = bundle.getString("selectedBinType") ?: bundle.getString("binType")
             wasteCategory = bundle.getString("wasteCategory") ?: bundle.getString("scannedCategory")
         }
@@ -170,28 +163,51 @@ class NearByBinFragment : Fragment(R.layout.fragment_near_by_bin), OnMapReadyCal
     }
 
     private fun fetchNearbyBins(lat: Double, lng: Double) {
-        viewLifecycleOwner.lifecycleScope.launch {
+        viewLifecycleOwner.lifecycleScope.launchWhenStarted {
             try {
                 Log.d(TAG, "Fetching bins via Retrofit for lat=$lat, lng=$lng")
 
-                // Retrofit does the background work and parsing for you
                 val bins = RetrofitClient.apiService().getNearbyBins(lat, lng, 3000)
+                Log.d(TAG, "Fetched ${bins.size} bins before filtering")
 
-                Log.d(TAG, "Successfully fetched ${bins.size} bins")
+                val filteredBins = filterBinsForSelectedType(bins)
+                Log.d(TAG, "Showing ${filteredBins.size} bins after filtering")
 
-                // Update UI on the main thread
                 nearbyBins.clear()
-                nearbyBins.addAll(bins)
+                nearbyBins.addAll(filteredBins)
                 adapter?.notifyDataSetChanged()
-                updateMapMarkers(bins)
+                updateMapMarkers(filteredBins)
 
             } catch (e: Exception) {
                 Log.e(TAG, "Retrofit Error: ${e.message}", e)
-                // Handle error (e.g., show a Toast)
             }
         }
     }
 
+    private fun filterBinsForSelectedType(bins: List<DropOffLocation>): List<DropOffLocation> {
+        val expected = normalizeBinType(selectedBinType)
+        if (expected.isBlank()) {
+            return bins
+        }
+
+        val matched = bins.filter { normalizeBinType(it.binType) == expected }
+        return if (matched.isNotEmpty()) {
+            matched
+        } else {
+            Log.w(TAG, "No bins matched selected type '$expected'. Fallback to all bins.")
+            bins
+        }
+    }
+
+    private fun normalizeBinType(raw: String?): String {
+        val text = raw?.trim()?.uppercase() ?: return ""
+        return when {
+            text.contains("BLUE") -> "BLUEBIN"
+            text.contains("EWASTE") || text.contains("E-WASTE") -> "EWASTE"
+            text.contains("LIGHT") || text.contains("LAMP") -> "LIGHTING"
+            else -> ""
+        }
+    }
 
     private fun updateMapMarkers(bins: List<DropOffLocation>) {
         if (!isMapReady) {
@@ -250,7 +266,6 @@ class NearByBinFragment : Fragment(R.layout.fragment_near_by_bin), OnMapReadyCal
         ) {
             fetchUserLocation()
         } else {
-            // Still show bins using a fallback coordinate so feature does not dead-end.
             hasFetchedBins = true
             fetchNearbyBins(FALLBACK_LAT, FALLBACK_LNG)
         }
@@ -261,4 +276,3 @@ class NearByBinFragment : Fragment(R.layout.fragment_near_by_bin), OnMapReadyCal
         _binding = null
     }
 }
-
