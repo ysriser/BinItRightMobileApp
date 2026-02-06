@@ -1,4 +1,4 @@
-package iss.nus.edu.sg.webviews.binitrightmobileapp
+﻿package iss.nus.edu.sg.webviews.binitrightmobileapp
 
 /*
  * File purpose:
@@ -50,7 +50,7 @@ class ScanViewModelTest {
     }
 
     private class FakeRepo : ScanRepository {
-        override suspend fun scanImage(imageFile: File): Result<ScanResult> {
+        override suspend fun scanImage(imageFile: File, forceTier2: Boolean, onStatusUpdate: (String) -> Unit): Result<ScanResult> {
             return Result.success(
                 ScanResult(
                     category = "Glass",
@@ -170,3 +170,4 @@ private fun <T> LiveData<T>.getOrAwaitValueSkipNull(
     }
     return data
 }
+

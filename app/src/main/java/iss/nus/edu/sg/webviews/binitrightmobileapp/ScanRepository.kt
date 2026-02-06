@@ -1,14 +1,22 @@
 package iss.nus.edu.sg.webviews.binitrightmobileapp
 
 import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.util.Log
 import iss.nus.edu.sg.webviews.binitrightmobileapp.network.RetrofitClient
 import kotlinx.coroutines.delay
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
-import okhttp3.RequestBody.Companion.asRequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
+import java.io.ByteArrayOutputStream
 import java.io.File
+
+private const val MAX_UPLOAD_BYTES = 350 * 1024 // Aggressive cap to avoid 413 on stricter gateways
+private const val INITIAL_JPEG_QUALITY = 80
+private const val MIN_JPEG_QUALITY = 40
+private const val UPLOAD_MAX_LONG_SIDE = 960
+private const val MIN_BITMAP_SIDE = 256
 
 interface ScanRepository {
     suspend fun scanImage(
@@ -56,8 +64,7 @@ class RealScanRepository : ScanRepository {
         onStatusUpdate: (String) -> Unit
     ): Result<ScanResult> {
         return try {
-            val requestFile = imageFile.asRequestBody("image/*".toMediaTypeOrNull())
-            val imagePart = MultipartBody.Part.createFormData("image", imageFile.name, requestFile)
+            val imagePart = createImageUploadPart(imageFile)
             val forceCloudPart = if (forceTier2) {
                 "true".toRequestBody("text/plain".toMediaTypeOrNull())
             } else {
@@ -78,7 +85,11 @@ class RealScanRepository : ScanRepository {
                     Result.failure(Exception("Server returned no final data"))
                 }
             } else {
-                Result.failure(Exception("Network error: ${response.code()}"))
+                if (response.code() == 413) {
+                    Result.failure(Exception("Image too large (413). Try scanning closer to the item."))
+                } else {
+                    Result.failure(Exception("Network error: ${response.code()}"))
+                }
             }
         } catch (e: Exception) {
             Log.e("RealScanRepository", "Failed to scan, falling back to mock", e)
@@ -218,8 +229,7 @@ class HybridScanRepository(
         forceTier2: Boolean
     ): Result<ScanResult> {
         return try {
-            val requestFile = imageFile.asRequestBody("image/*".toMediaTypeOrNull())
-            val imagePart = MultipartBody.Part.createFormData("image", imageFile.name, requestFile)
+            val imagePart = createImageUploadPart(imageFile)
 
             val tier1Json = gson.toJson(tier1Result)
             val tier1Body = tier1Json.toRequestBody("application/json".toMediaTypeOrNull())
@@ -244,7 +254,11 @@ class HybridScanRepository(
                     Result.failure(Exception("Server returned error: ${scanResponse.message}"))
                 }
             } else {
-                Result.failure(Exception("Network error: ${response.code()}"))
+                if (response.code() == 413) {
+                    Result.failure(Exception("Image too large (413). Try scanning closer to the item."))
+                } else {
+                    Result.failure(Exception("Network error: ${response.code()}"))
+                }
             }
         } catch (e: Exception) {
             Log.e("HybridScanRepository", "Tier2 failed, fallback to Tier1", e)
@@ -316,3 +330,86 @@ class HybridScanRepository(
         return Result.success(true)
     }
 }
+
+private fun createImageUploadPart(imageFile: File): MultipartBody.Part {
+    val uploadBytes = compressImageForUpload(imageFile)
+    val requestBody = uploadBytes.toRequestBody("image/jpeg".toMediaTypeOrNull())
+    val uploadName = imageFile.nameWithoutExtension + "_upload.jpg"
+    return MultipartBody.Part.createFormData("image", uploadName, requestBody)
+}
+
+private fun compressImageForUpload(imageFile: File): ByteArray {
+    if (!imageFile.exists()) {
+        return ByteArray(0)
+    }
+
+    val bitmap = BitmapFactory.decodeFile(imageFile.absolutePath)
+    if (bitmap == null) {
+        return imageFile.readBytes()
+    }
+
+    val normalized = downscaleLongSide(bitmap, UPLOAD_MAX_LONG_SIDE)
+    if (normalized !== bitmap) {
+        bitmap.recycle()
+    }
+
+    val compressed = compressBitmap(normalized)
+    normalized.recycle()
+    return compressed
+}
+
+private fun downscaleLongSide(source: Bitmap, maxLongSide: Int): Bitmap {
+    val longSide = maxOf(source.width, source.height)
+    if (longSide <= maxLongSide) {
+        return source
+    }
+
+    val scale = maxLongSide.toFloat() / longSide.toFloat()
+    val newWidth = (source.width * scale).toInt().coerceAtLeast(MIN_BITMAP_SIDE)
+    val newHeight = (source.height * scale).toInt().coerceAtLeast(MIN_BITMAP_SIDE)
+    return Bitmap.createScaledBitmap(source, newWidth, newHeight, true)
+}
+
+private fun compressBitmap(source: Bitmap): ByteArray {
+    var workingBitmap = source
+    var quality = INITIAL_JPEG_QUALITY
+
+    while (true) {
+        val bytes = ByteArrayOutputStream().use { stream ->
+            workingBitmap.compress(Bitmap.CompressFormat.JPEG, quality, stream)
+            stream.toByteArray()
+        }
+
+        if (bytes.size <= MAX_UPLOAD_BYTES) {
+            if (workingBitmap !== source) {
+                workingBitmap.recycle()
+            }
+            return bytes
+        }
+
+        if (quality > MIN_JPEG_QUALITY) {
+            quality -= 8
+            continue
+        }
+
+        val newWidth = (workingBitmap.width * 0.75f).toInt().coerceAtLeast(MIN_BITMAP_SIDE)
+        val newHeight = (workingBitmap.height * 0.75f).toInt().coerceAtLeast(MIN_BITMAP_SIDE)
+
+        if (newWidth == workingBitmap.width && newHeight == workingBitmap.height) {
+            if (workingBitmap !== source) {
+                workingBitmap.recycle()
+            }
+            return bytes
+        }
+
+        val resized = Bitmap.createScaledBitmap(workingBitmap, newWidth, newHeight, true)
+        if (workingBitmap !== source) {
+            workingBitmap.recycle()
+        }
+        workingBitmap = resized
+        quality = INITIAL_JPEG_QUALITY
+    }
+}
+
+
+
