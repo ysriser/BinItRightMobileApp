@@ -81,43 +81,104 @@ class ScanningResultFragment : Fragment() {
         }
     }
 
-    private fun displayResult(scanResult: ScanResult) {
-        binding.tvCategory.text = scanResult.category
+    private var currentScanResult: ScanResult? = null
 
-        if (scanResult.recyclable) {
-            binding.tvBadge.text = "♻ Recyclable"
-            binding.tvBadge.setTextColor(androidx.core.content.ContextCompat.getColor(requireContext(), android.R.color.holo_green_dark))
-            binding.tvBadge.setBackgroundResource(R.drawable.bg_badge_recyclable) // Ensure this exists or use tint
+    private fun displayResult(scanResult: ScanResult) {
+        currentScanResult = scanResult
+        binding.tvCategory.text = mappingCategory(scanResult.category)
+
+        val isNotSure = isNotSureCategory(scanResult.category)
+
+        if (isNotSure) {
+            binding.tvBadge.text = "Not sure"
+            binding.tvBadge.setTextColor(
+                androidx.core.content.ContextCompat.getColor(requireContext(), android.R.color.holo_orange_dark)
+            )
+            binding.tvBadge.setBackgroundResource(R.drawable.bg_badge_recyclable)
+
+            binding.ivSuccess.setImageResource(R.drawable.ic_help_24)
+            binding.ivSuccess.setColorFilter(
+                androidx.core.content.ContextCompat.getColor(requireContext(), android.R.color.holo_orange_dark)
+            )
+
+            binding.tvDescriptionWait.text = "We are not fully sure about this item."
+            binding.tvDescriptionWait.setTextColor(
+                androidx.core.content.ContextCompat.getColor(requireContext(), android.R.color.holo_orange_dark)
+            )
+        } else if (scanResult.recyclable) {
+            binding.tvBadge.text = "Recyclable"
+            binding.tvBadge.setTextColor(
+                androidx.core.content.ContextCompat.getColor(requireContext(), android.R.color.holo_green_dark)
+            )
+            binding.tvBadge.setBackgroundResource(R.drawable.bg_badge_recyclable)
 
             binding.ivSuccess.setImageResource(R.drawable.ic_check_circle_24)
-            binding.ivSuccess.setColorFilter(androidx.core.content.ContextCompat.getColor(requireContext(), android.R.color.holo_green_dark))
+            binding.ivSuccess.setColorFilter(
+                androidx.core.content.ContextCompat.getColor(requireContext(), android.R.color.holo_green_dark)
+            )
 
-            binding.tvDescriptionWait.text = "Great news! This item can be recycled. ✨"
-            binding.tvDescriptionWait.setTextColor(androidx.core.content.ContextCompat.getColor(requireContext(), android.R.color.holo_green_dark))
+            binding.tvDescriptionWait.text = "Great news! This item can be recycled."
+            binding.tvDescriptionWait.setTextColor(
+                androidx.core.content.ContextCompat.getColor(requireContext(), android.R.color.holo_green_dark)
+            )
         } else {
             binding.tvBadge.text = "Not Recyclable"
-            // Use a darker gray or red for non-recyclable
-            binding.tvBadge.setTextColor(androidx.core.content.ContextCompat.getColor(requireContext(), android.R.color.holo_red_dark))
-            // binding.tvBadge.setBackgroundResource(...) // Optional
+            binding.tvBadge.setTextColor(
+                androidx.core.content.ContextCompat.getColor(requireContext(), android.R.color.holo_red_dark)
+            )
+            binding.tvBadge.setBackgroundResource(R.drawable.bg_badge_recyclable)
 
-            // Change icon to 'Cancel' or similar
-            binding.ivSuccess.setImageResource(R.drawable.ic_close_24) // Reusing existing close icon if available, or just check-circle with red tint
-            binding.ivSuccess.setColorFilter(androidx.core.content.ContextCompat.getColor(requireContext(), android.R.color.holo_red_dark))
+            binding.ivSuccess.setImageResource(R.drawable.ic_close_24)
+            binding.ivSuccess.setColorFilter(
+                androidx.core.content.ContextCompat.getColor(requireContext(), android.R.color.holo_red_dark)
+            )
 
             binding.tvDescriptionWait.text = "This item cannot be recycled."
-            binding.tvDescriptionWait.setTextColor(androidx.core.content.ContextCompat.getColor(requireContext(), android.R.color.holo_red_dark))
+            binding.tvDescriptionWait.setTextColor(
+                androidx.core.content.ContextCompat.getColor(requireContext(), android.R.color.holo_red_dark)
+            )
         }
         binding.tvBadge.isVisible = true
 
-        // Overwrite description if instruction exists
         if (!scanResult.instruction.isNullOrBlank()) {
             binding.tvDescriptionWait.text = scanResult.instruction
         } else if (scanResult.instructions.isNotEmpty()) {
-            binding.tvDescriptionWait.text = scanResult.instructions.mapIndexed { index, tip -> "${index + 1}. $tip" }.joinToString("\n")
+            binding.tvDescriptionWait.text = scanResult.instructions.first()
+        }
+
+        val steps = if (scanResult.instructions.isNotEmpty()) {
+            scanResult.instructions
+        } else if (!scanResult.instruction.isNullOrBlank()) {
+            listOf(scanResult.instruction)
+        } else {
+            emptyList()
+        }
+
+        binding.tvInstructionTitle.text = "How to dispose:"
+        binding.tvInstructionSteps.text = if (steps.isNotEmpty()) {
+            steps.mapIndexed { index, tip -> "${index + 1}. $tip" }.joinToString("\n")
+        } else {
+            "1. Follow local disposal guidance"
         }
     }
 
+    private fun mappingCategory(fullCategory: String): String {
+        val trimmed = fullCategory.trim()
+        val separatorIndex = trimmed.indexOf(" - ")
+        return if (separatorIndex > 0) {
+            trimmed.substring(0, separatorIndex).trim()
+        } else {
+            trimmed
+        }
+    }
 
+    private fun isNotSureCategory(category: String): Boolean {
+        val normalized = category.trim().lowercase()
+        return normalized.contains("not sure")
+                || normalized.contains("uncertain")
+                || normalized.contains("unknown")
+                || normalized.contains("other_uncertain")
+    }
 
     private fun setupListeners() {
         binding.btnScanAgain.setOnClickListener {
@@ -126,24 +187,17 @@ class ScanningResultFragment : Fragment() {
 
         binding.btnNotNow.setOnClickListener {
             // Navigate home or exit
-            // 修复这里：将 R.id.homeFragment 改为 R.id.nav_home
+            // Navigate to Home
             findNavController().popBackStack(R.id.nav_home, false)
 
         }
 
         binding.btnRecycle.setOnClickListener {
             // Get the scanned item type
-            val scannedCategory = binding.tvCategory.text.toString() // e.g., "Paper"
+            val scannedCategory = mappingCategory(currentScanResult?.category ?: "")
+            // Use the bin type determined by the Repository/Logic
+            val binType = currentScanResult?.binType ?: ""
 
-            // Map the scanned category to match database bin types
-            val binType = when (scannedCategory.uppercase()) {
-                "PAPER", "CARDBOARD", "NEWSPAPER" -> "BlueBin"
-                "ELECTRONIC", "ELECTRONICS", "E-WASTE", "EWASTE" -> "EWaste"
-                "LIGHTING", "LAMP", "LIGHT", "BULB" -> "Lamp"
-                else -> {
-                    ""
-                }
-            }
             val bundle = Bundle().apply {
                 putString("selectedBinType", binType)
                 putString("wasteCategory", scannedCategory)

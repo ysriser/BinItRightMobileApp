@@ -19,11 +19,27 @@ class ScanViewModel(private val repository: ScanRepository) : ViewModel() {
     private val _isLoading = MutableLiveData<Boolean>(false)
     val isLoading: LiveData<Boolean> = _isLoading
 
+    private val _isDebugMode = MutableLiveData<Boolean>(false)
+    val isDebugMode: LiveData<Boolean> = _isDebugMode
+
+    private val _scanningStatus = MutableLiveData<String>("Identifying...")
+    val scanningStatus: LiveData<String> = _scanningStatus
+
+    fun toggleDebugMode(enabled: Boolean) {
+        _isDebugMode.value = enabled
+    }
+
     fun scanImage(imageFile: File) {
         _isLoading.value = true
+        _scanningStatus.value = "Identifying..."
         _scanResult.value = null // Clear previous result
+        
+        val forceTier2 = _isDebugMode.value ?: false
+
         viewModelScope.launch {
-            _scanResult.value = repository.scanImage(imageFile)
+            _scanResult.value = repository.scanImage(imageFile, forceTier2) { status ->
+                _scanningStatus.postValue(status)
+            }
             _isLoading.value = false
         }
     }
@@ -44,12 +60,12 @@ class ScanViewModel(private val repository: ScanRepository) : ViewModel() {
 class ScanViewModelFactory(private val context: android.content.Context) : ViewModelProvider.Factory {
     // Simple Config: CHANGE THIS TO SWITCH MODES
     // Options: "FAKE", "REAL", "LOCAL"
-    private val DATA_SOURCE = "LOCAL" 
+    private val DATA_SOURCE = "REAL" 
 
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(ScanViewModel::class.java)) {
             val repo: ScanRepository = when (DATA_SOURCE) {
-                "REAL" -> RealScanRepository()
+                "REAL" -> HybridScanRepository(context)
                 "LOCAL" -> LocalModelScanRepository(context)
                 else -> FakeScanRepository()
             }

@@ -18,6 +18,7 @@ import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import iss.nus.edu.sg.webviews.binitrightmobileapp.databinding.FragmentScanItemBinding
 import java.io.File
@@ -25,7 +26,6 @@ import java.text.SimpleDateFormat
 import java.util.Locale
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
-import androidx.fragment.app.viewModels
 
 class ScanItemFragment : Fragment() {
 
@@ -34,10 +34,11 @@ class ScanItemFragment : Fragment() {
 
     private var imageCapture: ImageCapture? = null
     private lateinit var cameraExecutor: ExecutorService
-    
+
     private val viewModel: ScanViewModel by viewModels {
         ScanViewModelFactory(requireContext())
     }
+
     private var scanAnimator: android.animation.ObjectAnimator? = null
     private var lastCapturedUri: Uri? = null
 
@@ -51,7 +52,8 @@ class ScanItemFragment : Fragment() {
         }
 
     override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
+        inflater: LayoutInflater,
+        container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentScanItemBinding.inflate(inflater, container, false)
@@ -77,16 +79,19 @@ class ScanItemFragment : Fragment() {
             findNavController().popBackStack(R.id.nav_home, false)
         }
 
+        binding.switchDebug.setOnCheckedChangeListener { _, isChecked ->
+            viewModel.toggleDebugMode(isChecked)
+        }
+
         setupObservers()
     }
 
-    companion object {
-        private const val FILENAME_FORMAT = "yyyy-MM-dd-HH-mm-ss-SSS"
-        private const val TAG = "ScanItemFragment"
-    }
-
     private fun takePhoto() {
-        val imageCapture = imageCapture ?: return
+        val captureUseCase = imageCapture
+        if (captureUseCase == null) {
+            Toast.makeText(requireContext(), "Camera is not ready yet", Toast.LENGTH_SHORT).show()
+            return
+        }
 
         binding.btnTakePhoto.isEnabled = false
 
@@ -97,7 +102,7 @@ class ScanItemFragment : Fragment() {
 
         val outputOptions = ImageCapture.OutputFileOptions.Builder(photoFile).build()
 
-        imageCapture.takePicture(
+        captureUseCase.takePicture(
             outputOptions,
             ContextCompat.getMainExecutor(requireContext()),
             object : ImageCapture.OnImageSavedCallback {
@@ -120,11 +125,21 @@ class ScanItemFragment : Fragment() {
     }
 
     private fun setupObservers() {
+        viewModel.scanningStatus.observe(viewLifecycleOwner) { status ->
+            binding.tvScanProgress.text = status
+        }
+
         viewModel.scanResult.observe(viewLifecycleOwner) { result ->
-            if (result == null) return@observe
+            if (result == null) {
+                return@observe
+            }
 
             result.onSuccess { scanResult ->
                 stopScanUI()
+
+                if (binding.switchDebug.isChecked && !scanResult.debugMessage.isNullOrBlank()) {
+                    Toast.makeText(requireContext(), scanResult.debugMessage, Toast.LENGTH_SHORT).show()
+                }
 
                 val bundle = Bundle().apply {
                     putString("imageUri", lastCapturedUri?.toString())
@@ -133,7 +148,6 @@ class ScanItemFragment : Fragment() {
 
                 findNavController().navigate(R.id.action_scanItemFragment_to_scanningResultFragment, bundle)
                 viewModel.resetScanState()
-
             }.onFailure {
                 stopScanUI()
                 Toast.makeText(context, "Scan failed: ${it.message}", Toast.LENGTH_LONG).show()
@@ -173,35 +187,48 @@ class ScanItemFragment : Fragment() {
         val cameraProviderFuture = ProcessCameraProvider.getInstance(requireContext())
 
         cameraProviderFuture.addListener({
-            val cameraProvider: ProcessCameraProvider = cameraProviderFuture.get()
+            if (!isAdded || _binding == null) {
+                return@addListener
+            }
+
+            val cameraProvider = try {
+                cameraProviderFuture.get()
+            } catch (exc: Exception) {
+                Log.e(TAG, "Failed to get camera provider", exc)
+                Toast.makeText(requireContext(), "Unable to start camera", Toast.LENGTH_SHORT).show()
+                return@addListener
+            }
 
             val preview = Preview.Builder()
                 .build()
-                .also {
-                    it.setSurfaceProvider(binding.viewFinder.surfaceProvider)
+                .also { previewUseCase ->
+                    previewUseCase.setSurfaceProvider(binding.viewFinder.surfaceProvider)
                 }
 
             imageCapture = ImageCapture.Builder().build()
-
             val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
 
             try {
                 cameraProvider.unbindAll()
-
                 cameraProvider.bindToLifecycle(
-                    this, cameraSelector, preview, imageCapture
+                    viewLifecycleOwner,
+                    cameraSelector,
+                    preview,
+                    imageCapture
                 )
-
             } catch (exc: Exception) {
                 Log.e(TAG, "Use case binding failed", exc)
+                Toast.makeText(requireContext(), "Camera initialization failed", Toast.LENGTH_SHORT).show()
             }
-
         }, ContextCompat.getMainExecutor(requireContext()))
     }
 
-    private fun allPermissionsGranted() = ContextCompat.checkSelfPermission(
-        requireContext(), Manifest.permission.CAMERA
-    ) == PackageManager.PERMISSION_GRANTED
+    private fun allPermissionsGranted(): Boolean {
+        return ContextCompat.checkSelfPermission(
+            requireContext(),
+            Manifest.permission.CAMERA
+        ) == PackageManager.PERMISSION_GRANTED
+    }
 
     private fun getOutputDirectory(): File {
         val mediaDir = requireContext().externalCacheDir?.let {
@@ -214,5 +241,10 @@ class ScanItemFragment : Fragment() {
         super.onDestroyView()
         _binding = null
         cameraExecutor.shutdown()
+    }
+
+    companion object {
+        private const val FILENAME_FORMAT = "yyyy-MM-dd-HH-mm-ss-SSS"
+        private const val TAG = "ScanItemFragment"
     }
 }
