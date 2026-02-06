@@ -136,12 +136,13 @@ class RealScanRepository : ScanRepository {
     }
 
     private fun determineBinType(category: String, recyclable: Boolean): String {
+        val normalized = category.trim()
         return when {
-            category.startsWith("E-waste - ", ignoreCase = true) -> "EWaste"
-            category.startsWith("Textile - ", ignoreCase = true) -> "Textile"
-            category.startsWith("Lighting - ", ignoreCase = true) -> "Lamp"
-            recyclable -> "BlueBin"
-            else -> "General"
+            normalized.startsWith("E-waste - ", ignoreCase = true) -> "EWASTE"
+            normalized.startsWith("Lighting - ", ignoreCase = true) -> "LIGHTING"
+            recyclable -> "BLUEBIN"
+            // No dedicated textile/general bin endpoint in current backend dataset.
+            else -> ""
         }
     }
 }
@@ -319,12 +320,13 @@ class HybridScanRepository(
     }
 
     private fun determineBinType(category: String, recyclable: Boolean): String {
+        val normalized = category.trim()
         return when {
-            category.startsWith("E-waste - ", ignoreCase = true) -> "EWaste"
-            category.startsWith("Textile - ", ignoreCase = true) -> "Textile"
-            category.startsWith("Lighting - ", ignoreCase = true) -> "Lamp"
-            recyclable -> "BlueBin"
-            else -> "General"
+            normalized.startsWith("E-waste - ", ignoreCase = true) -> "EWASTE"
+            normalized.startsWith("Lighting - ", ignoreCase = true) -> "LIGHTING"
+            recyclable -> "BLUEBIN"
+            // No dedicated textile/general bin endpoint in current backend dataset.
+            else -> ""
         }
     }
 
@@ -431,6 +433,8 @@ private fun compressBitmap(source: Bitmap): ByteArray {
         quality = INITIAL_JPEG_QUALITY
     }
 }
+
+
 
 
 

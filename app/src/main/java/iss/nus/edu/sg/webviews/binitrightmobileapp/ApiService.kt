@@ -1,6 +1,7 @@
 package iss.nus.edu.sg.webviews.binitrightmobileapp
 
 import iss.nus.edu.sg.webviews.binitrightmobileapp.model.Accessory
+import iss.nus.edu.sg.webviews.binitrightmobileapp.model.DropOffLocation
 import iss.nus.edu.sg.webviews.binitrightmobileapp.model.EventItem
 import iss.nus.edu.sg.webviews.binitrightmobileapp.model.IssueCreateRequest
 import iss.nus.edu.sg.webviews.binitrightmobileapp.model.IssueResponse
@@ -21,6 +22,7 @@ import retrofit2.http.Multipart
 import retrofit2.http.POST
 import retrofit2.http.Part
 import retrofit2.http.Path
+import retrofit2.http.Query
 
 // Data classes matching scan server contract v0.1
 
@@ -133,4 +135,11 @@ interface ApiService {
 
     @GET("api/user/profile/{id}")
     suspend fun getUserProfile(@Path("id") userId: Long): Response<UserResponse>
+
+    @GET("api/bins/search")
+    suspend fun getNearbyBins(
+        @Query("lat") lat: Double,
+        @Query("lng") lng: Double,
+        @Query("radius") radius: Int
+    ): List<DropOffLocation>
 }
