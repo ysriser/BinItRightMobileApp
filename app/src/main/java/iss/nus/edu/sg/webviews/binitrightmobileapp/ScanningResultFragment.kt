@@ -87,7 +87,25 @@ class ScanningResultFragment : Fragment() {
         currentScanResult = scanResult
         binding.tvCategory.text = mappingCategory(scanResult.category)
 
-        if (scanResult.recyclable) {
+        val isNotSure = isNotSureCategory(scanResult.category)
+
+        if (isNotSure) {
+            binding.tvBadge.text = "Not sure"
+            binding.tvBadge.setTextColor(
+                androidx.core.content.ContextCompat.getColor(requireContext(), android.R.color.holo_orange_dark)
+            )
+            binding.tvBadge.setBackgroundResource(R.drawable.bg_badge_recyclable)
+
+            binding.ivSuccess.setImageResource(R.drawable.ic_help_24)
+            binding.ivSuccess.setColorFilter(
+                androidx.core.content.ContextCompat.getColor(requireContext(), android.R.color.holo_orange_dark)
+            )
+
+            binding.tvDescriptionWait.text = "We are not fully sure about this item."
+            binding.tvDescriptionWait.setTextColor(
+                androidx.core.content.ContextCompat.getColor(requireContext(), android.R.color.holo_orange_dark)
+            )
+        } else if (scanResult.recyclable) {
             binding.tvBadge.text = "Recyclable"
             binding.tvBadge.setTextColor(
                 androidx.core.content.ContextCompat.getColor(requireContext(), android.R.color.holo_green_dark)
@@ -108,6 +126,7 @@ class ScanningResultFragment : Fragment() {
             binding.tvBadge.setTextColor(
                 androidx.core.content.ContextCompat.getColor(requireContext(), android.R.color.holo_red_dark)
             )
+            binding.tvBadge.setBackgroundResource(R.drawable.bg_badge_recyclable)
 
             binding.ivSuccess.setImageResource(R.drawable.ic_close_24)
             binding.ivSuccess.setColorFilter(
@@ -151,6 +170,14 @@ class ScanningResultFragment : Fragment() {
         } else {
             trimmed
         }
+    }
+
+    private fun isNotSureCategory(category: String): Boolean {
+        val normalized = category.trim().lowercase()
+        return normalized.contains("not sure")
+                || normalized.contains("uncertain")
+                || normalized.contains("unknown")
+                || normalized.contains("other_uncertain")
     }
 
     private fun setupListeners() {
