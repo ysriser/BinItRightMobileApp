@@ -2,12 +2,10 @@ package iss.nus.edu.sg.webviews.binitrightmobileapp.model
 
 import com.google.gson.annotations.SerializedName
 
-data class LoginResponse(
-    val success: Boolean,
-    val message: String,
-    val token: String?,
+data class User(
     @SerializedName("userId")
-    val userId: Long?,
+    val id: Long? = 0,
+
     @SerializedName("username")
-    val username: String?
+    val username: String? = ""
 )

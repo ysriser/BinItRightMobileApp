@@ -17,7 +17,8 @@ class RecycleHistoryViewModel : ViewModel() {
     fun loadHistory() {
         viewModelScope.launch {
             try {
-                _history.value = repo.getHistory()
+
+                _history.value = repo.getRecycleHistory()
             } catch (e: Exception) {
                 e.printStackTrace()
             }
