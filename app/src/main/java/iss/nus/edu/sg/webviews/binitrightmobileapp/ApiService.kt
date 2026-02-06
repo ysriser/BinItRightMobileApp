@@ -1,5 +1,7 @@
 package iss.nus.edu.sg.webviews.binitrightmobileapp
 
+import iss.nus.edu.sg.webviews.binitrightmobileapp.model.RedeemResponse
+import iss.nus.edu.sg.webviews.binitrightmobileapp.model.Accessory
 import iss.nus.edu.sg.webviews.binitrightmobileapp.model.IssueCreateRequest
 import iss.nus.edu.sg.webviews.binitrightmobileapp.model.IssueResponse
 import iss.nus.edu.sg.webviews.binitrightmobileapp.model.LoginResponse
@@ -9,6 +11,7 @@ import iss.nus.edu.sg.webviews.binitrightmobileapp.model.NewsItem
 import iss.nus.edu.sg.webviews.binitrightmobileapp.model.RecycleHistoryModel
 import iss.nus.edu.sg.webviews.binitrightmobileapp.model.UserAccessory
 import iss.nus.edu.sg.webviews.binitrightmobileapp.model.UserProfile
+import iss.nus.edu.sg.webviews.binitrightmobileapp.model.UserResponse
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
 
@@ -97,6 +100,10 @@ interface ApiService {
     @GET("api/news")
     suspend fun getAllNews(): Response<List<NewsItem>>
 
+    @GET("api/news/{id}")
+    suspend fun getNewsById(@Path("id") id: Long): Response<NewsItem>
+
+
     @POST("api/issues")
     suspend fun createIssue(@Body request: IssueCreateRequest): Response<IssueResponse>
 
@@ -114,4 +121,17 @@ interface ApiService {
 
     @GET("api/summary/profile")
     suspend fun getProfileSummary(): Response<UserProfile>
+
+    @GET("/api/reward-shop/items")
+    suspend fun getRewardShopItems(): Response<List<Accessory>>
+
+    @POST("/api/reward-shop/redeem/{accessoriesId}")
+    suspend fun redeemRewardShopItem(
+        @Path("accessoriesId") accessoriesId: Long
+    ): Response<RedeemResponse>
+
+    @GET("api/user/profile/{id}")
+    suspend fun getUserProfile(@Path("id") userId: Long): Response<UserResponse>
+
+
 }
