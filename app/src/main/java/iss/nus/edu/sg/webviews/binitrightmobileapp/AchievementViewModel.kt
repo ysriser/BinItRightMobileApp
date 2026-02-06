@@ -49,11 +49,11 @@ class AchievementViewModel(application: Application) : AndroidViewModel(applicat
         viewModelScope.launch {
             _isLoading.value = true
             try {
-                val response = RetrofitClient.instance.getAchievementsWithStatus(userId)
+                val response = RetrofitClient.apiService().getAchievementsWithStatus(userId)
                 if (response.isSuccessful && response.body() != null) {
                     val remoteData = response.body()!!
                     val remoteIds = remoteData.filter { it.isUnlocked }.map { it.id }.toSet()
-                    
+
                     val mergedList = fixedAchievements.map { ach ->
                         if (remoteIds.contains(ach.id)) {
                             ach.copy(isUnlocked = true)

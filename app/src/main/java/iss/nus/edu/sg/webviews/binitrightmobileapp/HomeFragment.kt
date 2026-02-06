@@ -1,31 +1,31 @@
 package iss.nus.edu.sg.webviews.binitrightmobileapp
 
-import android.content.ContentValues.TAG
-import android.os.Bundle
 import android.content.Context
+import android.os.Bundle
 import android.util.Log
 import android.view.View
-import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
-import androidx.navigation.NavOptions
-
 import androidx.navigation.fragment.findNavController
 import iss.nus.edu.sg.webviews.binitrightmobileapp.databinding.FragmentHomeBinding
 import iss.nus.edu.sg.webviews.binitrightmobileapp.network.RetrofitClient
 import kotlinx.coroutines.launch
 
 class HomeFragment : Fragment(R.layout.fragment_home) {
+
     private var _binding: FragmentHomeBinding? = null
     private val binding get() = _binding!!
+
+    companion object {
+        private const val TAG = "HomeFragment"
+    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         _binding = FragmentHomeBinding.bind(view)
 
-        // Existing Navigation listeners
         binding.btnScan.setOnClickListener {
-            findNavController().navigate(R.id.action_home_to_scanItem)
+            findNavController().navigate(R.id.action_home_to_scanHome)
         }
 
         binding.btnQuiz.setOnClickListener {
@@ -38,6 +38,11 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
 
         binding.btnRecycleNow.setOnClickListener {
             findNavController().navigate(R.id.action_home_to_scanHome)
+        }
+
+
+        binding.cardAchievements.setOnClickListener {
+            findNavController().navigate(R.id.action_home_to_achievements)
         }
 
         setupReportIssueButton()
@@ -53,9 +58,8 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
     }
 
     private fun fetchUserStats() {
-        // Assuming you store the logged-in user ID in SharedPreferences
         val userId = requireActivity()
-            .getSharedPreferences("AppPrefs", Context.MODE_PRIVATE)
+            .getSharedPreferences("APP_PREFS", Context.MODE_PRIVATE)
             .getLong("USER_ID", -1L)
 
         if (userId != -1L) {
@@ -67,14 +71,14 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
                         binding.tvPointsCount.text = user.pointBalance.toString()
                         Log.d(TAG, "###Point: ${user.pointBalance}")
                     } else {
-                        // This will tell you if you got a 404, 500, etc.
-                        Log.e(TAG, "###Server Error: ${response.code()} - ${response.errorBody()?.string()}")
+                        Log.e(TAG, "###Server Error: ${response.code()}")
                     }
                 } catch (e: Exception) {
-                    // This will tell you if it's a connection timeout or URL crash
                     Log.e(TAG, "###Network Crash: ${e.message}", e)
                 }
             }
+        } else {
+            Log.d(TAG, "User not logged in (UserId = -1)")
         }
     }
 

@@ -1,9 +1,9 @@
-package iss.nus.edu.sg.webviews.binitrightmobileapp
+package iss.nus.edu.sg.webviews.binitrightmobileapp.model
 
 data class CheckInData(
     val userId: Long,
     val duration: Long,
-    val binId: String,
+    val binId: Long,
     val wasteCategory: String,
     val quantity: Int,
     val videoKey: String?,
