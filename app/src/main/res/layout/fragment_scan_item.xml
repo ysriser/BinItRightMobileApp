@@ -7,7 +7,6 @@
     android:background="@android:color/white"
     tools:context=".ScanItemFragment">
 
-    <!-- Close Button - Tinted Black for Light BG -->
     <ImageButton
         android:id="@+id/btnClose"
         android:layout_width="64dp"
@@ -38,13 +37,13 @@
         android:id="@+id/cameraCard"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        app:layout_constraintDimensionRatio="1:1"
         android:layout_marginLeft="32dp"
-        android:layout_marginRight="32dp"
         android:layout_marginTop="80dp"
+        android:layout_marginRight="32dp"
+        app:cardBackgroundColor="@android:color/white"
         app:cardCornerRadius="16dp"
         app:cardElevation="4dp"
-        app:cardBackgroundColor="@android:color/white"
+        app:layout_constraintDimensionRatio="1:1"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/tvTitle">
@@ -57,8 +56,7 @@
                 android:id="@+id/viewFinder"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent" />
-            
-            <!-- Loading Overlay (Scanner Stylized) -->
+
             <FrameLayout
                 android:id="@+id/loadingOverlay"
                 android:layout_width="match_parent"
@@ -68,17 +66,15 @@
                 android:focusable="true"
                 android:visibility="gone"
                 tools:visibility="visible">
-        
-                <!-- Scan Line -->
+
                 <View
                     android:id="@+id/scanLine"
                     android:layout_width="4dp"
                     android:layout_height="match_parent"
-                    android:background="#00C853"
+                    android:layout_gravity="start"
                     android:alpha="0.9"
-                    android:layout_gravity="start"/>
-        
-                <!-- Progress Text - Center -->
+                    android:background="#00C853" />
+
                 <TextView
                     android:id="@+id/tvScanProgress"
                     android:layout_width="wrap_content"
@@ -86,8 +82,8 @@
                     android:layout_gravity="center"
                     android:text="Identifying..."
                     android:textColor="@android:color/white"
-                    android:textStyle="bold"
-                    android:textSize="18sp"/>
+                    android:textSize="18sp"
+                    android:textStyle="bold" />
             </FrameLayout>
 
         </FrameLayout>
@@ -137,7 +133,6 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/tvSubInstruction" />
 
-    <!-- Tips Card -->
     <androidx.cardview.widget.CardView
         android:layout_width="0dp"
         android:layout_height="wrap_content"
@@ -167,18 +162,13 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
                 android:lineSpacingExtra="4dp"
-                android:text="• Ensure good lighting\n• Keep the item centered\n• Avoid shadows and glare"
+                android:text="- Ensure good lighting&#10;- Keep the item centered&#10;- Avoid shadows and glare"
                 android:textColor="#616161"
                 android:textSize="12sp" />
         </LinearLayout>
     </androidx.cardview.widget.CardView>
 
-    <!-- Loading Overlay -->
-    <!-- Loading Overlay (Scanner Style) -->
-
-
-    <!-- Debug Switch -->
-    <com.google.android.material.materialswitch.MaterialSwitch
+    <androidx.appcompat.widget.SwitchCompat
         android:id="@+id/switchDebug"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -187,6 +177,9 @@
         android:layout_marginEnd="16dp"
         android:text="Force Cloud"
         android:textColor="@android:color/black"
+        android:textOff="Force Cloud"
+        android:textOn="Force Cloud"
+        app:showText="false"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 

@@ -2,71 +2,43 @@ package iss.nus.edu.sg.webviews.binitrightmobileapp
 
 import android.content.Context
 import android.util.Log
-import com.google.gson.GsonBuilder
-import iss.nus.edu.sg.webviews.binitrightmobileapp.model.AuthInterceptor
 import iss.nus.edu.sg.webviews.binitrightmobileapp.network.RetrofitClient
 import kotlinx.coroutines.delay
-import java.io.File
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.asRequestBody
-import okhttp3.OkHttpClient
-import okhttp3.logging.HttpLoggingInterceptor
-import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
-import java.util.concurrent.TimeUnit
-//
-//object RetrofitClient {
-//    private const val BASE_URL = "http://10.0.2.2:8080/"
-//
-//    private lateinit var apiServiceInstance: ApiService
-//
-//    fun init(context: Context) {
-//        val logging = HttpLoggingInterceptor().apply {
-//            level = HttpLoggingInterceptor.Level.BODY
-//        }
-//
-//        val gson = GsonBuilder()
-//            .setLenient()
-//            .create()
-//
-//        val okHttpClient = OkHttpClient.Builder()
-//            .addInterceptor(logging)
-//            .addInterceptor(AuthInterceptor(context.applicationContext))
-//            .connectTimeout(30, TimeUnit.SECONDS)
-//            .readTimeout(60, TimeUnit.SECONDS)
-//            .writeTimeout(60, TimeUnit.SECONDS)
-//            .build()
-//
-//        apiServiceInstance = Retrofit.Builder()
-//            .baseUrl(BASE_URL)
-//            .client(okHttpClient)
-//            .addConverterFactory(GsonConverterFactory.create(gson))
-//            .build()
-//            .create(ApiService::class.java)
-//    }
-//
-//    val instance: ApiService
-//        get() = apiServiceInstance
-//}
+import okhttp3.RequestBody.Companion.toRequestBody
+import java.io.File
 
 interface ScanRepository {
-    suspend fun scanImage(imageFile: File, forceTier2: Boolean = false, onStatusUpdate: (String) -> Unit = {}): Result<ScanResult>
+    suspend fun scanImage(
+        imageFile: File,
+        forceTier2: Boolean = false,
+        onStatusUpdate: (String) -> Unit = {}
+    ): Result<ScanResult>
+
     suspend fun sendFeedback(feedback: FeedbackRequest): Result<Boolean>
 }
 
 class FakeScanRepository : ScanRepository {
-    override suspend fun scanImage(imageFile: File, forceTier2: Boolean, onStatusUpdate: (String) -> Unit): Result<ScanResult> {
-        delay(1500) // Simulate network delay
+    override suspend fun scanImage(
+        imageFile: File,
+        forceTier2: Boolean,
+        onStatusUpdate: (String) -> Unit
+    ): Result<ScanResult> {
+        delay(1500)
         return Result.success(
             ScanResult(
                 category = "Electronics",
-                recyclable = true,
+                recyclable = false,
                 confidence = 0.86f,
-                instructions = listOf("Remove batteries if removable", "Dispose in e-waste bin"),
-                instruction = "1. Remove batteries if removable.\n2. Dispose in e-waste bin.",
-                categoryId = "electronics.generic",
-                binType = "ewaste"
+                instruction = "Bring this item to an e-waste collection point.",
+                instructions = listOf(
+                    "Remove batteries if removable.",
+                    "Pack sharp parts safely.",
+                    "Bring to an e-waste collection point."
+                ),
+                binType = "EWaste"
             )
         )
     }
@@ -77,74 +49,108 @@ class FakeScanRepository : ScanRepository {
     }
 }
 
-
 class RealScanRepository : ScanRepository {
-    override suspend fun scanImage(imageFile: File, forceTier2: Boolean, onStatusUpdate: (String) -> Unit): Result<ScanResult> {
+    override suspend fun scanImage(
+        imageFile: File,
+        forceTier2: Boolean,
+        onStatusUpdate: (String) -> Unit
+    ): Result<ScanResult> {
         return try {
             val requestFile = imageFile.asRequestBody("image/*".toMediaTypeOrNull())
-            val body = MultipartBody.Part.createFormData("image", imageFile.name, requestFile)
-            val response = RetrofitClient.apiService().scanImage(body)
+            val imagePart = MultipartBody.Part.createFormData("image", imageFile.name, requestFile)
+            val forceCloudPart = if (forceTier2) {
+                "true".toRequestBody("text/plain".toMediaTypeOrNull())
+            } else {
+                null
+            }
+
+            val response = RetrofitClient.apiService().scanImage(
+                image = imagePart,
+                forceCloud = forceCloudPart
+            )
+
             if (response.isSuccessful && response.body() != null) {
                 val scanResponse = response.body()!!
-                if (scanResponse.data?.final != null) {
-                    // Logic duplicated from HybridScanRepository for robustness
-                    val final = scanResponse.data.final
-                    val determinedBinType = if (final.category.startsWith("E-waste - ", true)) "EWaste"
-                                            else if (final.category.startsWith("Textile - ", true)) "Textile"
-                                            else if (final.category.startsWith("Lighting - ", true)) "Lamp"
-                                            else if (final.recyclable) "BlueBin" else "General"
-
-                    Result.success(ScanResult(
-                        category = final.category,
-                        recyclable = final.recyclable,
-                        confidence = final.confidence,
-                        instruction = final.instruction,
-                        instructions = final.instructions,
-                        binType = determinedBinType
-                        // Ignoring other fields for now
-                    ))
+                val final = scanResponse.data?.final
+                if (scanResponse.status == "success" && final != null) {
+                    Result.success(mapFinalToScanResult(final))
                 } else {
-                     Result.failure(Exception("Server returned no final data"))
+                    Result.failure(Exception("Server returned no final data"))
                 }
             } else {
                 Result.failure(Exception("Network error: ${response.code()}"))
             }
         } catch (e: Exception) {
-            // Fallback to fake for prototype robustness if real fails
             Log.e("RealScanRepository", "Failed to scan, falling back to mock", e)
             FakeScanRepository().scanImage(imageFile, forceTier2, onStatusUpdate)
         }
     }
 
     override suspend fun sendFeedback(feedback: FeedbackRequest): Result<Boolean> {
-         return try {
+        return try {
             val response = RetrofitClient.apiService().sendFeedback(feedback)
             if (response.isSuccessful && response.body() != null) {
                 Result.success(response.body()!!)
             } else {
-                 Result.failure(Exception("Feedback error: ${response.code()}"))
+                Result.failure(Exception("Feedback error: ${response.code()}"))
             }
         } catch (e: Exception) {
-             Log.e("RealScanRepository", "Failed to feedback", e)
-             Result.success(true) // Mock success on failure
+            Log.e("RealScanRepository", "Failed to send feedback", e)
+            Result.success(true)
+        }
+    }
+
+    private fun mapFinalToScanResult(final: FinalResult): ScanResult {
+        val fallbackInstructions = if (final.recyclable) {
+            listOf("Clean and dry the item.", "Place it in the blue recycling bin.")
+        } else {
+            listOf("Dispose in general waste unless official guidance says otherwise.")
+        }
+
+        val finalInstructions = if (final.instructions.isEmpty()) {
+            fallbackInstructions
+        } else {
+            final.instructions
+        }
+
+        return ScanResult(
+            category = final.category,
+            recyclable = final.recyclable,
+            confidence = final.confidence,
+            instruction = final.instruction,
+            instructions = finalInstructions,
+            binType = determineBinType(final.category, final.recyclable)
+        )
+    }
+
+    private fun determineBinType(category: String, recyclable: Boolean): String {
+        return when {
+            category.startsWith("E-waste - ", ignoreCase = true) -> "EWaste"
+            category.startsWith("Textile - ", ignoreCase = true) -> "Textile"
+            category.startsWith("Lighting - ", ignoreCase = true) -> "Lamp"
+            recyclable -> "BlueBin"
+            else -> "General"
         }
     }
 }
 
-class LocalModelScanRepository(private val context: android.content.Context) : ScanRepository {
-    private val classifier = ImageClassifier(context)
+class LocalModelScanRepository(private val context: Context) : ScanRepository {
+    private val classifier by lazy { ImageClassifier(context) }
 
-    override suspend fun scanImage(imageFile: File, forceTier2: Boolean, onStatusUpdate: (String) -> Unit): Result<ScanResult> {
+    override suspend fun scanImage(
+        imageFile: File,
+        forceTier2: Boolean,
+        onStatusUpdate: (String) -> Unit
+    ): Result<ScanResult> {
         return try {
             val bitmap = android.graphics.BitmapFactory.decodeFile(imageFile.absolutePath)
             val result = classifier.classify(bitmap)
 
-            // Map Tier1Result to ScanResult
-            val isRecyclable = when(result.category.lowercase()) {
+            val isRecyclable = when (result.category.lowercase()) {
                 "plastic", "metal", "glass", "paper" -> true
                 else -> false
             }
-            
+
             delay(1000)
 
             Result.success(
@@ -152,53 +158,52 @@ class LocalModelScanRepository(private val context: android.content.Context) : S
                     category = result.category.replaceFirstChar { it.uppercase() },
                     recyclable = isRecyclable,
                     confidence = result.confidence,
-                    instructions = if (isRecyclable) 
-                        listOf("Clean and Dry", "Recycle in Blue Bin") 
-                    else 
-                        listOf("Check specific disposal guidelines"),
-                    instruction = if (isRecyclable)
-                        "1. Rinse the item.\n2. Place in Blue Bin."
-                    else
-                        "1. Do not put in Blue Bin.\n2. Check local guidelines."
+                    instructions = if (isRecyclable) {
+                        listOf("Clean and dry the item.", "Place it in the blue recycling bin.")
+                    } else {
+                        listOf("Do not put this into the blue recycling bin.")
+                    },
+                    instruction = if (isRecyclable) {
+                        "Clean and dry the item, then recycle it."
+                    } else {
+                        "Dispose through general or special waste handling."
+                    }
                 )
             )
         } catch (e: Exception) {
-             Log.e("LocalModelRepository", "Error running local model", e)
-             Result.failure(e)
+            Log.e("LocalModelRepository", "Error running local model", e)
+            Result.failure(e)
         }
     }
 
     override suspend fun sendFeedback(feedback: FeedbackRequest): Result<Boolean> {
-         return Result.success(true)
+        return Result.success(true)
     }
 }
 
 class HybridScanRepository(
-    private val context: android.content.Context
+    private val context: Context
 ) : ScanRepository {
-    private val classifier = ImageClassifier(context)
+    private val classifier by lazy { ImageClassifier(context) }
     private val gson = com.google.gson.Gson()
 
-    override suspend fun scanImage(imageFile: File, forceTier2: Boolean, onStatusUpdate: (String) -> Unit): Result<ScanResult> {
+    override suspend fun scanImage(
+        imageFile: File,
+        forceTier2: Boolean,
+        onStatusUpdate: (String) -> Unit
+    ): Result<ScanResult> {
         return try {
-            // 1. Run Tier 1 (On-Device)
             onStatusUpdate("Identifying...")
             val bitmap = android.graphics.BitmapFactory.decodeFile(imageFile.absolutePath)
             val tier1Result = classifier.classify(bitmap)
 
-            Log.d("HybridScanRepository", "Tier 1 Result: $tier1Result")
+            Log.d("HybridScanRepository", "Tier1 result: $tier1Result")
 
-            // 2. Check Escalation
             val shouldEscalate = tier1Result.escalate || forceTier2
-
             if (shouldEscalate) {
-                Log.d("HybridScanRepository", "Escalating to Tier 2 (Force: $forceTier2)")
                 onStatusUpdate("Analyzing...")
-                // Call Server
-                callTier2(imageFile, tier1Result)
+                callTier2(imageFile, tier1Result, forceTier2)
             } else {
-                Log.d("HybridScanRepository", "Using Tier 1 Result")
-                // Return Tier 1 as Final
                 Result.success(mapTier1ToScanResult(tier1Result))
             }
         } catch (e: Exception) {
@@ -207,84 +212,107 @@ class HybridScanRepository(
         }
     }
 
-    private suspend fun callTier2(imageFile: File, tier1Result: Tier1Result): Result<ScanResult> {
+    private suspend fun callTier2(
+        imageFile: File,
+        tier1Result: Tier1Result,
+        forceTier2: Boolean
+    ): Result<ScanResult> {
         return try {
             val requestFile = imageFile.asRequestBody("image/*".toMediaTypeOrNull())
-            val body = MultipartBody.Part.createFormData("image", imageFile.name, requestFile)
+            val imagePart = MultipartBody.Part.createFormData("image", imageFile.name, requestFile)
 
             val tier1Json = gson.toJson(tier1Result)
-            val tier1Part = MultipartBody.Part.createFormData("tier1", tier1Json)
+            val tier1Body = tier1Json.toRequestBody("application/json".toMediaTypeOrNull())
+            val forceCloudBody = if (forceTier2) {
+                "true".toRequestBody("text/plain".toMediaTypeOrNull())
+            } else {
+                null
+            }
 
-            val response = RetrofitClient.apiService().scanImage(body, tier1Part)
+            val response = RetrofitClient.apiService().scanImage(
+                image = imagePart,
+                tier1 = tier1Body,
+                forceCloud = forceCloudBody
+            )
 
             if (response.isSuccessful && response.body() != null) {
                 val scanResponse = response.body()!!
-                if (scanResponse.status == "success" && scanResponse.data?.final != null) {
-                    Result.success(mapFinalToScanResult(scanResponse.data.final))
+                val final = scanResponse.data?.final
+                if (scanResponse.status == "success" && final != null) {
+                    Result.success(mapFinalToScanResult(final))
                 } else {
-                     Result.failure(Exception("Server returned error: ${scanResponse.message}"))
+                    Result.failure(Exception("Server returned error: ${scanResponse.message}"))
                 }
             } else {
                 Result.failure(Exception("Network error: ${response.code()}"))
             }
         } catch (e: Exception) {
-            Log.e("HybridScanRepository", "Tier 2 failed", e)
-            // Fallback to Tier 1 if network fails? Or propagate error?
-            // User spec says: "Always render server data.final" but if server fails?
-            // "Graceful degradation... prefer returning decision.used_tier2=false" if server is unavailable is SERVER logic.
-            // Client side logic: If network call throws, fallback to Tier 1 is safest for UX.
+            Log.e("HybridScanRepository", "Tier2 failed, fallback to Tier1", e)
             Result.success(mapTier1ToScanResult(tier1Result))
         }
     }
 
     private fun mapFinalToScanResult(final: FinalResult): ScanResult {
-        // User Requirement: Bin type logic must be on Android client
-        val determinedBinType = determineBinType(final.category, final.recyclable)
-        
+        val fallbackInstructions = if (final.recyclable) {
+            listOf("Clean and dry the item.", "Place it in the blue recycling bin.")
+        } else {
+            listOf("Dispose in general waste unless official guidance says otherwise.")
+        }
+
+        val finalInstructions = if (final.instructions.isEmpty()) {
+            fallbackInstructions
+        } else {
+            final.instructions
+        }
+
         return ScanResult(
             category = final.category,
             recyclable = final.recyclable,
             confidence = final.confidence,
             instruction = final.instruction,
-            instructions = final.instructions,
-            disposalMethod = final.disposal_method,
-            categoryId = final.category_id, // Likely null or ignored
-            binType = determinedBinType,
-            rationaleTags = final.rationale_tags // Likely null or ignored
+            instructions = finalInstructions,
+            binType = determineBinType(final.category, final.recyclable)
         )
     }
 
     private fun mapTier1ToScanResult(tier1: Tier1Result): ScanResult {
-        val isRecyclable = when(tier1.category.lowercase()) {
-             "plastic", "metal", "glass", "paper" -> true
-             else -> false
+        val recyclable = when (tier1.category.lowercase()) {
+            "plastic", "metal", "glass", "paper" -> true
+            else -> false
         }
+
         val categoryName = tier1.category.replaceFirstChar { it.uppercase() }
-        val determinedBinType = determineBinType(categoryName, isRecyclable)
 
         return ScanResult(
             category = categoryName,
-            recyclable = isRecyclable,
+            recyclable = recyclable,
             confidence = tier1.confidence,
-            instruction = if (isRecyclable) "Recycle in Blue Bin" else "Check local guidelines",
-            instructions = listOf("Generated from Tier 1"),
+            instruction = if (recyclable) {
+                "Clean and dry the item, then recycle it."
+            } else {
+                "Dispose through general or special waste handling."
+            },
+            instructions = if (recyclable) {
+                listOf("Clean and dry the item.", "Place it in the blue recycling bin.")
+            } else {
+                listOf("Do not put this into the blue recycling bin.")
+            },
             categoryId = "tier1.${tier1.category}",
-            binType = determinedBinType
+            binType = determineBinType(categoryName, recyclable)
         )
     }
-    
-    // Centralized Bin Logic
-    private fun determineBinType(category: String, isRecyclable: Boolean): String {
+
+    private fun determineBinType(category: String, recyclable: Boolean): String {
         return when {
             category.startsWith("E-waste - ", ignoreCase = true) -> "EWaste"
             category.startsWith("Textile - ", ignoreCase = true) -> "Textile"
-            category.startsWith("Lighting - ", ignoreCase = true) -> "Lamp" // Added for consistency with existing UI logic
-            else -> if (isRecyclable) "BlueBin" else "General"
+            category.startsWith("Lighting - ", ignoreCase = true) -> "Lamp"
+            recyclable -> "BlueBin"
+            else -> "General"
         }
     }
 
     override suspend fun sendFeedback(feedback: FeedbackRequest): Result<Boolean> {
-         return Result.success(true)
+        return Result.success(true)
     }
 }
-

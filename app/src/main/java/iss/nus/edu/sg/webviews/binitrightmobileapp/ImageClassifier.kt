@@ -36,7 +36,7 @@ class ImageClassifier(private val context: Context) {
             val modelBytes = context.assets.open("tier1.onnx").readBytes()
             ortSession = ortEnvironment?.createSession(modelBytes)
             Log.d("ImageClassifier", "Model loaded successfully")
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
             Log.e("ImageClassifier", "Error initializing model", e)
         }
     }
