@@ -14,7 +14,6 @@ import java.util.concurrent.TimeUnit
 object RetrofitClient {
     private lateinit var api: ApiService
 
-
     private val BASE_URL: String = "http://10.0.2.2:8080/"
 
     fun init(context: Context) {
@@ -34,7 +33,7 @@ object RetrofitClient {
             .build()
 
         api = Retrofit.Builder()
-            .baseUrl(BASE_URL)
+            .baseUrl(BuildConfig.BASE_URL)
             .client(okHttpClient)
             .addConverterFactory(GsonConverterFactory.create(gson))
             .build()

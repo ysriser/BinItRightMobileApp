@@ -40,6 +40,11 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
             findNavController().navigate(R.id.action_home_to_scanHome)
         }
 
+        binding.cardChatHelper.setOnClickListener {
+            findNavController().navigate(R.id.action_home_to_chatFragment)
+        }
+
+
         setupReportIssueButton()
 
         fetchUserStats()
@@ -53,28 +58,36 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
     }
 
     private fun fetchUserStats() {
-        // Assuming you store the logged-in user ID in SharedPreferences
         val userId = requireActivity()
-            .getSharedPreferences("AppPrefs", Context.MODE_PRIVATE)
+            .getSharedPreferences("APP_PREFS", Context.MODE_PRIVATE)
             .getLong("USER_ID", -1L)
+
+        Log.d(TAG, "###Fetching stats for userId: $userId") // Add this
 
         if (userId != -1L) {
             viewLifecycleOwner.lifecycleScope.launch {
                 try {
-                    val response = RetrofitClient.apiService().getUserProfile(userId)
+                    Log.d(TAG, "###Making API call to getUserProfile($userId)") // Add this
+                    val response = RetrofitClient.apiService().getProfileSummary()
+                    Log.d(TAG, "###Response received - Code: ${response.code()}, Successful: ${response.isSuccessful}") // Add this
+
                     if (response.isSuccessful && response.body() != null) {
                         val user = response.body()!!
+                        Log.d(TAG, "###Point Balance from API: ${user.pointBalance}") // Add this
+                        Log.d(TAG, "###Setting text to: ${user.pointBalance}") // Add this
                         binding.tvPointsCount.text = user.pointBalance.toString()
-                        Log.d(TAG, "###Point: ${user.pointBalance}")
+                        Log.d(TAG, "###Text set successfully") // Add this
                     } else {
-                        // This will tell you if you got a 404, 500, etc.
-                        Log.e(TAG, "###Server Error: ${response.code()} - ${response.errorBody()?.string()}")
+                        val errorBody = response.errorBody()?.string()
+                        Log.e(TAG, "###Server Error: ${response.code()} - $errorBody")
                     }
                 } catch (e: Exception) {
-                    // This will tell you if it's a connection timeout or URL crash
                     Log.e(TAG, "###Network Crash: ${e.message}", e)
+                    e.printStackTrace()
                 }
             }
+        } else {
+            Log.e(TAG, "###USER_ID is -1, not making API call")
         }
     }
 

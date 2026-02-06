@@ -2,6 +2,8 @@ package iss.nus.edu.sg.webviews.binitrightmobileapp
 
 import iss.nus.edu.sg.webviews.binitrightmobileapp.model.RedeemResponse
 import iss.nus.edu.sg.webviews.binitrightmobileapp.model.Accessory
+import iss.nus.edu.sg.webviews.binitrightmobileapp.model.ChatRequest
+import iss.nus.edu.sg.webviews.binitrightmobileapp.model.ChatResponse
 import iss.nus.edu.sg.webviews.binitrightmobileapp.model.IssueCreateRequest
 import iss.nus.edu.sg.webviews.binitrightmobileapp.model.IssueResponse
 import iss.nus.edu.sg.webviews.binitrightmobileapp.model.LoginResponse
@@ -89,5 +91,12 @@ interface ApiService {
     @GET("api/user/profile/{id}")
     suspend fun getUserProfile(@Path("id") userId: Long): Response<UserResponse>
 
+    @POST("api/chat")
+    suspend fun chat(@Body req: ChatRequest): ChatResponse
+
+    @GET("api/users/{userId}/total-recycled")
+    suspend fun getTotalRecycled(
+        @Path("userId") userId: Long
+    ): Response<Int>
 
 }
