@@ -73,6 +73,9 @@
         android:name="iss.nus.edu.sg.webviews.binitrightmobileapp.ProfileFragment"
         android:label="Profile">
         <action
+            android:id="@+id/action_profile_to_rewardShopFragment"
+            app:destination="@id/RewardShopFragment" />
+        <action
             android:id="@+id/action_profile_to_recycleHistory"
             app:destination="@id/recycleHistoryFragment" />
         <action
@@ -184,6 +187,18 @@
         android:id="@+id/videoRecordFragment"
         android:name="iss.nus.edu.sg.webviews.binitrightmobileapp.VideoRecordFragment"
         android:label="Record Video" />
+    <fragment
+        android:id="@+id/RewardShopFragment"
+        android:name="iss.nus.edu.sg.webviews.binitrightmobileapp.RewardShopFragment"
+        android:label="Avatar Shop"
+        tools:layout="@layout/fragment_reward_shop">
+
+        <argument
+            android:name="totalPoints"
+            app:argType="integer"
+            android:defaultValue="0" />
+    </fragment>
+
 
     <fragment
         android:id="@+id/achievementsFragment"
