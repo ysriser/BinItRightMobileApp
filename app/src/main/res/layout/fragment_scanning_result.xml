@@ -67,7 +67,7 @@
             android:background="@drawable/bg_badge_recyclable"
             android:paddingHorizontal="16dp"
             android:paddingVertical="6dp"
-            android:text="♻ Recyclable"
+            android:text="Recyclable"
             android:textColor="#00695C"
             android:textStyle="bold"
             app:layout_constraintEnd_toEndOf="parent"
@@ -158,7 +158,7 @@
                     android:id="@+id/tvDescriptionWait"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Great news! This item can be recycled. ✨"
+                    android:text="Great news! This item can be recycled."
                     android:textColor="#1B5E20"
                     android:textStyle="bold"
                     android:textSize="16sp"/>
@@ -186,14 +186,16 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Benefits:"
+                            android:id="@+id/tvInstructionTitle"
+                            android:text="How to dispose:"
                             android:textStyle="bold"
                             android:textColor="#424242"/>
                          <TextView
                              android:layout_width="wrap_content"
                              android:layout_height="wrap_content"
                              android:layout_marginTop="4dp"
-                             android:text="• Earn recycling points\n• Track your environmental impact"
+                             android:id="@+id/tvInstructionSteps"
+                             android:text="1. Follow local disposal guidance"
                              android:textColor="#616161"
                              android:lineSpacingExtra="4dp"/>
                     </LinearLayout>
@@ -211,7 +213,7 @@
             android:layout_marginHorizontal="24dp"
             android:layout_marginTop="32dp"
             android:backgroundTint="#00C853"
-            android:text="Yes, I want to recycle this →"
+            android:text="Yes, I want to recycle this"
             android:textSize="14sp"
             android:maxLines="2"
             android:ellipsize="end"
