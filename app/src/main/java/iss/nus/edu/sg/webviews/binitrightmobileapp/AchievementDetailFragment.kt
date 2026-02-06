@@ -60,7 +60,7 @@ class AchievementDetailFragment : Fragment() {
             binding.btnShare.isEnabled = true
 
             val prefs = requireContext().getSharedPreferences("APP_PREFS", Context.MODE_PRIVATE)
-            val token = prefs.getString("TOKEN", "") ?: ""
+            val token = prefs.getString("JWT_TOKEN", "") ?: ""
             val userName = if (token.isNotEmpty()) {
                 JwtUtils.getUsernameFromToken(token) ?: "Achiever"
             } else {

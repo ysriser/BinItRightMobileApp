@@ -2,6 +2,7 @@ package iss.nus.edu.sg.webviews.binitrightmobileapp
 
 import android.app.Application
 import android.content.Context
+import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -24,16 +25,16 @@ class AchievementViewModel(application: Application) : AndroidViewModel(applicat
     }
 
     private val fixedAchievements = listOf(
-        Achievement(1, "First Submission", "Submit your first recycling item.", "Recycle 1 item", "https://img.icons8.com/color/96/seed.png"),
-        Achievement(2, "Recycling Master", "Complete 10 recycling submissions.", "Recycle 10 times", "https://img.icons8.com/color/96/recycle-sign.png"),
-        Achievement(3, "Plastic Slayer", "Help keep 50 plastic bottles out of the ocean.", "Recycle 50 Plastic items", "https://img.icons8.com/color/96/plastic.png"),
-        Achievement(4, "The 100 Club", "A true eco-warrior legend.", "Earn 100 points in total", "https://img.icons8.com/color/96/trophy.png"),
-        Achievement(5, "The Collector", "Save up your rewards points.", "Hold 5000 points", "https://img.icons8.com/color/96/hamster.png"),
-        Achievement(6, "Rising Star", "Advance your environmental impact rank.", "Reach Rank 2", "https://img.icons8.com/color/96/upgrade.png"),
-        Achievement(7, "Early Bird", "Complete a check-in early in the morning.", "Check-in 06:00-08:00", "https://img.icons8.com/color/96/sun.png"),
-        Achievement(8, "Night Owl", "Contribute to recycling late at night.", "Recycle after 22:00", "https://img.icons8.com/color/96/owl.png"),
-        Achievement(9, "Eagle Eye", "Help maintain the community's bins.", "Report 1 Issue", "https://img.icons8.com/color/96/visible.png"),
-        Achievement(10, "First Pot of Gold", "Redeem your points for a reward.", "Redeem 1 Reward", "https://img.icons8.com/color/96/coins.png")
+        Achievement(1L, "First Submission", "Submit your first recycling item.", "Recycle 1 item", "https://img.icons8.com/color/96/seed.png"),
+        Achievement(2L, "Recycling Master", "Complete 10 recycling submissions.", "Recycle 10 times", "https://img.icons8.com/color/96/recycle-sign.png"),
+        Achievement(3L, "Plastic Slayer", "Help keep 50 plastic bottles out of the ocean.", "Recycle 50 Plastic items", "https://img.icons8.com/color/96/plastic.png"),
+        Achievement(4L, "The 100 Club", "A true eco-warrior legend.", "Earn 100 points in total", "https://img.icons8.com/color/96/trophy.png"),
+        Achievement(5L, "The Collector", "Save up your rewards points.", "Hold 5000 points", "https://img.icons8.com/color/96/hamster.png"),
+        Achievement(6L, "Rising Star", "Advance your environmental impact rank.", "Reach Rank 2", "https://img.icons8.com/color/96/upgrade.png"),
+        Achievement(7L, "Early Bird", "Complete a check-in early in the morning.", "Check-in 06:00-08:00", "https://img.icons8.com/color/96/sun.png"),
+        Achievement(8L, "Night Owl", "Contribute to recycling late at night.", "Recycle after 22:00", "https://img.icons8.com/color/96/owl.png"),
+        Achievement(9L, "Eagle Eye", "Help maintain the community's bins.", "Report 1 Issue", "https://img.icons8.com/color/96/visible.png"),
+        Achievement(10L, "First Pot of Gold", "Redeem your points for a reward.", "Redeem 1 Reward", "https://img.icons8.com/color/96/coins.png")
     )
 
     init {
@@ -50,12 +51,17 @@ class AchievementViewModel(application: Application) : AndroidViewModel(applicat
             _isLoading.value = true
             try {
                 val response = RetrofitClient.apiService().getAchievementsWithStatus(userId)
+
                 if (response.isSuccessful && response.body() != null) {
                     val remoteData = response.body()!!
-                    val remoteIds = remoteData.filter { it.isUnlocked }.map { it.id }.toSet()
+
+                    val unlockedIds = remoteData
+                        .filter { it.isUnlocked }
+                        .map { it.id }
+                        .toSet()
 
                     val mergedList = fixedAchievements.map { ach ->
-                        if (remoteIds.contains(ach.id)) {
+                        if (unlockedIds.contains(ach.id)) {
                             ach.copy(isUnlocked = true)
                         } else {
                             ach

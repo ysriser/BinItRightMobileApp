@@ -1,24 +1,21 @@
 package iss.nus.edu.sg.webviews.binitrightmobileapp.model
 
 import com.google.gson.annotations.SerializedName
+import java.io.Serializable
 
 data class Achievement(
-    @SerializedName("achievement_id")
+    @SerializedName(value = "id", alternate = ["achievementId", "achievement_id"])
     val id: Long,
 
-    @SerializedName("name")
     val name: String,
-
-    @SerializedName("description")
     val description: String,
-
-    @SerializedName("criteria")
     val criteria: String,
 
-    @SerializedName("badge_icon")
+    @SerializedName(value = "badgeIconUrl", alternate = ["badge_icon", "badge_icon_url"])
     val badgeIconUrl: String,
 
-    val isUnlocked: Boolean = false,
+    @SerializedName(value = "unlocked", alternate = ["isUnlocked", "status"])
+    var isUnlocked: Boolean = false,
 
-    val dateAchieved: String? = null
-)
+    var dateAchieved: String? = null
+) : Serializable
