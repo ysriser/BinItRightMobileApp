@@ -80,13 +80,10 @@ class LoginFragment : Fragment(R.layout.fragment_login) {
                             .edit()
 
                         body?.token?.let { token ->
-                            prefs.putString("TOKEN", token)
-                        }
-
-                        body?.token?.let { token ->
-
+                            // 1. 保存 Token
                             prefs.putString("TOKEN", token)
 
+                            // 2. 解析 UserID
                             val userId = JwtUtils.getUserIdFromToken(token)
                             userId?.let {
                                 prefs.putLong("USER_ID", it)
