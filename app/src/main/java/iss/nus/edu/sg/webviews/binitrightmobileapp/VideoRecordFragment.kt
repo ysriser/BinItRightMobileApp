@@ -2,13 +2,9 @@ package iss.nus.edu.sg.webviews.binitrightmobileapp
 
 import android.Manifest
 import android.annotation.SuppressLint
-import android.app.Activity
-import android.content.Intent
 import android.content.pm.PackageManager
-import android.net.Uri
 import android.os.Bundle
 import android.os.Environment
-import android.provider.MediaStore
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -18,24 +14,12 @@ import androidx.annotation.RequiresPermission
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import iss.nus.edu.sg.webviews.binitrightmobileapp.databinding.FragmentVideoRecordBinding
-
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.video.*
-import androidx.camera.view.PreviewView
 import androidx.core.content.ContextCompat
-import androidx.lifecycle.lifecycleScope
-import com.google.gson.Gson
-import kotlinx.coroutines.MainScope
-import kotlinx.coroutines.launch
 import java.io.File
-import okhttp3.MediaType.Companion.toMediaType
-import okhttp3.MultipartBody
-import okhttp3.RequestBody.Companion.asRequestBody
-import okhttp3.RequestBody.Companion.toRequestBody
-import retrofit2.http.Multipart
-import iss.nus.edu.sg.webviews.binitrightmobileapp.network.RetrofitClient
 
 
 class VideoRecordFragment : Fragment() {
@@ -48,7 +32,7 @@ class VideoRecordFragment : Fragment() {
     // Permissions
     private fun hasPermissions(): Boolean =
         ContextCompat.checkSelfPermission(
-        requireContext(), Manifest.permission.CAMERA
+            requireContext(), Manifest.permission.CAMERA
         ) == PackageManager.PERMISSION_GRANTED &&
                 ContextCompat.checkSelfPermission(
                     requireContext(), Manifest.permission.RECORD_AUDIO
@@ -141,16 +125,18 @@ class VideoRecordFragment : Fragment() {
                 ContextCompat.getMainExecutor(requireContext())
             ) { event ->
                 if (event is VideoRecordEvent.Finalize && !event.hasError()) {
-                    Toast.makeText(
-                        requireContext(),
-                        "Video saved in video_files",
-                        Toast.LENGTH_SHORT
-                    ).show()
+                    // Notify CheckInFragment that video was recorded
+                    findNavController()
+                        .previousBackStackEntry
+                        ?.savedStateHandle
+                        ?.set("video_recorded", true)
+
                     findNavController().popBackStack()
                 }
             }
 
     }
+
     private fun startCamera(){
         // Gets CameraX provider - entrypoint to access phone camera
         val cameraProviderFuture =
@@ -166,19 +152,19 @@ class VideoRecordFragment : Fragment() {
             }
 
             val recorder = Recorder.Builder().
-                        setQualitySelector(QualitySelector.from(Quality.HIGHEST)).build()
+            setQualitySelector(QualitySelector.from(Quality.HIGHEST)).build()
 
-                // record button
-                videoCapture = VideoCapture.withOutput(recorder)
+            // record button
+            videoCapture = VideoCapture.withOutput(recorder)
 
-                val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
+            val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
 
-                cameraProvider.unbindAll()
-                cameraProvider.bindToLifecycle(
-                    viewLifecycleOwner, cameraSelector,
-                    preview, videoCapture)
+            cameraProvider.unbindAll()
+            cameraProvider.bindToLifecycle(
+                viewLifecycleOwner, cameraSelector,
+                preview, videoCapture)
 
-    }, ContextCompat.getMainExecutor(requireContext()))
+        }, ContextCompat.getMainExecutor(requireContext()))
     }
 
     override fun onDestroyView() {
@@ -188,5 +174,4 @@ class VideoRecordFragment : Fragment() {
         _binding = null
     }
 }
-
 

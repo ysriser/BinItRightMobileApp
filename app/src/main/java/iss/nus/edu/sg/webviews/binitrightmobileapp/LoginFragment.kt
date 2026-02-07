@@ -24,6 +24,13 @@ class LoginFragment : Fragment(R.layout.fragment_login) {
     private var _binding: FragmentLoginBinding? = null
     private val binding get() = _binding!!
 
+    companion object {
+        private const val TAG = "LoginFragment"
+        private const val PREFS_NAME = "APP_PREFS"
+        private const val TOKEN = "AUTH_TOKEN"
+        private const val USER_ID_KEY = "USER_ID"
+    }
+
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -80,10 +87,9 @@ class LoginFragment : Fragment(R.layout.fragment_login) {
                             .edit()
 
                         body?.token?.let { token ->
-                            // 1. 保存 Token
+
                             prefs.putString("TOKEN", token)
 
-                            // 2. 解析 UserID
                             val userId = JwtUtils.getUserIdFromToken(token)
                             userId?.let {
                                 prefs.putLong("USER_ID", it)
