@@ -262,7 +262,7 @@
 
     <fragment
         android:id="@+id/achievementsFragment"
-        android:name="iss.nus.edu.sg.webviews.binitrightmobileapp.AchievementFragment"
+        android:name="iss.nus.edu.sg.webviews.binitrightmobileapp.AchievementsFragment"
         android:label="Achievements"
         tools:layout="@layout/fragment_achievements">
         <action

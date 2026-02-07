@@ -66,7 +66,7 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
                     val response = RetrofitClient.apiService().getUserProfile(userId)
                     if (response.isSuccessful && response.body() != null) {
                         val user = response.body()!!
-                        binding.tvPointsCount.text = user.pointBalance.toString()
+                        binding.tvPointsCount.text = user.pointBalance?.toString() ?: "0"
                         Log.d(TAG, "###Point: ${user.pointBalance}")
                     } else {
                         Log.e(TAG, "###Server Error: ${response.code()} - ${response.errorBody()?.string()}")
