@@ -67,19 +67,19 @@ class AvatarCustomizationFragment : Fragment() {
     private fun handleEquip(item: UserAccessory) {
         if (item.equipped) return
 
-            viewLifecycleOwner.lifecycleScope.launch {
-                try {
-                    val response =
-                        RetrofitClient.apiService().equipAccessory(item.accessories.accessoriesId)
+        viewLifecycleOwner.lifecycleScope.launch {
+            try {
+                val response =
+                    RetrofitClient.apiService().equipAccessory(item.accessories.accessoriesId)
 
-                    if (response.isSuccessful) {
-                        loadAccessories() // refresh to show new equipped highlight
-                    }
-                } catch (e: Exception) {
-                    Toast.makeText(context, "Connection error", Toast.LENGTH_SHORT).show()
+                if (response.isSuccessful) {
+                    loadAccessories() // refresh to show new equipped highlight
                 }
+            } catch (e: Exception) {
+                Toast.makeText(context, "Connection error", Toast.LENGTH_SHORT).show()
             }
         }
+    }
 
 
     override fun onDestroyView() {
