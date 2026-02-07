@@ -112,8 +112,13 @@ class RealScanRepository : ScanRepository {
     }
 
     private fun mapFinalToScanResult(final: FinalResult, meta: Meta?): ScanResult {
-        val fallbackInstructions = if (final.recyclable) {
-            listOf("Clean and dry the item.", "Place it in the blue recycling bin.")
+        val displayRecyclable = WasteCategoryMapper.shouldDisplayAsRecyclable(
+            final.category,
+            final.recyclable
+        )
+
+        val fallbackInstructions = if (displayRecyclable) {
+            listOf("Clean and dry the item before disposal.")
         } else {
             listOf("Dispose in general waste unless official guidance says otherwise.")
         }
@@ -124,26 +129,22 @@ class RealScanRepository : ScanRepository {
             final.instructions
         }
 
+        val wasteType = WasteCategoryMapper.mapCategoryToWasteType(final.category)
+
         return ScanResult(
             category = final.category,
-            recyclable = final.recyclable,
+            recyclable = displayRecyclable,
             confidence = final.confidence,
             instruction = final.instruction,
             instructions = finalInstructions,
-            binType = determineBinType(final.category, final.recyclable),
+            binType = WasteCategoryMapper.mapWasteTypeToBinType(wasteType),
             debugMessage = buildTier2DebugMessage(meta)
         )
     }
 
     private fun determineBinType(category: String, recyclable: Boolean): String {
-        val normalized = category.trim()
-        return when {
-            normalized.startsWith("E-waste - ", ignoreCase = true) -> "EWASTE"
-            normalized.startsWith("Lighting - ", ignoreCase = true) -> "LIGHTING"
-            recyclable -> "BLUEBIN"
-            // No dedicated textile/general bin endpoint in current backend dataset.
-            else -> ""
-        }
+        val wasteType = WasteCategoryMapper.mapCategoryToWasteType(category)
+        return WasteCategoryMapper.mapWasteTypeToBinType(wasteType)
     }
 }
 
@@ -159,10 +160,8 @@ class LocalModelScanRepository(private val context: Context) : ScanRepository {
             val bitmap = android.graphics.BitmapFactory.decodeFile(imageFile.absolutePath)
             val result = classifier.classify(bitmap)
 
-            val isRecyclable = when (result.category.lowercase()) {
-                "plastic", "metal", "glass", "paper" -> true
-                else -> false
-            }
+            val mappedWasteType = WasteCategoryMapper.mapCategoryToWasteType(result.category)
+            val isRecyclable = mappedWasteType != WasteCategoryMapper.TYPE_OTHERS
 
             delay(1000)
 
@@ -269,8 +268,13 @@ class HybridScanRepository(
     }
 
     private fun mapFinalToScanResult(final: FinalResult, meta: Meta?): ScanResult {
-        val fallbackInstructions = if (final.recyclable) {
-            listOf("Clean and dry the item.", "Place it in the blue recycling bin.")
+        val displayRecyclable = WasteCategoryMapper.shouldDisplayAsRecyclable(
+            final.category,
+            final.recyclable
+        )
+
+        val fallbackInstructions = if (displayRecyclable) {
+            listOf("Clean and dry the item before disposal.")
         } else {
             listOf("Dispose in general waste unless official guidance says otherwise.")
         }
@@ -281,24 +285,31 @@ class HybridScanRepository(
             final.instructions
         }
 
+        val wasteType = WasteCategoryMapper.mapCategoryToWasteType(final.category)
+
         return ScanResult(
             category = final.category,
-            recyclable = final.recyclable,
+            recyclable = displayRecyclable,
             confidence = final.confidence,
             instruction = final.instruction,
             instructions = finalInstructions,
-            binType = determineBinType(final.category, final.recyclable),
+            binType = WasteCategoryMapper.mapWasteTypeToBinType(wasteType),
             debugMessage = buildTier2DebugMessage(meta)
         )
     }
 
     private fun mapTier1ToScanResult(tier1: Tier1Result): ScanResult {
-        val recyclable = when (tier1.category.lowercase()) {
-            "plastic", "metal", "glass", "paper" -> true
+        val categoryName = tier1.category.replaceFirstChar { it.uppercase() }
+        val wasteType = WasteCategoryMapper.mapCategoryToWasteType(categoryName)
+        val recyclable = when (wasteType) {
+            WasteCategoryMapper.TYPE_PLASTIC,
+            WasteCategoryMapper.TYPE_PAPER,
+            WasteCategoryMapper.TYPE_GLASS,
+            WasteCategoryMapper.TYPE_METAL,
+            WasteCategoryMapper.TYPE_EWASTE,
+            WasteCategoryMapper.TYPE_LIGHTING -> true
             else -> false
         }
-
-        val categoryName = tier1.category.replaceFirstChar { it.uppercase() }
 
         return ScanResult(
             category = categoryName,
@@ -315,19 +326,13 @@ class HybridScanRepository(
                 listOf("Do not put this into the blue recycling bin.")
             },
             categoryId = "tier1.${tier1.category}",
-            binType = determineBinType(categoryName, recyclable)
+            binType = WasteCategoryMapper.mapWasteTypeToBinType(wasteType)
         )
     }
 
     private fun determineBinType(category: String, recyclable: Boolean): String {
-        val normalized = category.trim()
-        return when {
-            normalized.startsWith("E-waste - ", ignoreCase = true) -> "EWASTE"
-            normalized.startsWith("Lighting - ", ignoreCase = true) -> "LIGHTING"
-            recyclable -> "BLUEBIN"
-            // No dedicated textile/general bin endpoint in current backend dataset.
-            else -> ""
-        }
+        val wasteType = WasteCategoryMapper.mapCategoryToWasteType(category)
+        return WasteCategoryMapper.mapWasteTypeToBinType(wasteType)
     }
 
     override suspend fun sendFeedback(feedback: FeedbackRequest): Result<Boolean> {
@@ -433,6 +438,7 @@ private fun compressBitmap(source: Bitmap): ByteArray {
         quality = INITIAL_JPEG_QUALITY
     }
 }
+
 
 
 

@@ -4,165 +4,147 @@
     {
       "id": "q1_material",
       "title": "Item Questionnaire",
-      "question": "What material is your item mainly made of?",
-      "subtitle": "Select the option that best describes your item",
+      "question": "What material best matches your item?",
+      "subtitle": "Pick the closest option",
       "options": [
-        { "id": "plastic", "text": "Plastic", "next": "q2_type_common" },
-        { "id": "metal", "text": "Metal", "next": "q2_type_common" },
-        { "id": "glass", "text": "Glass", "next": "q2_type_common" },
-        { "id": "paper", "text": "Paper/Cardboard", "next": "q2_type_common" },
-        { "id": "textile", "text": "Textile (clothes/fabric)", "next": "qt1_textile_condition" },
-        { "id": "ewaste", "text": "Electronics / E-waste", "next": "qe1_battery" },
-        { "id": "other", "text": "Other / Not sure", "next": "qx1_uncertain" }
+        { "id": "plastic", "text": "Plastic", "next": "q2_clean_dry" },
+        { "id": "paper", "text": "Paper / Cardboard", "next": "q2_clean_dry" },
+        { "id": "glass", "text": "Glass", "next": "q2_clean_dry" },
+        { "id": "metal", "text": "Metal", "next": "q2_clean_dry" },
+        { "id": "ewaste", "text": "Electronics / E-waste", "next": "out_ewaste" },
+        { "id": "lighting", "text": "Lighting (bulb / tube)", "next": "out_lighting" },
+        { "id": "textile", "text": "Textile (clothes / fabric)", "next": "q_textile_state" },
+        { "id": "unknown", "text": "Other / Not sure", "next": "q_not_sure_reason" }
       ]
     },
     {
-      "id": "q2_type_common",
-      "question": "What type of item is it?",
-      "subtitle": "Select the option that best describes your item",
-      "options": [
-        { "id": "container", "text": "Container/Bottle/Can", "next": "q3_clean_dry" },
-        { "id": "packaging", "text": "Packaging (bag, wrapper, film)", "next": "q3_clean_dry" },
-        { "id": "device_nonelec", "text": "Device/Appliance (no electronics)", "next": "q3_clean_dry" },
-        { "id": "document", "text": "Document/Paper", "next": "q3_clean_dry" },
-        { "id": "other", "text": "Other", "next": "qx1_uncertain" }
-      ]
-    },
-    {
-      "id": "q3_clean_dry",
+      "id": "q2_clean_dry",
       "question": "Is the item clean and dry?",
-      "subtitle": "Select the option that best describes your item",
+      "subtitle": "Dirty items can contaminate recycling",
       "options": [
-        { "id": "clean", "text": "Yes, it's clean", "next": "q4_contains_battery" },
-        { "id": "dirty", "text": "No, it has residue", "next": "out_dirty_contaminated" },
-        { "id": "unsure", "text": "Not sure", "next": "qx1_uncertain" }
+        { "id": "yes", "text": "Yes", "next": "q3_mixed_parts" },
+        { "id": "no", "text": "No", "next": "out_contaminated" },
+        { "id": "not_sure", "text": "Not sure", "next": "out_not_sure" }
       ]
     },
     {
-      "id": "q4_contains_battery",
-      "question": "Does it contain a battery or electronic parts?",
-      "subtitle": "This helps determine if special drop-off is needed",
+      "id": "q3_mixed_parts",
+      "question": "Does it have multiple materials or parts?",
+      "subtitle": "For example lid + cup, straw + cup, plastic + paper",
       "options": [
-        { "id": "yes", "text": "Yes", "next": "out_ewaste_special" },
-        { "id": "no", "text": "No", "next": "out_common_recyclable" },
-        { "id": "unsure", "text": "Not sure", "next": "out_uncertain_try_scan" }
+        { "id": "single", "text": "Single material", "next": "out_bluebin" },
+        { "id": "mixed", "text": "Mixed parts", "next": "out_mixed_parts" },
+        { "id": "not_sure", "text": "Not sure", "next": "out_not_sure" }
       ]
     },
     {
-      "id": "qe1_battery",
-      "question": "Does it contain a battery?",
-      "subtitle": "Batteries should not go into the blue bin",
+      "id": "q_textile_state",
+      "question": "Is the textile clean and dry?",
+      "subtitle": "Textile does not go into blue bin",
       "options": [
-        { "id": "yes", "text": "Yes", "next": "out_ewaste_battery" },
-        { "id": "no", "text": "No", "next": "out_ewaste_special" },
-        { "id": "unsure", "text": "Not sure", "next": "out_ewaste_special" }
+        { "id": "yes", "text": "Yes", "next": "out_textile" },
+        { "id": "no", "text": "No", "next": "out_textile" },
+        { "id": "not_sure", "text": "Not sure", "next": "out_not_sure" }
       ]
     },
     {
-      "id": "qt1_textile_condition",
-      "question": "Is it wearable textile in good condition?",
-      "subtitle": "We can route you to donation or textile recycling",
+      "id": "q_not_sure_reason",
+      "question": "Why are you unsure?",
+      "subtitle": "Choose the closest reason",
       "options": [
-        { "id": "donate", "text": "Yes, can donate", "next": "out_textile_donate" },
-        { "id": "recycle", "text": "No, worn-out/dirty", "next": "out_textile_recycle" },
-        { "id": "unsure", "text": "Not sure", "next": "out_uncertain_try_scan" }
-      ]
-    },
-    {
-      "id": "qx1_uncertain",
-      "question": "Do you see a material label (e.g., PET, PP, PAP, GL)?",
-      "subtitle": "If yes, use it to identify the material more accurately",
-      "options": [
-        { "id": "yes", "text": "Yes, I see a label", "next": "out_uncertain_try_scan" },
-        { "id": "no", "text": "No label / Not sure", "next": "out_uncertain_try_scan" }
+        { "id": "blurry", "text": "Photo/item is unclear", "next": "out_not_sure" },
+        { "id": "multiple", "text": "Multiple items together", "next": "out_not_sure" },
+        { "id": "complex", "text": "Complex item/material", "next": "out_not_sure" }
       ]
     }
   ],
   "outcomes": [
     {
-      "id": "out_common_recyclable",
+      "id": "out_bluebin",
       "categoryTitle": "Recyclable Item",
       "disposalLabel": "Recyclable",
       "certainty": "MEDIUM",
-      "explanation": "Based on your answers, this item is likely acceptable for recycling if it is clean and dry.",
+      "explanation": "This looks suitable for normal recycling when clean and dry.",
       "tips": [
-        "Empty, rinse, and dry the item before recycling",
-        "Remove mixed materials if possible (e.g., caps, liners)",
-        "If in doubt, use camera scan for confirmation"
+        "Empty and rinse the item before disposal.",
+        "Dry the item to avoid contaminating other recyclables.",
+        "Place it in a blue recycling bin."
       ],
-      "instruction": "1. Rinse the bottle thoroughly.\n2. Remove the cap.\n3. Crush the bottle to save space."
+      "instruction": "Clean and dry the item, then use the blue recycling bin."
     },
     {
-      "id": "out_dirty_contaminated",
+      "id": "out_contaminated",
       "categoryTitle": "Contaminated Item",
       "disposalLabel": "Non-recyclable",
       "certainty": "HIGH",
-      "explanation": "Food or liquid residue can contaminate recycling streams, so it should not go into the recycling bin as-is.",
+      "explanation": "Food or liquid residue can contaminate the recycling stream.",
       "tips": [
-        "Rinse and dry the item before recycling",
-        "If it cannot be cleaned, dispose as general waste",
-        "Avoid placing oily or heavily soiled items into recycling"
+        "If possible, rinse and dry the item first.",
+        "If it cannot be cleaned, dispose it as general waste.",
+        "Do not place dirty items in the blue recycling bin."
       ]
     },
     {
-      "id": "out_ewaste_special",
-      "categoryTitle": "E-waste",
-      "disposalLabel": "Special drop-off",
-      "certainty": "HIGH",
-      "explanation": "Electronic items should be handled separately and should not be placed in the blue recycling bin.",
-      "tips": [
-        "Bring it to an e-waste collection point",
-        "Do not place e-waste into general recycling bins",
-        "If removable, separate parts like batteries for proper disposal"
-      ]
-    },
-    {
-      "id": "out_ewaste_battery",
-      "categoryTitle": "Battery / E-waste",
-      "disposalLabel": "Special drop-off",
-      "certainty": "HIGH",
-      "explanation": "Batteries require special handling and must not go into the blue bin.",
-      "tips": [
-        "Bring batteries to designated battery recycling points",
-        "If possible, remove battery from device before disposal",
-        "Avoid damaging or puncturing batteries"
-      ]
-    },
-    {
-      "id": "out_textile_donate",
-      "categoryTitle": "Textile (Donation)",
-      "disposalLabel": "Special drop-off",
-      "certainty": "HIGH",
-      "explanation": "Wearable textiles in good condition are better donated or collected via textile channels rather than the blue bin.",
-      "tips": [
-        "Donate to textile collection/donation points",
-        "Wash and bag clean clothing before donation",
-        "If unsure, use the app’s location finder (TODO) later"
-      ]
-    },
-    {
-      "id": "out_textile_recycle",
-      "categoryTitle": "Textile",
-      "disposalLabel": "Special drop-off",
+      "id": "out_mixed_parts",
+      "categoryTitle": "Mixed Material Item",
+      "disposalLabel": "Recyclable",
       "certainty": "MEDIUM",
-      "explanation": "Worn-out textiles may be accepted by textile recycling channels depending on condition and material.",
+      "explanation": "Separate mixed parts first, then recycle the suitable parts.",
       "tips": [
-        "Bag the textile separately before drop-off",
-        "If wet/soiled, dry it first to prevent mold",
-        "If uncertain, try camera scan or check guidance (TODO)"
+        "Separate plastic, paper, and metal parts if possible.",
+        "Recycle clean single-material parts in the blue bin.",
+        "Dispose non-recyclable parts as general waste."
       ]
     },
     {
-      "id": "out_uncertain_try_scan",
+      "id": "out_ewaste",
+      "categoryTitle": "E-waste - Electronic Item",
+      "disposalLabel": "Recyclable",
+      "certainty": "HIGH",
+      "explanation": "Electronic items require special e-waste collection channels.",
+      "tips": [
+        "Do not place this item in a blue recycling bin.",
+        "If safe, remove batteries first.",
+        "Bring it to an e-waste collection point."
+      ],
+      "instruction": "Use an e-waste collection point for this item."
+    },
+    {
+      "id": "out_lighting",
+      "categoryTitle": "Lighting Item",
+      "disposalLabel": "Recyclable",
+      "certainty": "HIGH",
+      "explanation": "Lighting items should use dedicated lighting collection bins.",
+      "tips": [
+        "Do not put lighting items in blue bins.",
+        "Pack carefully to avoid breakage.",
+        "Bring the item to a lighting recycling point."
+      ]
+    },
+    {
+      "id": "out_textile",
+      "categoryTitle": "Textile - Fabric Item",
+      "disposalLabel": "Recyclable",
+      "certainty": "MEDIUM",
+      "explanation": "Textile items should go to textile collection channels, not blue bins.",
+      "tips": [
+        "Keep textile items dry.",
+        "Bag them separately.",
+        "Send to a textile donation or collection point."
+      ]
+    },
+    {
+      "id": "out_not_sure",
       "categoryTitle": "Not sure",
       "disposalLabel": "Not sure",
       "certainty": "LOW",
-      "explanation": "We don’t have enough information to confidently determine the correct disposal path.",
+      "explanation": "There is not enough confidence to give a strict disposal path.",
       "tips": [
-        "Use camera scan to identify the item",
-        "Look for a material label (PET/PP/PAP/GL)",
-        "When in doubt, avoid placing it into the blue bin"
-      ]
+        "Use AI Trash Scan for a photo-based result.",
+        "If still unsure, avoid contaminating blue bins.",
+        "Use general waste as a safe fallback."
+      ],
+      "instruction": "If unsure, do not use blue bin. Use AI Trash Scan or general waste fallback."
     }
   ]
 }

@@ -88,6 +88,7 @@ class ScanningResultFragment : Fragment() {
         binding.tvCategory.text = mappingCategory(scanResult.category)
 
         val isNotSure = isNotSureCategory(scanResult.category)
+        val displayRecyclable = WasteCategoryMapper.shouldDisplayAsRecyclable(scanResult.category, scanResult.recyclable)
 
         if (isNotSure) {
             binding.tvBadge.text = "Not sure"
@@ -105,7 +106,7 @@ class ScanningResultFragment : Fragment() {
             binding.tvDescriptionWait.setTextColor(
                 androidx.core.content.ContextCompat.getColor(requireContext(), android.R.color.holo_orange_dark)
             )
-        } else if (scanResult.recyclable) {
+        } else if (displayRecyclable) {
             binding.tvBadge.text = "Recyclable"
             binding.tvBadge.setTextColor(
                 androidx.core.content.ContextCompat.getColor(requireContext(), android.R.color.holo_green_dark)
@@ -193,13 +194,12 @@ class ScanningResultFragment : Fragment() {
 
         binding.btnRecycle.setOnClickListener {
             // Get the scanned item type
-            val scannedCategory = mappingCategory(currentScanResult?.category ?: "")
-            // Use the bin type determined by the Repository/Logic
-            val binType = currentScanResult?.binType ?: ""
+            val mappedWasteType = WasteCategoryMapper.mapCategoryToWasteType(currentScanResult?.category)
+            val binType = WasteCategoryMapper.mapWasteTypeToBinType(mappedWasteType)
 
             val bundle = Bundle().apply {
                 putString("selectedBinType", binType)
-                putString("wasteCategory", scannedCategory)
+                putString("wasteCategory", mappedWasteType)
             }
 
             findNavController().navigate(
@@ -232,3 +232,6 @@ class ScanningResultFragment : Fragment() {
         _binding = null
     }
 }
+
+
+

@@ -80,14 +80,12 @@ class CheckInFragment : Fragment() {
 
             val prefs = requireContext().getSharedPreferences("APP_PREFS", Context.MODE_PRIVATE)
 
-            // 直接尝试从 Token 解析 userId
             val token = prefs.getString("TOKEN", null) ?: prefs.getString("JWT_TOKEN", null)
             if (token != null) {
                 userId = JwtUtils.getUserIdFromToken(token) ?: -1L
                 Log.d(TAG, "Successfully parsed userId from Token: $userId")
             }
 
-            // 如果 Token 解析失败，回退到存储的 ID
             if (userId == -1L) {
                 userId = prefs.getLong("USER_ID", -1L)
             }
@@ -96,9 +94,13 @@ class CheckInFragment : Fragment() {
             retrieveBinInformation()
             fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity())
             updateSubmitButtonState(false)
+
             setupButtons()
             setupCounter()
             setupChipListeners()
+
+            retrieveScannedBinType()
+
             displayBinInformation()
 
             Log.d(TAG, "### Resolved User ID: $userId")
@@ -116,7 +118,15 @@ class CheckInFragment : Fragment() {
             binType = bundle.getString("binType", "") ?: ""
             binLatitude = bundle.getDouble("binLatitude", 0.0)
             binLongitude = bundle.getDouble("binLongitude", 0.0)
-            selectedBinType = bundle.getString("selectedBinType", "")
+            selectedBinType = bundle.getString("selectedBinType", "") ?: ""
+            wasteCategory = bundle.getString("wasteCategory") ?: bundle.getString("scannedCategory")
+
+        } ?: run {
+            binId = ""
+            binName = "Paper"
+            binType = "BLUEBIN"
+            binLatitude = 1.4689
+            binLongitude = 103.8143
         }
     }
 
@@ -145,18 +155,27 @@ class CheckInFragment : Fragment() {
     }
 
     private fun setupChipListeners() {
-        binding.cgItemType.setOnCheckedStateChangeListener { _, checkedIds ->
-            if (checkedIds.isNotEmpty()) {
-                wasteType = when (checkedIds.first()) {
-                    R.id.chipPlastic -> "Plastic"
-                    R.id.chipPaper -> "Paper"
-                    R.id.chipGlass -> "Glass"
-                    R.id.chipMetal -> "Metal"
-                    R.id.chipEWaste -> "E-Waste"
-                    R.id.chipTextiles -> "Textile"
+
+        try {
+            binding.cgItemType.setOnCheckedStateChangeListener { _, checkedIds ->
+                if (checkedIds.isEmpty()) {
+                    return@setOnCheckedStateChangeListener
+                }
+
+                val checkedId = checkedIds.first()
+                wasteType = when (checkedId) {
+                    R.id.chipPlastic -> WasteCategoryMapper.TYPE_PLASTIC
+                    R.id.chipPaper -> WasteCategoryMapper.TYPE_PAPER
+                    R.id.chipGlass -> WasteCategoryMapper.TYPE_GLASS
+                    R.id.chipMetal -> WasteCategoryMapper.TYPE_METAL
+                    R.id.chipEWaste -> WasteCategoryMapper.TYPE_EWASTE
+                    R.id.chipLighting -> WasteCategoryMapper.TYPE_LIGHTING
+                    R.id.chipOthers -> WasteCategoryMapper.TYPE_OTHERS
                     else -> ""
                 }
             }
+
+        } catch (_: Exception) {
         }
     }
 
@@ -209,38 +228,197 @@ class CheckInFragment : Fragment() {
         if (isSubmitted) {
             disableRecordVideo()
             updateSubmitButtonState(false)
-        } else if (findNavController().currentBackStackEntry?.savedStateHandle?.contains("item_count") == true) {
-            loadLastRecordedVideo()
+        }
+    }
+
+    private fun retrieveScannedBinType() {
+        arguments?.let { bundle ->
+            selectedBinType = bundle.getString("selectedBinType")
+            wasteCategory = bundle.getString("wasteCategory") ?: bundle.getString("scannedCategory")
+        } ?: run {
+            selectedBinType = null
+            wasteCategory = null
+        }
+
+        applyDefaultWasteTypeSelection()
+    }
+
+    private fun applyDefaultWasteTypeSelection() {
+        val mappedWasteType = if (!wasteCategory.isNullOrBlank()) {
+            WasteCategoryMapper.mapCategoryToWasteType(wasteCategory)
+        } else {
+            mapBinTypeToWasteType(selectedBinType)
+        }
+
+        wasteType = mappedWasteType
+
+        val chipId = when (mappedWasteType) {
+            WasteCategoryMapper.TYPE_PLASTIC -> R.id.chipPlastic
+            WasteCategoryMapper.TYPE_PAPER -> R.id.chipPaper
+            WasteCategoryMapper.TYPE_GLASS -> R.id.chipGlass
+            WasteCategoryMapper.TYPE_METAL -> R.id.chipMetal
+            WasteCategoryMapper.TYPE_EWASTE -> R.id.chipEWaste
+            WasteCategoryMapper.TYPE_LIGHTING -> R.id.chipLighting
+            else -> R.id.chipOthers
+        }
+
+        binding.cgItemType.check(chipId)
+    }
+
+    private fun mapBinTypeToWasteType(binType: String?): String {
+        return when (binType?.trim()?.uppercase()) {
+            "EWASTE", "E-WASTE" -> WasteCategoryMapper.TYPE_EWASTE
+            "LIGHTING", "LAMP" -> WasteCategoryMapper.TYPE_LIGHTING
+            "BLUEBIN" -> WasteCategoryMapper.TYPE_PLASTIC
+            else -> WasteCategoryMapper.TYPE_OTHERS
         }
     }
 
     private fun disableRecordVideo() {
-        binding.btnRecordVideo.apply {
-            isEnabled = false
-            text = "VIDEO SUBMITTED"
-            setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.light_red_disabled))
-        }
+        binding.btnRecordVideo.isEnabled = false
+        binding.btnRecordVideo.isClickable = false
+
+        // Visual clarity
+        binding.btnRecordVideo.alpha = 1f
+        binding.btnRecordVideo.text = "VIDEO SUBMITTED"
+
+        // Force readable colors
+        binding.btnRecordVideo.setBackgroundColor(
+            ContextCompat.getColor(requireContext(), R.color.light_red_disabled)
+        )
+        binding.btnRecordVideo.setTextColor(Color.WHITE)
     }
 
+    private fun restoreRecordVideoButton() {
+        binding.btnRecordVideo.isEnabled = true
+        binding.btnRecordVideo.isClickable = true
+        binding.btnRecordVideo.alpha = 1f
+        binding.btnRecordVideo.text = "RECORD VIDEO"
+        binding.btnRecordVideo.setBackgroundColor(
+            ContextCompat.getColor(requireContext(), android.R.color.holo_blue_dark)
+        )
+        binding.btnRecordVideo.setTextColor(Color.WHITE)
+    }
+
+    // Validation orchestration function
     private fun handleSubmitWithValidation() {
-        if (userId == -1L) {
-            showStatus("Error: User not logged in!", true)
+        val quantity = currentCount
+        val file = recordedFile
+
+        // Quantity > 10 video mandatory
+        if (quantity > 10) {
+            if (file == null) {
+                showStatus("Video required for quantity > 10", isError = true)
+                restoreRecordVideoButton()
+                return
+            }
+            submitWithVideoProof(file)
             return
         }
 
-        val file = recordedFile
-        if (currentCount > 10 && file == null) {
-            showStatus("Video required for > 10 items", true)
-            return
+        // Quantity <= 10 check duration
+        val durationSeconds = file?.let { getVideoDurationSeconds(it) } ?: 0
+
+        if (durationSeconds > 5) {
+            submitWithoutVideoProof(durationSeconds)
+        } else {
+            showStatus(
+                "Invalid check-in: duration must be more than 5 seconds",
+                isError = true
+            )
+            restoreRecordVideoButton()
         }
-        val duration = file?.let { getVideoDurationSeconds(it) } ?: 0
-        updateSubmitButtonState(false)
-        showStatus("Submitting...", false)
-        lifecycleScope.launch { submitCheckIn(duration, file?.name ?: "dummy_video.mp4") }
     }
 
-    private suspend fun submitCheckIn(durationSeconds: Int, videoKey: String?) {
-        val currentTime = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.US).format(Date())
+    // Upload video and submit (for quantity > 10)
+    private fun submitWithVideoProof(file: File) {
+        val durationSeconds = getVideoDurationSeconds(file)
+
+        updateSubmitButtonState(false)
+        showStatus("Requesting upload permission...", isError = false)
+
+        lifecycleScope.launch {
+            try {
+                // Step 1: Request pre-signed upload URL from backend
+                val presignResponse = RetrofitClient.apiService().getPresignedUpload(
+                    PresignUploadRequest(userId = userId.toLong())
+                )
+
+                if (!presignResponse.isSuccessful || presignResponse.body() == null) {
+                    showStatus("Failed to get upload permission", isError = true)
+                    updateSubmitButtonState(true)
+                    restoreRecordVideoButton()
+                    return@launch
+                }
+
+                val presignData = presignResponse.body()!!
+                Log.d(TAG, "Got pre-signed URL for key: ${presignData.objectKey}")
+
+                // Step 2: Upload video directly to Spaces
+                showStatus("Uploading video...", isError = false)
+
+                val uploadSuccess = VideoUploader.uploadVideoToSpaces(
+                    file = file,
+                    presignedUrl = presignData.uploadUrl,
+                    onProgress = { progress ->
+                        lifecycleScope.launch {
+                            showStatus("Uploading: $progress%", isError = false)
+                        }
+                    }
+                )
+
+                if (!uploadSuccess) {
+                    showStatus("Video upload failed", isError = true)
+                    updateSubmitButtonState(true)
+                    restoreRecordVideoButton()
+                    return@launch
+                }
+
+                Log.d(TAG, "Video uploaded successfully")
+
+                // Step 3: Submit check-in metadata WITH video key
+                submitCheckIn(
+                    durationSeconds = durationSeconds,
+                    videoKey = presignData.objectKey
+                )
+
+            } catch (e: Exception) {
+                Log.e(TAG, "Upload error", e)
+                showStatus("Error: ${e.message}", isError = true)
+                updateSubmitButtonState(true)
+                restoreRecordVideoButton()
+            }
+        }
+    }
+
+    // Submit WITHOUT video (valid low-quantity case)
+    private fun submitWithoutVideoProof(durationSeconds: Int) {
+        updateSubmitButtonState(false)
+        showStatus("Submitting check-in...", isError = false)
+
+        lifecycleScope.launch {
+            try {
+                submitCheckIn(
+                    durationSeconds = durationSeconds,
+                    videoKey = null
+                )
+            } catch (e: Exception) {
+                Log.e(TAG, "Submission error", e)
+                showStatus("Submission failed: ${e.message}", isError = true)
+                updateSubmitButtonState(true)
+            }
+        }
+    }
+
+    // Centralized submission (clean & reusable)
+    private suspend fun submitCheckIn(
+        durationSeconds: Int,
+        videoKey: String?
+    ) {
+        val currentTime = SimpleDateFormat(
+            "yyyy-MM-dd'T'HH:mm:ss",
+            Locale.getDefault()
+        ).format(Date())
 
         val checkInData = CheckInData(
             userId = userId,
@@ -252,24 +430,43 @@ class CheckInFragment : Fragment() {
             checkInTime = currentTime
         )
 
+        Log.d(ContentValues.TAG, "####Bin ID submitted: ${binId}")
+
         try {
             val response = RetrofitClient.apiService().submitRecycleCheckIn(checkInData)
-            if (response.isSuccessful && (response.body()?.responseCode == "SUCCESS" || response.body()?.responseCode == "0000")) {
-                showStatus("Check-in Successful!", false)
-                isSubmitted = true
 
-                delay(1200)
-                findNavController().popBackStack()
+            if (response.isSuccessful) {
+                updateSubmitButtonState(false)
+                disableRecordVideo()
+                val resBody = response.body()
+                if (resBody != null) {
+                    val message = resBody.responseCode + "\n" + resBody.responseDesc
+                    showStatus(message, isError = false)
+
+                    if (resBody.responseCode == "0000") {
+                        isSubmitted = true
+                        delay(1200)
+                        findNavController().popBackStack()
+                    } else {
+                        updateSubmitButtonState(true)
+                        restoreRecordVideoButton()
+                    }
+                } else {
+                    showStatus("Error: ${response.body()?.responseDesc ?: response.message()}", true)
+                    updateSubmitButtonState(true)
+                    restoreRecordVideoButton()
+                }
             } else {
-                showStatus("Error: ${response.body()?.responseDesc ?: response.message()}", true)
+                showStatus("Submission failed (${response.code()})", true)
                 updateSubmitButtonState(true)
+                restoreRecordVideoButton()
             }
         } catch (e: Exception) {
             showStatus("Network Error: ${e.message}", true)
             updateSubmitButtonState(true)
+            restoreRecordVideoButton()
         }
     }
-
     private fun showStatus(message: String, isError: Boolean) {
         binding.tvStatusMessage.apply {
             text = message
@@ -289,5 +486,12 @@ class CheckInFragment : Fragment() {
 
     fun updateCounterDisplay() { binding.tvItemCount.text = currentCount.toString() }
 
-    override fun onDestroyView() { super.onDestroyView(); _binding = null }
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
+    }
 }
+
+
+
+
