@@ -1,6 +1,8 @@
 package iss.nus.edu.sg.webviews.binitrightmobileapp
 
+import iss.nus.edu.sg.webviews.binitrightmobileapp.model.Achievement
 import iss.nus.edu.sg.webviews.binitrightmobileapp.model.Accessory
+import iss.nus.edu.sg.webviews.binitrightmobileapp.model.CheckInData
 import iss.nus.edu.sg.webviews.binitrightmobileapp.model.DropOffLocation
 import iss.nus.edu.sg.webviews.binitrightmobileapp.model.EventItem
 import iss.nus.edu.sg.webviews.binitrightmobileapp.model.IssueCreateRequest
@@ -142,4 +144,13 @@ interface ApiService {
         @Query("lng") lng: Double,
         @Query("radius") radius: Int
     ): List<DropOffLocation>
+
+    @GET("api/achievements/user/{userId}")
+    suspend fun getAchievementsWithStatus(@Path("userId") userId: Long): Response<List<Achievement>>
+
+    @POST("api/achievements/unlock/{userId}/{achievementId}")
+    suspend fun unlockAchievement(
+        @Path("userId") userId: Long,
+        @Path("achievementId") achievementId: Long
+    ): Response<Unit>
 }

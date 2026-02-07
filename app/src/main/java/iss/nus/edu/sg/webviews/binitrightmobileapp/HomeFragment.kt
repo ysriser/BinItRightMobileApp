@@ -23,7 +23,6 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         super.onViewCreated(view, savedInstanceState)
         _binding = FragmentHomeBinding.bind(view)
 
-        // Existing Navigation listeners
         binding.btnScan.setOnClickListener {
             findNavController().navigate(R.id.action_home_to_scanItem)
         }
@@ -40,6 +39,10 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
             findNavController().navigate(R.id.action_home_to_scanHome)
         }
 
+        binding.cardAchievements.setOnClickListener {
+            findNavController().navigate(R.id.action_home_to_achievements)
+        }
+
         setupReportIssueButton()
 
         fetchUserStats()
@@ -53,9 +56,8 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
     }
 
     private fun fetchUserStats() {
-        // Assuming you store the logged-in user ID in SharedPreferences
         val userId = requireActivity()
-            .getSharedPreferences("AppPrefs", Context.MODE_PRIVATE)
+            .getSharedPreferences("APP_PREFS", Context.MODE_PRIVATE)
             .getLong("USER_ID", -1L)
 
         if (userId != -1L) {
@@ -64,14 +66,12 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
                     val response = RetrofitClient.apiService().getUserProfile(userId)
                     if (response.isSuccessful && response.body() != null) {
                         val user = response.body()!!
-                        binding.tvPointsCount.text = user.pointBalance.toString()
+                        binding.tvPointsCount.text = user.pointBalance?.toString() ?: "0"
                         Log.d(TAG, "###Point: ${user.pointBalance}")
                     } else {
-                        // This will tell you if you got a 404, 500, etc.
                         Log.e(TAG, "###Server Error: ${response.code()} - ${response.errorBody()?.string()}")
                     }
                 } catch (e: Exception) {
-                    // This will tell you if it's a connection timeout or URL crash
                     Log.e(TAG, "###Network Crash: ${e.message}", e)
                 }
             }
