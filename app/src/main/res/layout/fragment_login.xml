@@ -63,6 +63,7 @@
                 app:startIconDrawable="@drawable/outline_person_24"
                 app:layout_constraintTop_toBottomOf="@id/tvWelcome">
                 <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/appUsername"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:hint="Enter your username" />
@@ -78,6 +79,7 @@
                 app:layout_constraintTop_toBottomOf="@id/userUsername">
 
                 <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/appPassword"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:hint="Enter your password"

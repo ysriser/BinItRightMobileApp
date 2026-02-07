@@ -4,4 +4,5 @@ data class UserProfile(
     val name: String,
     val pointBalance: Int,
     val equippedAvatarName: String,
-    )
+    val totalRecycled: Int
+)

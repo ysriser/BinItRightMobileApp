@@ -1,7 +1,9 @@
 package iss.nus.edu.sg.webviews.binitrightmobileapp
 
+import android.content.ContentValues.TAG
 import android.net.Uri
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -192,10 +194,11 @@ class ScanningResultFragment : Fragment() {
         }
 
         binding.btnRecycle.setOnClickListener {
-            // Get the scanned item type
             val scannedCategory = mappingCategory(currentScanResult?.category ?: "")
-            // Use the bin type determined by the Repository/Logic
             val binType = currentScanResult?.binType ?: ""
+
+            Log.d("ScanningResult", "### Passing wasteCategory: $scannedCategory")
+            Log.d("ScanningResult", "### Passing binType: $binType")
 
             val bundle = Bundle().apply {
                 putString("selectedBinType", binType)

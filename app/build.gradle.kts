@@ -140,7 +140,7 @@ dependencies {
     implementation("com.google.android.gms:play-services-location:21.0.1")
 
     // ONNX Runtime
-    implementation("com.microsoft.onnxruntime:onnxruntime-android:1.16.0")
+    implementation("com.microsoft.onnxruntime:onnxruntime-android:1.14.0")
 
     // Image Loading
     implementation(libs.coil)

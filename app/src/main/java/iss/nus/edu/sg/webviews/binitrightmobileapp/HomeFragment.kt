@@ -23,7 +23,6 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         super.onViewCreated(view, savedInstanceState)
         _binding = FragmentHomeBinding.bind(view)
 
-        // Existing Navigation listeners
         binding.btnScan.setOnClickListener {
             findNavController().navigate(R.id.action_home_to_scanItem)
         }
@@ -40,6 +39,15 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
             findNavController().navigate(R.id.action_home_to_scanHome)
         }
 
+        binding.cardChatHelper.setOnClickListener {
+            findNavController().navigate(R.id.action_home_to_chatFragment)
+        }
+
+
+        binding.cardAchievements.setOnClickListener {
+            findNavController().navigate(R.id.action_home_to_achievements)
+        }
+
         setupReportIssueButton()
 
         fetchUserStats()
@@ -53,28 +61,33 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
     }
 
     private fun fetchUserStats() {
-        // Assuming you store the logged-in user ID in SharedPreferences
         val userId = requireActivity()
-            .getSharedPreferences("AppPrefs", Context.MODE_PRIVATE)
+            .getSharedPreferences("APP_PREFS", Context.MODE_PRIVATE)
             .getLong("USER_ID", -1L)
 
         if (userId != -1L) {
             viewLifecycleOwner.lifecycleScope.launch {
                 try {
-                    val response = RetrofitClient.apiService().getUserProfile(userId)
+                    val response = RetrofitClient.apiService().getProfileSummary()
                     if (response.isSuccessful && response.body() != null) {
                         val user = response.body()!!
+                        Log.d(TAG, "###Point Balance from API: ${user.pointBalance}")
+                        Log.d(TAG, "###Setting text to: ${user.pointBalance}")
                         binding.tvPointsCount.text = user.pointBalance.toString()
-                        Log.d(TAG, "###Point: ${user.pointBalance}")
+                        binding.tvRecycledCount.text = user.totalRecycled.toString()
+                        Log.d(TAG, "###Text set successfully") // Add this
                     } else {
-                        // This will tell you if you got a 404, 500, etc.
+                        val errorBody = response.errorBody()?.string()
+                        Log.e(TAG, "###Server Error: ${response.code()} - $errorBody")
                         Log.e(TAG, "###Server Error: ${response.code()} - ${response.errorBody()?.string()}")
                     }
                 } catch (e: Exception) {
-                    // This will tell you if it's a connection timeout or URL crash
                     Log.e(TAG, "###Network Crash: ${e.message}", e)
+                    e.printStackTrace()
                 }
             }
+        } else {
+            Log.e(TAG, "###USER_ID is -1, not making API call")
         }
     }
 

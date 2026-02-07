@@ -24,6 +24,13 @@ class LoginFragment : Fragment(R.layout.fragment_login) {
     private var _binding: FragmentLoginBinding? = null
     private val binding get() = _binding!!
 
+    companion object {
+        private const val TAG = "LoginFragment"
+        private const val PREFS_NAME = "APP_PREFS"
+        private const val TOKEN = "AUTH_TOKEN"
+        private const val USER_ID_KEY = "USER_ID"
+    }
+
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -85,10 +92,6 @@ class LoginFragment : Fragment(R.layout.fragment_login) {
                         val prefs = requireContext()
                             .getSharedPreferences("APP_PREFS", Context.MODE_PRIVATE)
                             .edit()
-
-                        body?.token?.let { token ->
-                            prefs.putString("TOKEN", token)
-                        }
 
                         body?.token?.let { token ->
 
