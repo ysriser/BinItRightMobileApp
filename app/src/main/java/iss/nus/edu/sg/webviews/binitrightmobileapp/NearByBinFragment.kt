@@ -226,8 +226,8 @@ class NearByBinFragment : Fragment(R.layout.fragment_near_by_bin), OnMapReadyCal
                 val lat = location?.latitude ?: FALLBACK_LAT
                 val lng = location?.longitude ?: FALLBACK_LNG
                 hasFetchedBins = true
-                //fetchNearbyBins(lat, lng)
-                fetchNearbyBins(1.2921, 103.77)
+                fetchNearbyBins(lat, lng)
+                //fetchNearbyBins(1.2921, 103.77)
             }
             .addOnFailureListener { e ->
                 Log.e(TAG, "Failed to get location: ${e.message}", e)
@@ -242,7 +242,7 @@ class NearByBinFragment : Fragment(R.layout.fragment_near_by_bin), OnMapReadyCal
                 Log.d(TAG, "Fetching bins via Retrofit for lat=$lat, lng=$lng")
 
                 // Retrofit does the background work and parsing for you
-                val bins = RetrofitClient.apiService().getNearbyBins(lat, lng, 6000)
+                val bins = RetrofitClient.apiService().getNearbyBins(lat, lng, 10000)
 
                 Log.d(TAG, "Successfully fetched ${bins.size} bins")
 
