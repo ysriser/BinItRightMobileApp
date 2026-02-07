@@ -11,6 +11,10 @@
         android:label="Login"
         tools:layout="@layout/fragment_login">
         <action
+            android:id="@+id/action_loginFragment_to_registerFragment"
+            app:destination="@id/registerFragment" />
+
+        <action
             android:id="@+id/action_loginFragment_to_homeFragment"
             app:destination="@id/nav_home"
             app:popUpTo="@id/loginFragment"
@@ -18,10 +22,24 @@
     </fragment>
 
     <fragment
-        android:id="@+id/nav_home"
-        android:name="iss.nus.edu.sg.webviews.binitrightmobileapp.HomeFragment"
-        android:label="Home"
-        tools:layout="@layout/fragment_home" >
+        android:id="@+id/registerFragment"
+        android:name="iss.nus.edu.sg.webviews.binitrightmobileapp.RegisterFragment"
+        android:label="Register"
+        tools:layout="@layout/fragment_register">
+
+        <action
+            android:id="@+id/action_registerFragment_to_loginFragment"
+            app:destination="@id/loginFragment"
+            app:popUpTo="@id/loginFragment"
+            app:popUpToInclusive="true" />
+    </fragment>
+
+
+<fragment
+    android:id="@+id/nav_home"
+    android:name="iss.nus.edu.sg.webviews.binitrightmobileapp.HomeFragment"
+    android:label="Home"
+    tools:layout="@layout/fragment_home" >
         <action
             android:id="@+id/action_home_to_achievements"
             app:destination="@id/achievementsFragment"
@@ -67,7 +85,17 @@
         <action
             android:id="@+id/action_findRecyclingBinFragment_to_homeFragment"
             app:destination="@id/nav_home" />
+
+        <action
+            android:id="@+id/action_home_to_chatFragment"
+            app:destination="@id/chatFragment" />
+
     </fragment>
+
+    <fragment
+        android:id="@+id/chatFragment"
+        android:name="iss.nus.edu.sg.webviews.binitrightmobileapp.ChatFragment"
+        android:label="Chat" />
 
     <fragment
         android:id="@+id/nav_news"
@@ -92,11 +120,6 @@
         android:id="@+id/nav_events"
         android:name="iss.nus.edu.sg.webviews.binitrightmobileapp.EventsFragment"
         android:label="Events" />
-
-    <fragment
-        android:id="@+id/nav_games"
-        android:name="iss.nus.edu.sg.webviews.binitrightmobileapp.GamesFragment"
-        android:label="Games" />
 
     <fragment
         android:id="@+id/nav_profile"

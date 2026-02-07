@@ -255,10 +255,10 @@
                         style="@style/Widget.MaterialComponents.Chip.Choice"/>
 
                     <com.google.android.material.chip.Chip
-                        android:id="@+id/chipTextiles"
+                        android:id="@+id/chipLighting"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Textiles"
+                        android:text="Lighting"
                         android:checkable="true"
                         style="@style/Widget.MaterialComponents.Chip.Choice"/>
 
@@ -398,20 +398,6 @@
             android:orientation="horizontal"
             android:gravity="center"
             android:layout_marginBottom="24dp">
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnBackHome"
-                android:layout_width="0dp"
-                android:layout_weight="1"
-                android:layout_height="56dp"
-                android:text="Back to Home"
-                android:textSize="15sp"
-                app:cornerRadius="28dp"
-                app:icon="@drawable/ic_home"
-                app:iconGravity="start"
-                android:backgroundTint="#757575"
-                android:layout_marginEnd="8dp"
-                style="@style/Widget.Material3.Button.OutlinedButton"/>
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnSubmit"

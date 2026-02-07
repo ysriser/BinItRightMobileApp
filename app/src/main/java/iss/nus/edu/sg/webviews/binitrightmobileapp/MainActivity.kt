@@ -64,7 +64,7 @@ class MainActivity : AppCompatActivity() {
             val params = navBar.layoutParams
 
             when (destination.id) {
-                R.id.loginFragment -> {
+                R.id.loginFragment,R.id.registerFragment -> {
                     navBar.menu.clear() // Deletes the buttons and their listeners
                     navBar.alpha = 0f
                     params.height = 0

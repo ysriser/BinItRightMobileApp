@@ -2,6 +2,8 @@ package iss.nus.edu.sg.webviews.binitrightmobileapp
 
 import iss.nus.edu.sg.webviews.binitrightmobileapp.model.Achievement
 import iss.nus.edu.sg.webviews.binitrightmobileapp.model.Accessory
+import iss.nus.edu.sg.webviews.binitrightmobileapp.model.ChatRequest
+import iss.nus.edu.sg.webviews.binitrightmobileapp.model.ChatResponse
 import iss.nus.edu.sg.webviews.binitrightmobileapp.model.CheckInData
 import iss.nus.edu.sg.webviews.binitrightmobileapp.model.DropOffLocation
 import iss.nus.edu.sg.webviews.binitrightmobileapp.model.EventItem
@@ -12,6 +14,8 @@ import iss.nus.edu.sg.webviews.binitrightmobileapp.model.LoginResponse
 import iss.nus.edu.sg.webviews.binitrightmobileapp.model.NewsItem
 import iss.nus.edu.sg.webviews.binitrightmobileapp.model.RecycleHistoryModel
 import iss.nus.edu.sg.webviews.binitrightmobileapp.model.RedeemResponse
+import iss.nus.edu.sg.webviews.binitrightmobileapp.model.RegisterRequest
+import iss.nus.edu.sg.webviews.binitrightmobileapp.model.RegisterResponse
 import iss.nus.edu.sg.webviews.binitrightmobileapp.model.UserAccessory
 import iss.nus.edu.sg.webviews.binitrightmobileapp.model.UserProfile
 import iss.nus.edu.sg.webviews.binitrightmobileapp.model.UserResponse
@@ -78,6 +82,10 @@ interface ApiService {
         @Body request: LoginRequest
     ): Response<LoginResponse>
 
+    @POST("api/auth/register")
+    suspend fun register(@Body req: RegisterRequest): Response<RegisterResponse>
+
+
     @Multipart
     @POST("/api/v1/scan")
     suspend fun scanImage(
@@ -135,8 +143,8 @@ interface ApiService {
         @Path("accessoriesId") accessoriesId: Long
     ): Response<RedeemResponse>
 
-    @GET("api/user/profile/{id}")
-    suspend fun getUserProfile(@Path("id") userId: Long): Response<UserResponse>
+    @GET("api/summary/profile")
+    suspend fun getUserProfile(@Path("id") userId: Long): Response<UserProfile>
 
     @GET("api/bins/search")
     suspend fun getNearbyBins(
@@ -144,6 +152,15 @@ interface ApiService {
         @Query("lng") lng: Double,
         @Query("radius") radius: Int
     ): List<DropOffLocation>
+
+    @POST("api/chat")
+    suspend fun chat(@Body req: ChatRequest): ChatResponse
+
+    @GET("api/users/{userId}/total-recycled")
+    suspend fun getTotalRecycled(
+        @Path("userId") userId: Long
+    ): Response<Int>
+
 
     @GET("api/achievements/user/{userId}")
     suspend fun getAchievementsWithStatus(@Path("userId") userId: Long): Response<List<Achievement>>
