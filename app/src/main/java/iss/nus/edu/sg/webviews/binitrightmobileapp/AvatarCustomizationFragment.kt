@@ -74,8 +74,6 @@ class AvatarCustomizationFragment : Fragment() {
 
                     if (response.isSuccessful) {
                         loadAccessories() // refresh to show new equipped highlight
-                    } else {
-                        Toast.makeText(context, "Equip failed", Toast.LENGTH_SHORT).show()
                     }
                 } catch (e: Exception) {
                     Toast.makeText(context, "Connection error", Toast.LENGTH_SHORT).show()
