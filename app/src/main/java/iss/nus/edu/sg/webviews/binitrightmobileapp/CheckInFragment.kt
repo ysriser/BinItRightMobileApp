@@ -451,7 +451,7 @@ class CheckInFragment : Fragment() {
         binding.btnRecordVideo.setTextColor(Color.WHITE)
     }
 
-    private fun enableRecordVideo() {
+    private fun restoreRecordVideoButton() {
         binding.btnRecordVideo.isEnabled = true
         binding.btnRecordVideo.isClickable = true
         binding.btnRecordVideo.alpha = 1f
@@ -471,10 +471,10 @@ class CheckInFragment : Fragment() {
         if (quantity > 10) {
             if (file == null) {
                 showStatus("Video required for quantity > 10", isError = true)
-                enableRecordVideo()
+                restoreRecordVideoButton()
                 return
             }
-            uploadVideoAndSubmit(file)
+            submitWithVideoProof(file)
             return
         }
 
@@ -482,18 +482,18 @@ class CheckInFragment : Fragment() {
         val durationSeconds = file?.let { getVideoDurationSeconds(it) } ?: 0
 
         if (durationSeconds > 5) {
-            submitWithoutVideo(durationSeconds)
+            submitWithoutVideoProof(durationSeconds)
         } else {
             showStatus(
                 "Invalid check-in: duration must be more than 5 seconds",
                 isError = true
             )
-            enableRecordVideo()
+            restoreRecordVideoButton()
         }
     }
 
     // Upload video and submit (for quantity > 10)
-    private fun uploadVideoAndSubmit(file: File) {
+    private fun submitWithVideoProof(file: File) {
         val durationSeconds = getVideoDurationSeconds(file)
 
         updateSubmitButtonState(false)
@@ -509,7 +509,7 @@ class CheckInFragment : Fragment() {
                 if (!presignResponse.isSuccessful || presignResponse.body() == null) {
                     showStatus("Failed to get upload permission", isError = true)
                     updateSubmitButtonState(true)
-                    enableRecordVideo()
+                    restoreRecordVideoButton()
                     return@launch
                 }
 
@@ -532,7 +532,7 @@ class CheckInFragment : Fragment() {
                 if (!uploadSuccess) {
                     showStatus("Video upload failed", isError = true)
                     updateSubmitButtonState(true)
-                    enableRecordVideo()
+                    restoreRecordVideoButton()
                     return@launch
                 }
 
@@ -548,13 +548,13 @@ class CheckInFragment : Fragment() {
                 Log.e(TAG, "Upload error", e)
                 showStatus("Error: ${e.message}", isError = true)
                 updateSubmitButtonState(true)
-                enableRecordVideo()
+                restoreRecordVideoButton()
             }
         }
     }
 
     // Submit WITHOUT video (valid low-quantity case)
-    private fun submitWithoutVideo(durationSeconds: Int) {
+    private fun submitWithoutVideoProof(durationSeconds: Int) {
         updateSubmitButtonState(false)
         showStatus("Submitting check-in...", isError = false)
 
@@ -605,17 +605,17 @@ class CheckInFragment : Fragment() {
                     findNavController().popBackStack()
                 } else {
                     updateSubmitButtonState(true)
-                    enableRecordVideo()
+                    restoreRecordVideoButton()
                 }
             } else {
                 showStatus("Empty server response", isError = true)
                 updateSubmitButtonState(true)
-                enableRecordVideo()
+                restoreRecordVideoButton()
             }
         } else {
             showStatus("Submission failed (${response.code()})", isError = true)
             updateSubmitButtonState(true)
-            enableRecordVideo()
+            restoreRecordVideoButton()
         }
     }
 
@@ -657,6 +657,7 @@ class CheckInFragment : Fragment() {
         _binding = null
     }
 }
+
 
 
 
