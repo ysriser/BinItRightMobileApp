@@ -13,7 +13,8 @@ import iss.nus.edu.sg.webviews.binitrightmobileapp.model.Accessory
 class RewardShopAdapter(
     private var items: List<Accessory>,
     private var totalPoints: Int,
-    private val onRedeemClick: (Accessory) -> Unit
+    private val onRedeemClick: (Accessory) -> Unit,
+    private val onEquipClick: (Accessory) -> Unit
 ) : RecyclerView.Adapter<RewardShopAdapter.VH>() {
 
     class VH(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -53,14 +54,38 @@ class RewardShopAdapter(
         )
 
         // Redeem logic
-        val enough = totalPoints >= item.requiredPoints
-        holder.btn.text = if (enough) "Redeem" else "Not enough"
-        holder.btn.isEnabled = enough
-        holder.btn.alpha = if (enough) 1f else 0.5f
+        // --- STATE LOGIC: equipped / owned / redeemable ---
+        val isEquipped = item.equipped
+        val isOwned = item.owned
+        val canRedeem = !isOwned && totalPoints >= item.requiredPoints
 
-        holder.btn.setOnClickListener {
-            if (enough) onRedeemClick(item)
+// important: clear old click due to RecyclerView reuse
+        holder.btn.setOnClickListener(null)
+
+        when {
+            item.owned -> {
+                holder.btn.text = "Owned"
+                holder.btn.isEnabled = false
+                holder.btn.alpha = 0.7f
+                holder.btn.setOnClickListener(null)
+            }
+
+            totalPoints >= item.requiredPoints -> {
+                holder.btn.text = "Redeem"
+                holder.btn.isEnabled = true
+                holder.btn.alpha = 1f
+                holder.btn.setOnClickListener { onRedeemClick(item) }
+            }
+
+            else -> {
+                holder.btn.text = "Not enough"
+                holder.btn.isEnabled = false
+                holder.btn.alpha = 0.5f
+                holder.itemView.alpha = 0.4f
+                holder.itemView.isClickable = false
+            }
         }
+
     }
 
     fun updateData(newItems: List<Accessory>) {

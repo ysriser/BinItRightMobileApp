@@ -21,7 +21,11 @@ class RewardShopFragment : Fragment() {
     private lateinit var adapter: RewardShopAdapter
     private var totalPoints: Int = 0
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
         _binding = FragmentRewardShopBinding.inflate(inflater, container, false)
         return binding.root
     }
@@ -30,17 +34,22 @@ class RewardShopFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         binding.btnBack.setOnClickListener {
-            // Navigates back to the previous fragment (ProfileFragment)
             parentFragmentManager.popBackStack()
         }
+
         // SafeArgs total points passed from Profile
         totalPoints = RewardShopFragmentArgs.fromBundle(requireArguments()).totalPoints
         binding.tvBalance.text = "Your Balance: $totalPoints points"
 
         binding.rvShop.layoutManager = GridLayoutManager(requireContext(), 2)
-        adapter = RewardShopAdapter(emptyList(), totalPoints) { item ->
-            redeem(item)
-        }
+
+        adapter = RewardShopAdapter(
+            emptyList(),
+            totalPoints,
+            onRedeemClick = { item -> redeem(item) },
+            onEquipClick = { item -> equip(item) }
+        )
+
         binding.rvShop.adapter = adapter
 
         loadShopItems()
@@ -72,9 +81,27 @@ class RewardShopFragment : Fragment() {
                         binding.tvBalance.text = "Your Balance: $totalPoints points"
                         adapter.updateTotalPoints(totalPoints)
                         Toast.makeText(requireContext(), body.message, Toast.LENGTH_SHORT).show()
+
+                        loadShopItems() // ✅ refresh so item becomes owned and button changes to Equip
                     }
                 } else {
                     Toast.makeText(requireContext(), "Redeem failed", Toast.LENGTH_SHORT).show()
+                }
+            } catch (e: Exception) {
+                Toast.makeText(requireContext(), "Connection error", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    private fun equip(item: Accessory) {
+        viewLifecycleOwner.lifecycleScope.launch {
+            try {
+                val res = RetrofitClient.apiService().equipAccessory(item.accessoriesId)
+                if (res.isSuccessful) {
+                    Toast.makeText(requireContext(), "Equipped", Toast.LENGTH_SHORT).show()
+                    loadShopItems()
+                } else {
+                    Toast.makeText(requireContext(), "Equip failed", Toast.LENGTH_SHORT).show()
                 }
             } catch (e: Exception) {
                 Toast.makeText(requireContext(), "Connection error", Toast.LENGTH_SHORT).show()
