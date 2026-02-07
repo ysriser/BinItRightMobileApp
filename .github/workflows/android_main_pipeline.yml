@@ -1,7 +1,7 @@
 name: Android Main Pipeline (Post-Merge)
 
 permissions:
-  contents: write 
+  contents: write
   
 on:
   push:
