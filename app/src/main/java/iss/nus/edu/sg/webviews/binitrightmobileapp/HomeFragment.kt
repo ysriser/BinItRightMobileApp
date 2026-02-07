@@ -71,19 +71,17 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
                     val response = RetrofitClient.apiService().getProfileSummary()
                     if (response.isSuccessful && response.body() != null) {
                         val user = response.body()!!
-                        Log.d(TAG, "###Point Balance from API: ${user.pointBalance}")
-                        Log.d(TAG, "###Setting text to: ${user.pointBalance}")
                         binding.tvPointsCount.text = user.pointBalance.toString()
                         binding.tvRecycledCount.text = user.totalRecycled.toString()
-                        Log.d(TAG, "###Text set successfully") // Add this
-                    } else {
-                        val errorBody = response.errorBody()?.string()
-                        Log.e(TAG, "###Server Error: ${response.code()} - $errorBody")
-                        Log.e(TAG, "###Server Error: ${response.code()} - ${response.errorBody()?.string()}")
+                        binding.tvAchievementCount.text = user.totalAchievement.toString()
+                        binding.tvCo2Saved.text = String.format("%.1f kg", user.carbonEmissionSaved)
+                        binding.aiSummary.text = user.aiSummary
                     }
                 } catch (e: Exception) {
                     Log.e(TAG, "###Network Crash: ${e.message}", e)
                     e.printStackTrace()
+                    binding.aiSummary.text =
+                        "You're making a positive environmental impact 🌱 Keep recycling!"
                 }
             }
         } else {
