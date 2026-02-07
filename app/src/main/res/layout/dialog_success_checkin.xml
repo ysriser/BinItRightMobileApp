@@ -20,7 +20,7 @@
             android:layout_width="80dp"
             android:layout_height="80dp"
             android:src="@drawable/ic_check_circle_24"
-            android:tint="@android:color/holo_green_dark"
+            app:tint="@android:color/holo_green_dark"
             android:contentDescription="Success" />
 
         <!-- Success Title -->
