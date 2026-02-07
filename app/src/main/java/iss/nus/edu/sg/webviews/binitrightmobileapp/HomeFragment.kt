@@ -68,11 +68,11 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         if (userId != -1L) {
             viewLifecycleOwner.lifecycleScope.launch {
                 try {
-                    val response = RetrofitClient.apiService().getUserProfile(userId)
+                    val response = RetrofitClient.apiService().getProfileSummary()
                     if (response.isSuccessful && response.body() != null) {
                         val user = response.body()!!
-                        Log.d(TAG, "###Point Balance from API: ${user.pointBalance}") // Add this
-                        Log.d(TAG, "###Setting text to: ${user.pointBalance}") // Add this
+                        Log.d(TAG, "###Point Balance from API: ${user.pointBalance}")
+                        Log.d(TAG, "###Setting text to: ${user.pointBalance}")
                         binding.tvPointsCount.text = user.pointBalance.toString()
                         binding.tvRecycledCount.text = user.totalRecycled.toString()
                         Log.d(TAG, "###Text set successfully") // Add this

@@ -137,8 +137,8 @@ interface ApiService {
         @Path("accessoriesId") accessoriesId: Long
     ): Response<RedeemResponse>
 
-    @GET("api/user/profile/{id}")
-    suspend fun getUserProfile(@Path("id") userId: Long): Response<UserResponse>
+    @GET("api/summary/profile")
+    suspend fun getUserProfile(@Path("id") userId: Long): Response<UserProfile>
 
     @GET("api/bins/search")
     suspend fun getNearbyBins(
