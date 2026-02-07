@@ -41,7 +41,7 @@ class AvatarCustomizationFragment : Fragment() {
 
         // Initialize adapter with empty list
         avatarAdapter = AvatarAdapter(emptyList()) { selectedItem ->
-            handleToggleEquip(selectedItem)
+            handleEquip(selectedItem)
         }
         binding.accessoriesGrid.adapter = avatarAdapter
 
@@ -63,26 +63,26 @@ class AvatarCustomizationFragment : Fragment() {
         }
     }
 
-    private fun handleToggleEquip(item: UserAccessory) {
-        viewLifecycleOwner.lifecycleScope.launch {
-            try {
-                // Determine which endpoint to call based on current state
-                val response = if (item.equipped) {
-                    RetrofitClient.apiService().unequipAccessory(item.accessories.accessoriesId)
-                } else {
-                    RetrofitClient.apiService().equipAccessory(item.accessories.accessoriesId)
-                }
 
-                if (response.isSuccessful) {
-                    loadAccessories() // Refresh the grid to show updated status
-                } else {
-                    Toast.makeText(context, "Update failed", Toast.LENGTH_SHORT).show()
+    private fun handleEquip(item: UserAccessory) {
+        if (item.equipped) return
+
+            viewLifecycleOwner.lifecycleScope.launch {
+                try {
+                    val response =
+                        RetrofitClient.apiService().equipAccessory(item.accessories.accessoriesId)
+
+                    if (response.isSuccessful) {
+                        loadAccessories() // refresh to show new equipped highlight
+                    } else {
+                        Toast.makeText(context, "Equip failed", Toast.LENGTH_SHORT).show()
+                    }
+                } catch (e: Exception) {
+                    Toast.makeText(context, "Connection error", Toast.LENGTH_SHORT).show()
                 }
-            } catch (e: Exception) {
-                Toast.makeText(context, "Connection error", Toast.LENGTH_SHORT).show()
             }
         }
-    }
+
 
     override fun onDestroyView() {
         super.onDestroyView()
