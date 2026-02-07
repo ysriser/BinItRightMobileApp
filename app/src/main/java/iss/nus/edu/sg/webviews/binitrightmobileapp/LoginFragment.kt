@@ -36,7 +36,14 @@ class LoginFragment : Fragment(R.layout.fragment_login) {
             return
         }
 
-        binding.btnSignIn.setOnClickListener { handleLogin() }
+        binding.btnSignIn.setOnClickListener {
+            handleLogin()
+        }
+
+        binding.tvCreateAccount.setOnClickListener {
+            findNavController()
+                .navigate(R.id.action_loginFragment_to_registerFragment)
+        }
     }
 
     private fun handleLogin() {

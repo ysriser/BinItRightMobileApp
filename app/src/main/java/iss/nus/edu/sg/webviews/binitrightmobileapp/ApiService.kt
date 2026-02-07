@@ -9,6 +9,8 @@ import iss.nus.edu.sg.webviews.binitrightmobileapp.model.LoginResponse
 import iss.nus.edu.sg.webviews.binitrightmobileapp.model.NewsItem
 import iss.nus.edu.sg.webviews.binitrightmobileapp.model.RecycleHistoryModel
 import iss.nus.edu.sg.webviews.binitrightmobileapp.model.RedeemResponse
+import iss.nus.edu.sg.webviews.binitrightmobileapp.model.RegisterRequest
+import iss.nus.edu.sg.webviews.binitrightmobileapp.model.RegisterResponse
 import iss.nus.edu.sg.webviews.binitrightmobileapp.model.UserAccessory
 import iss.nus.edu.sg.webviews.binitrightmobileapp.model.UserProfile
 import iss.nus.edu.sg.webviews.binitrightmobileapp.model.UserResponse
@@ -73,6 +75,10 @@ interface ApiService {
     suspend fun login(
         @Body request: LoginRequest
     ): Response<LoginResponse>
+
+    @POST("api/auth/register")
+    suspend fun register(@Body req: RegisterRequest): Response<RegisterResponse>
+
 
     @Multipart
     @POST("/api/v1/scan")

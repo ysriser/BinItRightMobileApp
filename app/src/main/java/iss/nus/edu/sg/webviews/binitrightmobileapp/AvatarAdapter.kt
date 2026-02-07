@@ -33,24 +33,29 @@ class AvatarAdapter(
 
         holder.binding.itemName.text = item.accessories.name
 
-        // 2. Selection Styling: Blue border if equipped
+
         if (item.equipped) {
             holder.binding.accessoryCard.strokeWidth = 6
             holder.binding.accessoryCard.strokeColor = Color.parseColor("#536DFE")
             holder.binding.accessoryCard.setCardBackgroundColor(Color.parseColor("#EEF0FF"))
+
+            holder.binding.root.alpha = 0.7f
+            holder.binding.root.setOnClickListener(null)
+            holder.binding.root.isClickable = false
         } else {
             holder.binding.accessoryCard.strokeWidth = 0
             holder.binding.accessoryCard.setCardBackgroundColor(Color.WHITE)
+
+            holder.binding.root.alpha = 1f
+            holder.binding.root.isClickable = true
+            holder.binding.root.setOnClickListener { onItemClick(item) }
         }
-
-        // 3. Click listener for the whole card
-        holder.binding.root.setOnClickListener { onItemClick(item) }
     }
 
-    override fun getItemCount() = items.size
+        override fun getItemCount() = items.size
 
-    fun updateData(newItems: List<UserAccessory>) {
-        this.items = newItems
-        notifyDataSetChanged()
+        fun updateData(newItems: List<UserAccessory>) {
+            this.items = newItems
+            notifyDataSetChanged()
+        }
     }
-}
