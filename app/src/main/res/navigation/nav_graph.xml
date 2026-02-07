@@ -18,10 +18,10 @@
     </fragment>
 
     <fragment
-        android:id="@+id/nav_home"
-        android:name="iss.nus.edu.sg.webviews.binitrightmobileapp.HomeFragment"
-        android:label="Home"
-        tools:layout="@layout/fragment_home" >
+    android:id="@+id/nav_home"
+    android:name="iss.nus.edu.sg.webviews.binitrightmobileapp.HomeFragment"
+    android:label="Home"
+    tools:layout="@layout/fragment_home" >
         <action
             android:id="@+id/action_home_to_achievements"
             app:destination="@id/achievementsFragment"
@@ -67,7 +67,17 @@
         <action
             android:id="@+id/action_findRecyclingBinFragment_to_homeFragment"
             app:destination="@id/nav_home" />
+
+        <action
+            android:id="@+id/action_home_to_chatFragment"
+            app:destination="@id/chatFragment" />
+
     </fragment>
+
+    <fragment
+        android:id="@+id/chatFragment"
+        android:name="iss.nus.edu.sg.webviews.binitrightmobileapp.ChatFragment"
+        android:label="Chat" />
 
     <fragment
         android:id="@+id/nav_news"

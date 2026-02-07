@@ -1,7 +1,9 @@
 package iss.nus.edu.sg.webviews.binitrightmobileapp
 
+import android.content.ContentValues.TAG
 import android.graphics.Color
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -127,6 +129,9 @@ class QuestionnaireResultFragment : Fragment() {
                 putString("selectedBinType", binType)
                 putString("wasteCategory", itemType)
             }
+
+            Log.d(TAG, "###binType: ${binType}")
+            Log.d(TAG, "###Waste Type: ${itemType}")
 
             findNavController().navigate(
                 R.id.action_questionnaireResultFragment_to_nearbyBinFragment,

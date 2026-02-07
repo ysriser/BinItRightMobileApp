@@ -50,8 +50,8 @@ class NearByBinFragment : Fragment(R.layout.fragment_near_by_bin), OnMapReadyCal
     companion object {
         private const val TAG = "NearByBinFragment"
         private const val LOCATION_PERMISSION_REQUEST_CODE = 1001
-        private const val FALLBACK_LAT = 1.3521
-        private const val FALLBACK_LNG = 103.8198
+        private const val FALLBACK_LAT = 1.2921
+        private const val FALLBACK_LNG = 103.77
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -67,12 +67,12 @@ class NearByBinFragment : Fragment(R.layout.fragment_near_by_bin), OnMapReadyCal
 
     private fun retrieveScanArguments() {
         arguments?.let { bundle ->
-            // Keep both keys for backward compatibility.
             selectedBinType = bundle.getString("selectedBinType") ?: bundle.getString("binType")
             wasteCategory = bundle.getString("wasteCategory") ?: bundle.getString("scannedCategory")
-        }
 
-        Log.d(TAG, "selectedBinType=$selectedBinType, wasteCategory=$wasteCategory")
+            Log.d(TAG, "### Received selectedBinType: $selectedBinType")
+            Log.d(TAG, "### Received wasteCategory: $wasteCategory")
+        }
     }
 
     private fun setupMap() {
@@ -109,6 +109,8 @@ class NearByBinFragment : Fragment(R.layout.fragment_near_by_bin), OnMapReadyCal
     }
 
     private fun navigateToCheckIn(bin: DropOffLocation) {
+        Log.d(TAG, "### Navigating to CheckIn with wasteCategory: $wasteCategory")
+
         val bundle = Bundle().apply {
             putString("binId", bin.id)
             putString("binName", bin.name)
@@ -116,14 +118,16 @@ class NearByBinFragment : Fragment(R.layout.fragment_near_by_bin), OnMapReadyCal
             putString("binType", bin.binType)
             putDouble("binLatitude", bin.latitude)
             putDouble("binLongitude", bin.longitude)
-        }
 
-        selectedBinType?.let {
-            bundle.putString("selectedBinType", it)
-        }
-        wasteCategory?.let {
-            bundle.putString("wasteCategory", it)
-            bundle.putString("scannedCategory", it)
+            // Pass both fields forward
+            selectedBinType?.let {
+                putString("selectedBinType", it)
+                Log.d(TAG, "### Passing selectedBinType: $it")
+            }
+            wasteCategory?.let {
+                putString("wasteCategory", it)
+                Log.d(TAG, "### Passing wasteCategory: $it")
+            }
         }
 
         try {
@@ -161,6 +165,7 @@ class NearByBinFragment : Fragment(R.layout.fragment_near_by_bin), OnMapReadyCal
                 val lng = location?.longitude ?: FALLBACK_LNG
                 hasFetchedBins = true
                 fetchNearbyBins(lat, lng)
+                //fetchNearbyBins(1.2921, 103.77)
             }
             .addOnFailureListener { e ->
                 Log.e(TAG, "Failed to get location: ${e.message}", e)

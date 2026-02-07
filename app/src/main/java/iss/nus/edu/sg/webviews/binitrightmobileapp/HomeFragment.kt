@@ -39,6 +39,11 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
             findNavController().navigate(R.id.action_home_to_scanHome)
         }
 
+        binding.cardChatHelper.setOnClickListener {
+            findNavController().navigate(R.id.action_home_to_chatFragment)
+        }
+
+
         binding.cardAchievements.setOnClickListener {
             findNavController().navigate(R.id.action_home_to_achievements)
         }
@@ -63,18 +68,26 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         if (userId != -1L) {
             viewLifecycleOwner.lifecycleScope.launch {
                 try {
-                    val response = RetrofitClient.apiService().getUserProfile(userId)
+                    val response = RetrofitClient.apiService().getProfileSummary()
                     if (response.isSuccessful && response.body() != null) {
                         val user = response.body()!!
-                        binding.tvPointsCount.text = user.pointBalance?.toString() ?: "0"
-                        Log.d(TAG, "###Point: ${user.pointBalance}")
+                        Log.d(TAG, "###Point Balance from API: ${user.pointBalance}")
+                        Log.d(TAG, "###Setting text to: ${user.pointBalance}")
+                        binding.tvPointsCount.text = user.pointBalance.toString()
+                        binding.tvRecycledCount.text = user.totalRecycled.toString()
+                        Log.d(TAG, "###Text set successfully") // Add this
                     } else {
+                        val errorBody = response.errorBody()?.string()
+                        Log.e(TAG, "###Server Error: ${response.code()} - $errorBody")
                         Log.e(TAG, "###Server Error: ${response.code()} - ${response.errorBody()?.string()}")
                     }
                 } catch (e: Exception) {
                     Log.e(TAG, "###Network Crash: ${e.message}", e)
+                    e.printStackTrace()
                 }
             }
+        } else {
+            Log.e(TAG, "###USER_ID is -1, not making API call")
         }
     }
 
