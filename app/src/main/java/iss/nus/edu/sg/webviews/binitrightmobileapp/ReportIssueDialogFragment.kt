@@ -102,8 +102,7 @@ class ReportIssueDialogFragment : DialogFragment() {
             try {
                 val request = IssueCreateRequest(
                     issueCategory = category,
-                    description = description,
-                    raisedByUserId = userId
+                    description = description
                 )
 
                 android.util.Log.d("ISSUE_DEBUG", "Submitting issue: $request")

@@ -76,6 +76,7 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
                         Log.d(TAG, "###Point Balance from API: ${user.pointBalance}") // Add this
                         Log.d(TAG, "###Setting text to: ${user.pointBalance}") // Add this
                         binding.tvPointsCount.text = user.pointBalance.toString()
+                        binding.tvRecycledCount.text = user.totalRecycled.toString()
                         Log.d(TAG, "###Text set successfully") // Add this
                     } else {
                         val errorBody = response.errorBody()?.string()

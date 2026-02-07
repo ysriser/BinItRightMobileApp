@@ -3,6 +3,7 @@ package iss.nus.edu.sg.webviews.binitrightmobileapp
 import iss.nus.edu.sg.webviews.binitrightmobileapp.model.Accessory
 import iss.nus.edu.sg.webviews.binitrightmobileapp.model.ChatRequest
 import iss.nus.edu.sg.webviews.binitrightmobileapp.model.ChatResponse
+import iss.nus.edu.sg.webviews.binitrightmobileapp.model.CheckInData
 import iss.nus.edu.sg.webviews.binitrightmobileapp.model.DropOffLocation
 import iss.nus.edu.sg.webviews.binitrightmobileapp.model.EventItem
 import iss.nus.edu.sg.webviews.binitrightmobileapp.model.IssueCreateRequest
