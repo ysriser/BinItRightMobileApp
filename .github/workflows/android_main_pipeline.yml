@@ -3,7 +3,7 @@ name: Android Main Pipeline (Post-Merge)
 permissions:
   contents: write
   
-on:
+on: 
   push:
     branches: [ "master" ]
 
