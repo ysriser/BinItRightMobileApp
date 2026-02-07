@@ -18,7 +18,6 @@ import iss.nus.edu.sg.webviews.binitrightmobileapp.model.RegisterRequest
 import iss.nus.edu.sg.webviews.binitrightmobileapp.model.RegisterResponse
 import iss.nus.edu.sg.webviews.binitrightmobileapp.model.UserAccessory
 import iss.nus.edu.sg.webviews.binitrightmobileapp.model.UserProfile
-import iss.nus.edu.sg.webviews.binitrightmobileapp.model.UserResponse
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
 import retrofit2.Response
@@ -160,7 +159,6 @@ interface ApiService {
     suspend fun getTotalRecycled(
         @Path("userId") userId: Long
     ): Response<Int>
-
 
     @GET("api/achievements/user/{userId}")
     suspend fun getAchievementsWithStatus(@Path("userId") userId: Long): Response<List<Achievement>>

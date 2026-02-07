@@ -1,426 +1,395 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F5F7F6">
-    <RelativeLayout
+    android:background="#F5F7F6"
+    android:fillViewport="true">
+
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
 
-        <View
-            android:id="@+id/headerBg"
+        <!-- Header Section -->
+        <RelativeLayout
             android:layout_width="match_parent"
-            android:layout_height="220dp"
-            android:background="#00C853" />
+            android:layout_height="wrap_content">
 
-        <LinearLayout
-            android:id="@+id/headerTextContainer"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:paddingStart="24dp"
-            android:paddingTop="32dp"
-            android:paddingEnd="24dp">
+            <View
+                android:id="@+id/headerBg"
+                android:layout_width="match_parent"
+                android:layout_height="200dp"
+                android:background="#00C853" />
 
             <LinearLayout
-                android:layout_width="wrap_content"
+                android:id="@+id/headerContent"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center_vertical">
+                android:orientation="vertical"
+                android:padding="24dp">
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="8dp"
+                        android:text="🌿"
+                        android:textSize="20sp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Good Morning!"
+                        android:textColor="#E8F5E9"
+                        android:textSize="14sp" />
+                </LinearLayout>
+
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="🌿"
-                    android:textSize="20sp"
-                    android:layout_marginEnd="8dp"/>
+                    android:layout_marginTop="4dp"
+                    android:text="Bin It Right"
+                    android:textColor="#FFFFFF"
+                    android:textSize="28sp"
+                    android:textStyle="bold" />
+
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Good Morning!"
+                    android:layout_marginTop="4dp"
+                    android:text="Making the world greener, together 🌏"
                     android:textColor="#E8F5E9"
                     android:textSize="14sp" />
             </LinearLayout>
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
-                android:text="Bin It Right"
-                android:textColor="#FFFFFF"
-                android:textSize="28sp"
-                android:textStyle="bold" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
-                android:text="Making the world greener, together 🌏"
-                android:textColor="#E8F5E9"
-                android:textSize="14sp" />
-        </LinearLayout>
-
-        <LinearLayout
-            android:id="@+id/statsContainer"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_below="@id/headerTextContainer"
-            android:layout_marginTop="24dp"
-            android:paddingHorizontal="16dp"
-            android:orientation="horizontal"
-            android:baselineAligned="false">
-
-            <androidx.cardview.widget.CardView
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:layout_marginEnd="8dp"
-                app:cardCornerRadius="16dp"
-                app:cardElevation="4dp"
-                app:cardBackgroundColor="#FFFFFF">
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:gravity="center"
-                    android:orientation="vertical"
-                    android:padding="16dp">
-                    <TextView android:text="🏆" android:textSize="24sp" android:layout_width="wrap_content" android:layout_height="wrap_content"/>
-                    <TextView
-                        android:id="@+id/tvPointsCount"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="0"
-                        android:textSize="20sp"
-                        android:textStyle="bold"
-                        android:textColor="#212121"
-                        android:layout_marginTop="4dp"/>
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Points"
-                        android:textSize="12sp"
-                        android:textColor="#757575"/>
-                </LinearLayout>
-            </androidx.cardview.widget.CardView>
-
-            <androidx.cardview.widget.CardView
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:layout_marginHorizontal="4dp"
-                app:cardCornerRadius="16dp"
-                app:cardElevation="4dp"
-                app:cardBackgroundColor="#FFFFFF">
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:gravity="center"
-                    android:orientation="vertical"
-                    android:padding="16dp">
-                    <TextView android:text="♻️"
-                        android:textSize="24sp"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"/>
-                    <TextView
-                        android:id="@+id/tvRecycledCount"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="2"
-                        android:textSize="20sp"
-                        android:textStyle="bold"
-                        android:textColor="#212121"
-                        android:layout_marginTop="4dp"/>
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Recycled"
-                        android:textSize="12sp"
-                        android:textColor="#757575"/>
-                </LinearLayout>
-            </androidx.cardview.widget.CardView>
-
-            <androidx.cardview.widget.CardView
-                android:id="@+id/cardAchievements"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:layout_marginStart="8dp"
-                android:clickable="true"
-                android:focusable="true"
-                android:foreground="?android:attr/selectableItemBackground"
-                app:cardCornerRadius="16dp"
-                app:cardElevation="4dp"
-                app:cardBackgroundColor="#FFFFFF">
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:gravity="center"
-                    android:orientation="vertical"
-                    android:padding="16dp">
-                    <TextView android:text="🏵️" android:textSize="24sp" android:layout_width="wrap_content" android:layout_height="wrap_content"/>
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="1"
-                        android:textSize="20sp"
-                        android:textStyle="bold"
-                        android:textColor="#212121"
-                        android:layout_marginTop="4dp"/>
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Achievements"
-                        android:textSize="10sp"
-                        android:textColor="#757575"/>
-                </LinearLayout>
-            </androidx.cardview.widget.CardView>
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_below="@id/statsContainer"
-            android:orientation="vertical"
-            android:padding="16dp">
-
-            <androidx.cardview.widget.CardView
+            <!-- Stats Cards -->
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="16dp"
-                app:cardCornerRadius="16dp"
-                app:cardElevation="2dp"
-                app:cardBackgroundColor="#FFF8E1"> <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:padding="16dp">
+                android:layout_below="@id/headerContent"
+                android:layout_marginStart="16dp"
+                android:layout_marginEnd="16dp"
+                android:baselineAligned="false"
+                android:orientation="horizontal">
 
-                <LinearLayout
-                    android:layout_width="match_parent"
+                <androidx.cardview.widget.CardView
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal">
-                    <TextView
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:text="📈 Next Milestone"
-                        android:textStyle="bold"
-                        android:textColor="#212121"/>
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="2/5"
-                        android:textStyle="bold"
-                        android:textColor="#FF6D00"/>
-                </LinearLayout>
-
-                <ProgressBar
-                    style="?android:attr/progressBarStyleHorizontal"
-                    android:layout_width="match_parent"
-                    android:layout_height="8dp"
-                    android:layout_marginTop="8dp"
-                    android:progress="40"
-                    android:progressTint="#FF6D00"
-                    android:backgroundTint="#FFE0B2"/>
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:text="3 more to unlock your next achievement! 🎯"
-                    android:textSize="12sp"
-                    android:textColor="#5D4037"/>
-            </LinearLayout>
-            </androidx.cardview.widget.CardView>
-
-            <androidx.cardview.widget.CardView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="16dp"
-                app:cardCornerRadius="16dp"
-                app:cardElevation="2dp"
-                app:cardBackgroundColor="#F3E5F5"> <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:padding="16dp">
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:gravity="center_vertical">
-                    <TextView
-                        android:text="✨"
-                        android:textSize="18sp"
-                        android:layout_marginEnd="8dp"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"/>
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="AI Progress Summary"
-                        android:textStyle="bold"
-                        android:textColor="#4A148C"/>
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Personalized"
-                        android:background="#E1BEE7"
-                        android:textColor="#4A148C"
-                        android:textSize="10sp"
-                        android:paddingHorizontal="6dp"
-                        android:paddingVertical="2dp"
-                        android:layout_marginStart="8dp"/>
-                </LinearLayout>
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:text="🚀 Great start! You've recycled 2 items and earned 20 points. Keep up the momentum!"
-                    android:textSize="13sp"
-                    android:lineSpacingExtra="4dp"
-                    android:textColor="#4A148C"/>
-            </LinearLayout>
-            </androidx.cardview.widget.CardView>
-
-            <androidx.cardview.widget.CardView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="24dp"
-                app:cardCornerRadius="16dp"
-                app:cardBackgroundColor="#E8F5E9"
-                app:cardElevation="0dp">
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:padding="16dp">
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="🌏 Your Environmental Impact"
-                        android:textStyle="bold"
-                        android:textColor="#1B5E20"/>
+                    android:layout_marginEnd="6dp"
+                    android:layout_weight="1"
+                    app:cardBackgroundColor="#FFFFFF"
+                    app:cardCornerRadius="16dp"
+                    app:cardElevation="4dp">
 
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:layout_marginTop="12dp">
+                        android:gravity="center"
+                        android:orientation="vertical"
+                        android:padding="16dp">
 
-                        <androidx.cardview.widget.CardView
-                            android:layout_width="0dp"
+                        <TextView
+                            android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:layout_marginEnd="8dp"
-                            app:cardCornerRadius="12dp"
-                            app:cardElevation="0dp">
-                            <LinearLayout
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:orientation="vertical"
-                                android:padding="12dp">
-                                <TextView
-                                    android:text="5.0 kg"
-                                    android:textSize="18sp"
-                                    android:textStyle="bold"
-                                    android:textColor="#2E7D32"
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"/>
-                                <TextView
-                                    android:text="Waste Reduced"
-                                    android:textSize="12sp"
-                                    android:textColor="#757575"
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"/>
-                            </LinearLayout>
-                        </androidx.cardview.widget.CardView>
+                            android:text="🏆"
+                            android:textSize="24sp" />
 
-                        <androidx.cardview.widget.CardView
-                            android:layout_width="0dp"
+                        <TextView
+                            android:id="@+id/tvPointsCount"
+                            android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:layout_marginStart="8dp"
-                            app:cardCornerRadius="12dp"
-                            app:cardElevation="0dp">
-                            <LinearLayout
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:orientation="vertical"
-                                android:padding="12dp">
-                                <TextView
-                                    android:text="3.6 kg"
-                                    android:textSize="18sp"
-                                    android:textStyle="bold"
-                                    android:textColor="#2E7D32"
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"/>
-                                <TextView
-                                    android:text="CO₂ Saved"
-                                    android:textSize="12sp"
-                                    android:textColor="#757575"
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"/>
-                            </LinearLayout>
-                        </androidx.cardview.widget.CardView>
+                            android:layout_marginTop="4dp"
+                            android:text="0"
+                            android:textColor="#212121"
+                            android:textSize="20sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Points"
+                            android:textColor="#757575"
+                            android:textSize="12sp" />
                     </LinearLayout>
+                </androidx.cardview.widget.CardView>
+
+                <androidx.cardview.widget.CardView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginHorizontal="6dp"
+                    android:layout_weight="1"
+                    app:cardBackgroundColor="#FFFFFF"
+                    app:cardCornerRadius="16dp"
+                    app:cardElevation="4dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:orientation="vertical"
+                        android:padding="16dp">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="♻️"
+                            android:textSize="24sp" />
+
+                        <TextView
+                            android:id="@+id/tvRecycledCount"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="4dp"
+                            android:text="2"
+                            android:textColor="#212121"
+                            android:textSize="20sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Recycled"
+                            android:textColor="#757575"
+                            android:textSize="12sp" />
+                    </LinearLayout>
+                </androidx.cardview.widget.CardView>
+
+                <androidx.cardview.widget.CardView
+                    android:id="@+id/cardAchievements"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="6dp"
+                    android:layout_weight="1"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:foreground="?android:attr/selectableItemBackground"
+                    app:cardBackgroundColor="#FFFFFF"
+                    app:cardCornerRadius="16dp"
+                    app:cardElevation="4dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:orientation="vertical"
+                        android:padding="16dp">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="🏵️"
+                            android:textSize="24sp" />
+
+                        <TextView
+                            android:id="@+id/tvAchievementCount"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="4dp"
+                            android:text="1"
+                            android:textColor="#212121"
+                            android:textSize="20sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Achievements"
+                            android:textColor="#757575"
+                            android:textSize="10sp" />
+                    </LinearLayout>
+                </androidx.cardview.widget.CardView>
+            </LinearLayout>
+        </RelativeLayout>
+
+        <!-- Main Content -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <!-- AI Summary Card -->
+            <androidx.cardview.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                app:cardBackgroundColor="#F3E5F5"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="2dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginEnd="8dp"
+                            android:text="✨"
+                            android:textSize="18sp" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="AI Progress Summary"
+                            android:textColor="#4A148C"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="8dp"
+                            android:background="#E1BEE7"
+                            android:paddingHorizontal="6dp"
+                            android:paddingVertical="2dp"
+                            android:text="Personalized"
+                            android:textColor="#4A148C"
+                            android:textSize="10sp" />
+                    </LinearLayout>
+
+                    <TextView
+                        android:id="@+id/aiSummary"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:lineSpacingExtra="4dp"
+                        android:text="🚀 Great start! You've recycled 2 items and earned 20 points. Keep up the momentum!"
+                        android:textColor="#4A148C"
+                        android:textSize="13sp" />
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
 
+            <!-- Environmental Impact Card -->
+            <androidx.cardview.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="24dp"
+                app:cardBackgroundColor="#E8F5E9"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="0dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="🌏 Your Environmental Impact"
+                        android:textColor="#1B5E20"
+                        android:textStyle="bold" />
+
+                    <androidx.cardview.widget.CardView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="12dp"
+                        app:cardCornerRadius="12dp"
+                        app:cardElevation="0dp">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:gravity="center"
+                            android:orientation="vertical"
+                            android:padding="12dp">
+
+                            <TextView
+                                android:id="@+id/tvCo2Saved"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="3.6 kg"
+                                android:textColor="#2E7D32"
+                                android:textSize="18sp"
+                                android:textStyle="bold" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="CO₂ Saved"
+                                android:textColor="#757575"
+                                android:textSize="12sp" />
+                        </LinearLayout>
+                    </androidx.cardview.widget.CardView>
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+
+            <!-- Quick Actions Header -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginBottom="12dp"
                 android:text="⚡ Quick Actions"
-                android:textStyle="bold"
-                android:textSize="18sp"
                 android:textColor="#212121"
-                android:layout_marginBottom="12dp"/>
+                android:textSize="18sp"
+                android:textStyle="bold" />
 
+            <!-- Recycle Now Button -->
             <androidx.cardview.widget.CardView
                 android:layout_width="match_parent"
                 android:layout_height="80dp"
                 android:layout_marginBottom="24dp"
-                app:cardCornerRadius="16dp"
                 app:cardBackgroundColor="#00C853"
+                app:cardCornerRadius="16dp"
                 app:cardElevation="4dp">
+
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:gravity="center_vertical"
                     android:paddingHorizontal="20dp">
+
                     <TextView
-                        android:text="♻️"
-                        android:textSize="32sp"
                         android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"/>
+                        android:layout_height="wrap_content"
+                        android:text="♻️"
+                        android:textSize="32sp" />
 
                     <LinearLayout
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
+                        android:layout_marginStart="16dp"
                         android:layout_weight="1"
-                        android:orientation="vertical"
-                        android:layout_marginStart="16dp">
+                        android:orientation="vertical">
+
                         <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
                             android:text="Recycle Now"
                             android:textColor="#FFFFFF"
                             android:textSize="18sp"
-                            android:textStyle="bold"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"/>
+                            android:textStyle="bold" />
+
                         <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
                             android:text="Record &amp; earn points instantly"
                             android:textColor="#E8F5E9"
-                            android:textSize="12sp"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"/>
+                            android:textSize="12sp" />
                     </LinearLayout>
+
                     <TextView
-                        android:text="➔"
-                        android:textColor="#FFFFFF"
-                        android:textSize="20sp"
                         android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"/>
+                        android:layout_height="wrap_content"
+                        android:text="→"
+                        android:textColor="#FFFFFF"
+                        android:textSize="20sp" />
                 </LinearLayout>
+
                 <View
                     android:id="@+id/btnRecycleNow"
                     android:layout_width="match_parent"
@@ -430,36 +399,40 @@
                     android:focusable="true" />
             </androidx.cardview.widget.CardView>
 
+            <!-- Identify Items Section -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
                 android:text="🔍 Identify Items"
-                android:textStyle="bold"
-                android:textSize="18sp"
                 android:textColor="#212121"
-                android:layout_marginBottom="8dp"/>
+                android:textSize="18sp"
+                android:textStyle="bold" />
+
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginBottom="12dp"
                 android:text="Not sure what something is? Let us help"
-                android:textSize="13sp"
                 android:textColor="#616161"
-                android:layout_marginBottom="12dp"/>
+                android:textSize="13sp" />
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:layout_marginBottom="24dp">
+                android:layout_marginBottom="24dp"
+                android:orientation="horizontal">
 
+                <!-- Scan Item Card -->
                 <androidx.cardview.widget.CardView
                     android:layout_width="0dp"
                     android:layout_height="130dp"
-                    android:layout_weight="1"
                     android:layout_marginEnd="8dp"
+                    android:layout_weight="1"
+                    app:cardBackgroundColor="#E8F5E9"
                     app:cardCornerRadius="20dp"
-                    app:cardElevation="3dp"
-                    app:cardBackgroundColor="#E8F5E9">
+                    app:cardElevation="3dp">
+
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
@@ -470,52 +443,57 @@
                         <View
                             android:layout_width="56dp"
                             android:layout_height="56dp"
-                            android:background="@drawable/circle_bg_scan"/>
+                            android:background="@drawable/circle_bg_scan" />
 
                         <FrameLayout
                             android:layout_width="56dp"
                             android:layout_height="56dp"
                             android:layout_marginTop="-56dp">
+
                             <TextView
-                                android:text="📷"
-                                android:textSize="25sp"
-                                android:layout_gravity="center"
                                 android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"/>
+                                android:layout_height="wrap_content"
+                                android:layout_gravity="center"
+                                android:text="📷"
+                                android:textSize="25sp" />
                         </FrameLayout>
 
                         <TextView
-                            android:text="Scan Item"
-                            android:textStyle="bold"
-                            android:textSize="15sp"
-                            android:textColor="#212121"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
                             android:layout_marginTop="10dp"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"/>
+                            android:text="Scan Item"
+                            android:textColor="#212121"
+                            android:textSize="15sp"
+                            android:textStyle="bold" />
+
                         <TextView
-                            android:text="Use your camera"
-                            android:textSize="11sp"
-                            android:textColor="#666666"
-                            android:layout_marginTop="2dp"
                             android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"/>
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="2dp"
+                            android:text="Use your camera"
+                            android:textColor="#666666"
+                            android:textSize="11sp" />
                     </LinearLayout>
+
                     <View
                         android:id="@+id/btnScan"
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
-                        android:clickable="true"
-                        android:background="?android:attr/selectableItemBackground"/>
+                        android:background="?android:attr/selectableItemBackground"
+                        android:clickable="true" />
                 </androidx.cardview.widget.CardView>
 
+                <!-- Answer Quiz Card -->
                 <androidx.cardview.widget.CardView
                     android:layout_width="0dp"
                     android:layout_height="130dp"
-                    android:layout_weight="1"
                     android:layout_marginStart="8dp"
+                    android:layout_weight="1"
+                    app:cardBackgroundColor="#F3E5F5"
                     app:cardCornerRadius="20dp"
-                    app:cardElevation="3dp"
-                    app:cardBackgroundColor="#F3E5F5">
+                    app:cardElevation="3dp">
+
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
@@ -526,65 +504,71 @@
                         <View
                             android:layout_width="56dp"
                             android:layout_height="56dp"
-                            android:background="@drawable/circle_bg_quiz"/>
+                            android:background="@drawable/circle_bg_quiz" />
 
                         <FrameLayout
                             android:layout_width="56dp"
                             android:layout_height="56dp"
                             android:layout_marginTop="-56dp">
+
                             <TextView
-                                android:text="❓"
-                                android:textSize="25sp"
-                                android:layout_gravity="center"
                                 android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"/>
+                                android:layout_height="wrap_content"
+                                android:layout_gravity="center"
+                                android:text="❓"
+                                android:textSize="25sp" />
                         </FrameLayout>
 
                         <TextView
-                            android:text="Answer Quiz"
-                            android:textStyle="bold"
-                            android:textSize="15sp"
-                            android:textColor="#212121"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
                             android:layout_marginTop="10dp"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"/>
+                            android:text="Answer Quiz"
+                            android:textColor="#212121"
+                            android:textSize="15sp"
+                            android:textStyle="bold" />
+
                         <TextView
-                            android:text="Quick questions"
-                            android:textSize="11sp"
-                            android:textColor="#666666"
-                            android:layout_marginTop="2dp"
                             android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"/>
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="2dp"
+                            android:text="Quick questions"
+                            android:textColor="#666666"
+                            android:textSize="11sp" />
                     </LinearLayout>
+
                     <View
                         android:id="@+id/btnQuiz"
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
-                        android:clickable="true"
-                        android:background="?android:attr/selectableItemBackground"/>
+                        android:background="?android:attr/selectableItemBackground"
+                        android:clickable="true" />
                 </androidx.cardview.widget.CardView>
             </LinearLayout>
 
+            <!-- Other Tools Section -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginBottom="12dp"
                 android:text="🛠️ Other Tools"
-                android:textStyle="bold"
-                android:textSize="18sp"
                 android:textColor="#212121"
-                android:layout_marginBottom="12dp"/>
+                android:textSize="18sp"
+                android:textStyle="bold" />
 
+            <!-- Find Recycling Bins Card -->
             <androidx.cardview.widget.CardView
                 android:id="@+id/cardFindBins"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="24dp"
-                app:cardCornerRadius="20dp"
-                app:cardElevation="3dp"
-                app:cardBackgroundColor="#E8F5E9"
                 android:clickable="true"
                 android:focusable="true"
-                android:foreground="?android:attr/selectableItemBackground">
+                android:foreground="?android:attr/selectableItemBackground"
+                app:cardBackgroundColor="#E8F5E9"
+                app:cardCornerRadius="20dp"
+                app:cardElevation="3dp">
+
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -594,90 +578,97 @@
                     <View
                         android:layout_width="48dp"
                         android:layout_height="48dp"
-                        android:background="@drawable/circle_bg_bins"/>
+                        android:background="@drawable/circle_bg_bins" />
 
                     <FrameLayout
                         android:layout_width="48dp"
                         android:layout_height="48dp"
                         android:layout_marginStart="-48dp">
+
                         <TextView
-                            android:text="📍"
-                            android:textSize="24sp"
-                            android:layout_gravity="center"
                             android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"/>
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center"
+                            android:text="📍"
+                            android:textSize="24sp" />
                     </FrameLayout>
 
                     <LinearLayout
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
+                        android:layout_marginStart="16dp"
                         android:layout_weight="1"
-                        android:orientation="vertical"
-                        android:layout_marginStart="16dp">
+                        android:orientation="vertical">
+
                         <TextView
-                            android:text="Find Recycling Bins"
-                            android:textStyle="bold"
-                            android:textSize="16sp"
-                            android:textColor="#212121"
                             android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"/>
+                            android:layout_height="wrap_content"
+                            android:text="Find Recycling Bins"
+                            android:textColor="#212121"
+                            android:textSize="16sp"
+                            android:textStyle="bold" />
+
                         <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="2dp"
                             android:text="Nearby drop-off locations"
                             android:textColor="#666666"
-                            android:textSize="13sp"
-                            android:layout_marginTop="2dp"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"/>
+                            android:textSize="13sp" />
                     </LinearLayout>
 
                     <View
                         android:layout_width="28dp"
                         android:layout_height="28dp"
-                        android:background="@drawable/circle_arrow_bg"/>
+                        android:background="@drawable/circle_arrow_bg" />
 
                     <FrameLayout
                         android:layout_width="28dp"
                         android:layout_height="28dp"
                         android:layout_marginStart="-28dp">
+
                         <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center"
                             android:text="→"
                             android:textColor="#FFFFFF"
                             android:textSize="16sp"
-                            android:textStyle="bold"
-                            android:layout_gravity="center"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"/>
+                            android:textStyle="bold" />
                     </FrameLayout>
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
 
+            <!-- Help & Support Section -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginBottom="12dp"
                 android:text="💚 Help &amp; Support"
-                android:textStyle="bold"
-                android:textSize="18sp"
                 android:textColor="#212121"
-                android:layout_marginBottom="12dp"/>
+                android:textSize="18sp"
+                android:textStyle="bold" />
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:layout_marginBottom="32dp">
+                android:layout_marginBottom="32dp"
+                android:orientation="horizontal">
 
+                <!-- Chat Helper Card -->
                 <androidx.cardview.widget.CardView
                     android:id="@+id/cardChatHelper"
                     android:layout_width="0dp"
                     android:layout_height="110dp"
-                    android:layout_weight="1"
                     android:layout_marginEnd="8dp"
-                    app:cardCornerRadius="20dp"
-                    app:cardBackgroundColor="#E8F5E9"
-                    app:cardElevation="3dp"
+                    android:layout_weight="1"
                     android:clickable="true"
                     android:focusable="true"
-                    android:foreground="?android:attr/selectableItemBackground">
+                    android:foreground="?android:attr/selectableItemBackground"
+                    app:cardBackgroundColor="#E8F5E9"
+                    app:cardCornerRadius="20dp"
+                    app:cardElevation="3dp">
+
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
@@ -688,43 +679,46 @@
                         <View
                             android:layout_width="44dp"
                             android:layout_height="44dp"
-                            android:background="@drawable/circle_bg_chat"/>
+                            android:background="@drawable/circle_bg_chat" />
 
                         <FrameLayout
                             android:layout_width="44dp"
                             android:layout_height="44dp"
                             android:layout_marginTop="-44dp">
+
                             <TextView
-                                android:text="💬"
-                                android:textSize="24sp"
-                                android:layout_gravity="center"
                                 android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"/>
+                                android:layout_height="wrap_content"
+                                android:layout_gravity="center"
+                                android:text="💬"
+                                android:textSize="24sp" />
                         </FrameLayout>
 
                         <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="10dp"
                             android:text="Chat Helper"
-                            android:textStyle="bold"
                             android:textColor="#212121"
                             android:textSize="15sp"
-                            android:layout_marginTop="10dp"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"/>
+                            android:textStyle="bold" />
                     </LinearLayout>
                 </androidx.cardview.widget.CardView>
 
+                <!-- Report Issue Card -->
                 <androidx.cardview.widget.CardView
                     android:id="@+id/cardReportIssue"
                     android:layout_width="0dp"
                     android:layout_height="110dp"
-                    android:layout_weight="1"
                     android:layout_marginStart="8dp"
-                    app:cardCornerRadius="20dp"
-                    app:cardBackgroundColor="#26D96A"
-                    app:cardElevation="3dp"
+                    android:layout_weight="1"
                     android:clickable="true"
                     android:focusable="true"
-                    android:foreground="?android:attr/selectableItemBackground">
+                    android:foreground="?android:attr/selectableItemBackground"
+                    app:cardBackgroundColor="#FFCDD2"
+                    app:cardCornerRadius="20dp"
+                    app:cardElevation="3dp">
+
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
@@ -735,33 +729,32 @@
                         <View
                             android:layout_width="44dp"
                             android:layout_height="44dp"
-                            android:background="@drawable/circle_bg_report"/>
+                            android:background="@drawable/circle_bg_report" />
 
                         <FrameLayout
                             android:layout_width="44dp"
                             android:layout_height="44dp"
                             android:layout_marginTop="-44dp">
+
                             <TextView
-                                android:text="⚠️"
-                                android:textSize="24sp"
-                                android:layout_gravity="center"
                                 android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"/>
+                                android:layout_height="wrap_content"
+                                android:layout_gravity="center"
+                                android:text="⚠️"
+                                android:textSize="24sp" />
                         </FrameLayout>
 
                         <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="10dp"
                             android:text="Report Issue"
-                            android:textStyle="bold"
                             android:textColor="#212121"
                             android:textSize="15sp"
-                            android:layout_marginTop="10dp"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"/>
+                            android:textStyle="bold" />
                     </LinearLayout>
                 </androidx.cardview.widget.CardView>
             </LinearLayout>
-
         </LinearLayout>
-
-    </RelativeLayout>
+    </LinearLayout>
 </androidx.core.widget.NestedScrollView>

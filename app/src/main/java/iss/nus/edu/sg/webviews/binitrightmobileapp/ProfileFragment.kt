@@ -68,10 +68,12 @@ class ProfileFragment : Fragment() {
                             // 1. Update Header Info
                             binding.profileName.text = it.name
                             binding.pointsDisplay.text = "${it.pointBalance} Points"
+                            binding.summaryRecycled.text = "${it.totalRecycled}"
 
                             // 2. Update Stats Grid (This fixes your issue)
                             // Make sure 'gridPoints' is the ID of the blue number in your 'Total Points' card
                             binding.gridPoints.text = it.pointBalance.toString()
+                            binding.gridItems.text = it.totalRecycled.toString()
 
                             // 3. Update Avatar Image
                             val drawableName = it.equippedAvatarName.lowercase().replace(" ", "_")

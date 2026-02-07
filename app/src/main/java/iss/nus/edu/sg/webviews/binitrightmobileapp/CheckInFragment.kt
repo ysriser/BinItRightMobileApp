@@ -179,6 +179,11 @@ class CheckInFragment : Fragment() {
         binding.btnSubmit.setOnClickListener {
             handleSubmitWithValidation()
         }
+
+        binding.btnBackToHome.setOnClickListener {
+            findNavController().popBackStack()
+        }
+
     }
 
     private fun setupCounter() {
