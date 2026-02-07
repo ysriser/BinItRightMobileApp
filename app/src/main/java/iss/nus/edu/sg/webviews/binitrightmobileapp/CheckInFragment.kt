@@ -415,6 +415,11 @@ class CheckInFragment : Fragment() {
         durationSeconds: Int,
         videoKey: String?
     ) {
+        val currentTime = SimpleDateFormat(
+            "yyyy-MM-dd'T'HH:mm:ss",
+            Locale.getDefault()
+        ).format(Date())
+
         val checkInData = CheckInData(
             userId = userId,
             duration = durationSeconds.toLong(),
@@ -427,27 +432,32 @@ class CheckInFragment : Fragment() {
 
         Log.d(ContentValues.TAG, "####Bin ID submitted: ${binId}")
 
+        try {
+            val response = RetrofitClient.apiService().submitRecycleCheckIn(checkInData)
 
-        val response = RetrofitClient.apiService().submitRecycleCheckIn(checkInData)
+            if (response.isSuccessful) {
+                updateSubmitButtonState(false)
+                disableRecordVideo()
+                val resBody = response.body()
+                if (resBody != null) {
+                    val message = resBody.responseCode + "\n" + resBody.responseDesc
+                    showStatus(message, isError = false)
 
-        if (response.isSuccessful) {
-            updateSubmitButtonState(false)
-            disableRecordVideo()
-            val resBody = response.body()
-            if (resBody != null) {
-                val message = resBody.responseCode + "\n" + resBody.responseDesc
-                showStatus(message, isError = false)
-
-                if (resBody.responseCode == "0000") {
-                    isSubmitted = true
-                    delay(1200)
-                    findNavController().popBackStack()
+                    if (resBody.responseCode == "0000") {
+                        isSubmitted = true
+                        delay(1200)
+                        findNavController().popBackStack()
+                    } else {
+                        updateSubmitButtonState(true)
+                        restoreRecordVideoButton()
+                    }
                 } else {
+                    showStatus("Error: ${response.body()?.responseDesc ?: response.message()}", true)
                     updateSubmitButtonState(true)
                     restoreRecordVideoButton()
                 }
             } else {
-                showStatus("Error: ${response.body()?.responseDesc ?: response.message()}", true)
+                showStatus("Submission failed (${response.code()})", true)
                 updateSubmitButtonState(true)
                 restoreRecordVideoButton()
             }
@@ -457,7 +467,6 @@ class CheckInFragment : Fragment() {
             restoreRecordVideoButton()
         }
     }
-
     private fun showStatus(message: String, isError: Boolean) {
         binding.tvStatusMessage.apply {
             text = message
