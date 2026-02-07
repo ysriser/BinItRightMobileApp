@@ -38,7 +38,7 @@ class BinJsonParserTest {
         // Step 3: verify content.
         assertEquals(1, list.size)
         val bin = list.first()
-        assertEquals(1L, bin.id)
+        assertEquals("1", bin.id)
         assertEquals("Bin A", bin.name)
         assertEquals("123 Road", bin.address)
         assertEquals("Plastic only", bin.description)

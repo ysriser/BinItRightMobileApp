@@ -30,7 +30,7 @@ object BinJsonParser {
     }
 
     private data class DropOffLocationDto(
-        val id: Long,
+        val id: String,
         val name: String,
         val address: String,
         val description: String,

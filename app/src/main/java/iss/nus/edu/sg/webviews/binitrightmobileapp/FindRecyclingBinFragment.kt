@@ -140,11 +140,12 @@ class FindRecyclingBinFragment : Fragment(R.layout.fragment_find_recycling_bin),
         viewLifecycleOwner.lifecycleScope.launch {
             try {
                 val json = withContext(Dispatchers.IO) {
-                    // FIX 1: Build URL properly with proper empty string handling
+                    // Build URL from the same environment base URL used by login/API calls
+                    val baseUrl = BuildConfig.BASE_URL.trimEnd('/')
                     val urlString = if (binType.isEmpty()) {
-                        "http://10.0.2.2:8080/api/bins/search?lat=$lat&lng=$lng"
+                        "$baseUrl/api/bins/search?lat=$lat&lng=$lng"
                     } else {
-                        "http://10.0.2.2:8080/api/bins/search?lat=$lat&lng=$lng&binType=$binType"
+                        "$baseUrl/api/bins/search?lat=$lat&lng=$lng&binType=$binType"
                     }
 
                     val url = URL(urlString)
@@ -192,7 +193,7 @@ class FindRecyclingBinFragment : Fragment(R.layout.fragment_find_recycling_bin),
                     val obj = jsonArray.getJSONObject(i)
 
                     val bin = DropOffLocation(
-                        id = obj.optLong("id", -1),
+                        id = obj.optString("id", ""),
                         name = obj.optString("name", "Unknown Bin"),
                         address = obj.optString("address", ""),
                         description = obj.optString("description", ""),
@@ -336,7 +337,7 @@ class FindRecyclingBinFragment : Fragment(R.layout.fragment_find_recycling_bin),
 
             chipLighting.setOnClickListener {
                 chipLighting.isChecked = true
-                fetchBinsWithLocation("LAMP")
+                fetchBinsWithLocation("Lighting")
             }
         }
     }
@@ -369,3 +370,4 @@ class FindRecyclingBinFragment : Fragment(R.layout.fragment_find_recycling_bin),
         _binding = null
     }
 }
+

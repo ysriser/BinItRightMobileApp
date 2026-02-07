@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="8dp"
+    app:cardCornerRadius="14dp"
+    app:cardElevation="4dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="12dp"
+        android:gravity="center_horizontal">
+
+        <ImageView
+            android:id="@+id/ivAccessory"
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:scaleType="fitCenter"
+            android:src="@drawable/ic_launcher_foreground"/>
+
+        <TextView
+            android:id="@+id/tvName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Accessory"
+            android:textStyle="bold"
+            android:textColor="#212121"
+            android:layout_marginTop="8dp"/>
+
+        <TextView
+            android:id="@+id/tvPoints"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="50 pts"
+            android:textColor="#7B1FA2"
+            android:textStyle="bold"
+            android:layout_marginTop="4dp"/>
+
+        <Button
+            android:id="@+id/btnRedeem"
+            android:layout_width="match_parent"
+            android:layout_height="44dp"
+            android:text="Redeem"
+            android:textAllCaps="false"
+            android:layout_marginTop="10dp"
+            android:backgroundTint="#8E2DE2"
+            app:cornerRadius="14dp"/>
+    </LinearLayout>
+</androidx.cardview.widget.CardView>
