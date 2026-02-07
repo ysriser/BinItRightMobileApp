@@ -54,8 +54,7 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
     }
 
     private fun setupReportIssueButton() {
-        val reportIssueCard = view?.findViewById<View>(R.id.cardReportIssue)
-        reportIssueCard?.setOnClickListener {
+        binding.cardReportIssue.setOnClickListener {
             ReportIssueDialogFragment().show(childFragmentManager, "ReportIssue")
         }
     }
