@@ -1,5 +1,6 @@
 package iss.nus.edu.sg.webviews.binitrightmobileapp
 
+import iss.nus.edu.sg.webviews.binitrightmobileapp.model.Achievement
 import iss.nus.edu.sg.webviews.binitrightmobileapp.model.Accessory
 import iss.nus.edu.sg.webviews.binitrightmobileapp.model.ChatRequest
 import iss.nus.edu.sg.webviews.binitrightmobileapp.model.ChatResponse
@@ -18,7 +19,6 @@ import iss.nus.edu.sg.webviews.binitrightmobileapp.model.UserProfile
 import iss.nus.edu.sg.webviews.binitrightmobileapp.model.UserResponse
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
-
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.GET
@@ -92,13 +92,11 @@ interface ApiService {
     @POST("/api/v1/feedback")
     suspend fun sendFeedback(@Body feedback: FeedbackRequest): Response<Boolean>
 
-
     @POST("api/checkin")
     suspend fun submitRecycleCheckIn(
         @Body checkInData: CheckInData
     ): Response<CheckInDataResponse>
 
-    // Endpoint for getting pre-signed upload URL
     @POST("api/videos/presign-upload")
     suspend fun getPresignedUpload(
         @Body req: PresignUploadRequest
@@ -157,4 +155,13 @@ interface ApiService {
         @Path("userId") userId: Long
     ): Response<Int>
 
+
+    @GET("api/achievements/user/{userId}")
+    suspend fun getAchievementsWithStatus(@Path("userId") userId: Long): Response<List<Achievement>>
+
+    @POST("api/achievements/unlock/{userId}/{achievementId}")
+    suspend fun unlockAchievement(
+        @Path("userId") userId: Long,
+        @Path("achievementId") achievementId: Long
+    ): Response<Unit>
 }

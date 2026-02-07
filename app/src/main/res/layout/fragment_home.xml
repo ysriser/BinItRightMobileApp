@@ -141,10 +141,14 @@
             </androidx.cardview.widget.CardView>
 
             <androidx.cardview.widget.CardView
+                android:id="@+id/cardAchievements"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:layout_marginStart="8dp"
+                android:clickable="true"
+                android:focusable="true"
+                android:foreground="?android:attr/selectableItemBackground"
                 app:cardCornerRadius="16dp"
                 app:cardElevation="4dp"
                 app:cardBackgroundColor="#FFFFFF">
@@ -166,8 +170,8 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Awards"
-                        android:textSize="12sp"
+                        android:text="Achievements"
+                        android:textSize="10sp"
                         android:textColor="#757575"/>
                 </LinearLayout>
             </androidx.cardview.widget.CardView>

@@ -23,7 +23,6 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         super.onViewCreated(view, savedInstanceState)
         _binding = FragmentHomeBinding.bind(view)
 
-        // Existing Navigation listeners
         binding.btnScan.setOnClickListener {
             findNavController().navigate(R.id.action_home_to_scanItem)
         }
@@ -45,6 +44,10 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         }
 
 
+        binding.cardAchievements.setOnClickListener {
+            findNavController().navigate(R.id.action_home_to_achievements)
+        }
+
         setupReportIssueButton()
 
         fetchUserStats()
@@ -62,15 +65,10 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
             .getSharedPreferences("APP_PREFS", Context.MODE_PRIVATE)
             .getLong("USER_ID", -1L)
 
-        Log.d(TAG, "###Fetching stats for userId: $userId") // Add this
-
         if (userId != -1L) {
             viewLifecycleOwner.lifecycleScope.launch {
                 try {
-                    Log.d(TAG, "###Making API call to getUserProfile($userId)") // Add this
-                    val response = RetrofitClient.apiService().getProfileSummary()
-                    Log.d(TAG, "###Response received - Code: ${response.code()}, Successful: ${response.isSuccessful}") // Add this
-
+                    val response = RetrofitClient.apiService().getUserProfile(userId)
                     if (response.isSuccessful && response.body() != null) {
                         val user = response.body()!!
                         Log.d(TAG, "###Point Balance from API: ${user.pointBalance}") // Add this
@@ -81,6 +79,7 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
                     } else {
                         val errorBody = response.errorBody()?.string()
                         Log.e(TAG, "###Server Error: ${response.code()} - $errorBody")
+                        Log.e(TAG, "###Server Error: ${response.code()} - ${response.errorBody()?.string()}")
                     }
                 } catch (e: Exception) {
                     Log.e(TAG, "###Network Crash: ${e.message}", e)
