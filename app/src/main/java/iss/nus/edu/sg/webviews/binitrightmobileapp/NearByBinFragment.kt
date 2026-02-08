@@ -6,6 +6,8 @@ import android.content.pm.PackageManager
 import android.os.Bundle
 import android.util.Log
 import android.view.View
+import android.widget.AdapterView
+import android.widget.ArrayAdapter
 import androidx.core.app.ActivityCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
@@ -32,16 +34,14 @@ class NearByBinFragment : Fragment(R.layout.fragment_near_by_bin), OnMapReadyCal
 
     private var _binding: FragmentNearByBinBinding? = null
     private val binding get() = _binding!!
-
     private lateinit var googleMap: GoogleMap
     private lateinit var locationClient: FusedLocationProviderClient
-
     private val nearbyBins = mutableListOf<DropOffLocation>()
+    private val filteredBins = mutableListOf<DropOffLocation>()
     private var adapter: NearByBinsAdapter? = null
-
     private var selectedBinType: String? = null
     private var wasteCategory: String? = null
-
+    private var currentFilterBinType: String = "All"
     private var pendingBins: List<DropOffLocation>? = null
     private var isMapReady = false
     private var hasZoomedToBins = false
@@ -52,6 +52,7 @@ class NearByBinFragment : Fragment(R.layout.fragment_near_by_bin), OnMapReadyCal
         private const val LOCATION_PERMISSION_REQUEST_CODE = 1001
         private const val FALLBACK_LAT = 1.2921
         private const val FALLBACK_LNG = 103.77
+        private val BIN_TYPES = listOf("All", "BlueBin", "EWaste", "Lighting")
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -61,6 +62,7 @@ class NearByBinFragment : Fragment(R.layout.fragment_near_by_bin), OnMapReadyCal
         locationClient = LocationServices.getFusedLocationProviderClient(requireActivity())
 
         retrieveScanArguments()
+        setupBinTypeSpinner()
         setupMap()
         setupRecyclerView()
     }
@@ -73,6 +75,65 @@ class NearByBinFragment : Fragment(R.layout.fragment_near_by_bin), OnMapReadyCal
             Log.d(TAG, "### Received selectedBinType: $selectedBinType")
             Log.d(TAG, "### Received wasteCategory: $wasteCategory")
         }
+    }
+
+    private fun setupBinTypeSpinner() {
+        val spinnerAdapter = ArrayAdapter(
+            requireContext(),
+            android.R.layout.simple_spinner_item,
+            BIN_TYPES
+        ).apply {
+            setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        }
+
+        binding.spinnerBinType.adapter = spinnerAdapter
+
+        // If selectedBinType matches one of the valid types, set it as default
+        val defaultPosition = when (selectedBinType) {
+            "BlueBin", "EWaste", "Lighting" -> BIN_TYPES.indexOf(selectedBinType)
+            else -> 0 // "All" by default
+        }
+        binding.spinnerBinType.setSelection(defaultPosition)
+        currentFilterBinType = BIN_TYPES[defaultPosition]
+
+        binding.spinnerBinType.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+                currentFilterBinType = BIN_TYPES[position]
+                Log.d(TAG, "### Filter changed to: $currentFilterBinType")
+                filterBins()
+            }
+
+            override fun onNothingSelected(parent: AdapterView<*>?) {
+                // Do nothing
+            }
+        }
+    }
+
+    private fun filterBins() {
+        filteredBins.clear()
+
+        if (currentFilterBinType == "All") {
+            filteredBins.addAll(nearbyBins)
+        } else {
+            // Filter based on binType matching the selected filter
+            filteredBins.addAll(nearbyBins.filter { bin ->
+                bin.binType.equals(currentFilterBinType, ignoreCase = true)
+            })
+        }
+
+        Log.d(TAG, "### Total bins: ${nearbyBins.size}")
+        Log.d(TAG, "### Filtered ${filteredBins.size} bins for type: $currentFilterBinType")
+
+        // Log the bins to debug
+        nearbyBins.forEach { bin ->
+            Log.d(TAG, "### Bin: ${bin.name}, Type: ${bin.binType}")
+        }
+
+        // Notify adapter that data has changed
+        adapter?.notifyDataSetChanged()
+
+        // Update map with filtered bins
+        updateMapMarkers(filteredBins)
     }
 
     private fun setupMap() {
@@ -102,7 +163,8 @@ class NearByBinFragment : Fragment(R.layout.fragment_near_by_bin), OnMapReadyCal
 
     private fun setupRecyclerView() {
         binding.binsRecyclerView.layoutManager = LinearLayoutManager(requireContext())
-        adapter = NearByBinsAdapter(nearbyBins) { selectedBin ->
+        // Pass filteredBins to the adapter
+        adapter = NearByBinsAdapter(filteredBins) { selectedBin ->
             navigateToCheckIn(selectedBin)
         }
         binding.binsRecyclerView.adapter = adapter
@@ -180,15 +242,14 @@ class NearByBinFragment : Fragment(R.layout.fragment_near_by_bin), OnMapReadyCal
                 Log.d(TAG, "Fetching bins via Retrofit for lat=$lat, lng=$lng")
 
                 // Retrofit does the background work and parsing for you
-                val bins = RetrofitClient.apiService().getNearbyBins(lat, lng, 3000)
+                val bins = RetrofitClient.apiService().getNearbyBins(lat, lng, 10000)
 
                 Log.d(TAG, "Successfully fetched ${bins.size} bins")
 
                 // Update UI on the main thread
                 nearbyBins.clear()
                 nearbyBins.addAll(bins)
-                adapter?.notifyDataSetChanged()
-                updateMapMarkers(bins)
+                filterBins()
 
             } catch (e: Exception) {
                 Log.e(TAG, "Retrofit Error: ${e.message}", e)
