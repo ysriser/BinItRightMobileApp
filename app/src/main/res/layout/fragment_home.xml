@@ -637,6 +637,13 @@
                             android:textStyle="bold" />
                     </FrameLayout>
                 </LinearLayout>
+                <View
+                    android:id="@+id/btnFindRecyclingBins"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:background="?android:attr/selectableItemBackground"/>
             </androidx.cardview.widget.CardView>
 
             <!-- Help & Support Section -->

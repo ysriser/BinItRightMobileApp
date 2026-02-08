@@ -401,6 +401,7 @@
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnSubmit"
+                android:contentDescription="submit_checkin"
                 android:layout_width="0dp"
                 android:layout_weight="1"
                 android:layout_height="56dp"
@@ -410,7 +411,7 @@
                 app:cornerRadius="28dp"
                 app:icon="@drawable/ic_check_circle_24"
                 app:iconGravity="start"
-                android:enabled="false"
+                android:enabled="true"
                 android:layout_marginStart="8dp"/>
 
         </LinearLayout>
