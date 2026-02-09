@@ -12,7 +12,7 @@ import okhttp3.RequestBody.Companion.toRequestBody
 import java.io.ByteArrayOutputStream
 import java.io.File
 
-private const val MAX_UPLOAD_BYTES = 350 * 1024 // Aggressive cap to avoid 413 on stricter gateways
+private const val MAX_UPLOAD_BYTES = 350 * 1024
 private const val INITIAL_JPEG_QUALITY = 80
 private const val MIN_JPEG_QUALITY = 40
 private const val UPLOAD_MAX_LONG_SIDE = 960
@@ -38,7 +38,7 @@ class FakeScanRepository : ScanRepository {
         return Result.success(
             ScanResult(
                 category = "Electronics",
-                recyclable = false,
+                recyclable = true,
                 confidence = 0.86f,
                 instruction = "Bring this item to an e-waste collection point.",
                 instructions = listOf(
@@ -46,7 +46,7 @@ class FakeScanRepository : ScanRepository {
                     "Pack sharp parts safely.",
                     "Bring to an e-waste collection point."
                 ),
-                binType = "EWaste"
+                binType = "EWASTE"
             )
         )
     }
@@ -112,8 +112,9 @@ class RealScanRepository : ScanRepository {
     }
 
     private fun mapFinalToScanResult(final: FinalResult, meta: Meta?): ScanResult {
-        val fallbackInstructions = if (final.recyclable) {
-            listOf("Clean and dry the item.", "Place it in the blue recycling bin.")
+        val effectiveRecyclable = final.recyclable || ScannedCategoryHelper.isSpecialRecyclable(final.category)
+        val fallbackInstructions = if (effectiveRecyclable) {
+            listOf("Clean and dry the item.", "Place it in the proper recycling stream.")
         } else {
             listOf("Dispose in general waste unless official guidance says otherwise.")
         }
@@ -126,29 +127,24 @@ class RealScanRepository : ScanRepository {
 
         return ScanResult(
             category = final.category,
-            recyclable = final.recyclable,
+            recyclable = effectiveRecyclable,
             confidence = final.confidence,
             instruction = final.instruction,
             instructions = finalInstructions,
-            binType = determineBinType(final.category, final.recyclable),
+            binType = ScannedCategoryHelper.toBinType(final.category, effectiveRecyclable),
             debugMessage = buildTier2DebugMessage(meta)
         )
-    }
-
-    private fun determineBinType(category: String, recyclable: Boolean): String {
-        val normalized = category.trim()
-        return when {
-            normalized.startsWith("E-waste - ", ignoreCase = true) -> "EWASTE"
-            normalized.startsWith("Lighting - ", ignoreCase = true) -> "LIGHTING"
-            recyclable -> "BLUEBIN"
-            // No dedicated textile/general bin endpoint in current backend dataset.
-            else -> ""
-        }
     }
 }
 
 class LocalModelScanRepository(private val context: Context) : ScanRepository {
-    private val classifier by lazy { ImageClassifier(context) }
+    private val classifier by lazy {
+        ImageClassifier(
+            context = context,
+            inputSize = Tier1PreprocessConfig.INPUT_SIZE,
+            resizeScale = Tier1PreprocessConfig.RESIZE_SCALE
+        )
+    }
 
     override suspend fun scanImage(
         imageFile: File,
@@ -156,31 +152,33 @@ class LocalModelScanRepository(private val context: Context) : ScanRepository {
         onStatusUpdate: (String) -> Unit
     ): Result<ScanResult> {
         return try {
-            val bitmap = android.graphics.BitmapFactory.decodeFile(imageFile.absolutePath)
+            val bitmap = BitmapFactory.decodeFile(imageFile.absolutePath)
             val result = classifier.classify(bitmap)
 
-            val isRecyclable = when (result.category.lowercase()) {
-                "plastic", "metal", "glass", "paper" -> true
+            val recyclable = when (result.category.lowercase()) {
+                "plastic", "metal", "glass", "paper", "e-waste", "textile", "lighting" -> true
                 else -> false
             }
 
+            val categoryName = result.category.replaceFirstChar { it.uppercase() }
             delay(1000)
 
             Result.success(
                 ScanResult(
-                    category = result.category.replaceFirstChar { it.uppercase() },
-                    recyclable = isRecyclable,
+                    category = categoryName,
+                    recyclable = recyclable,
                     confidence = result.confidence,
-                    instructions = if (isRecyclable) {
-                        listOf("Clean and dry the item.", "Place it in the blue recycling bin.")
+                    instructions = if (recyclable) {
+                        listOf("Clean and dry the item.", "Place it in the proper recycling stream.")
                     } else {
                         listOf("Do not put this into the blue recycling bin.")
                     },
-                    instruction = if (isRecyclable) {
+                    instruction = if (recyclable) {
                         "Clean and dry the item, then recycle it."
                     } else {
                         "Dispose through general or special waste handling."
-                    }
+                    },
+                    binType = ScannedCategoryHelper.toBinType(categoryName, recyclable)
                 )
             )
         } catch (e: Exception) {
@@ -197,7 +195,13 @@ class LocalModelScanRepository(private val context: Context) : ScanRepository {
 class HybridScanRepository(
     private val context: Context
 ) : ScanRepository {
-    private val classifier by lazy { ImageClassifier(context) }
+    private val classifier by lazy {
+        ImageClassifier(
+            context = context,
+            inputSize = Tier1PreprocessConfig.INPUT_SIZE,
+            resizeScale = Tier1PreprocessConfig.RESIZE_SCALE
+        )
+    }
     private val gson = com.google.gson.Gson()
 
     override suspend fun scanImage(
@@ -207,7 +211,7 @@ class HybridScanRepository(
     ): Result<ScanResult> {
         return try {
             onStatusUpdate("Identifying...")
-            val bitmap = android.graphics.BitmapFactory.decodeFile(imageFile.absolutePath)
+            val bitmap = BitmapFactory.decodeFile(imageFile.absolutePath)
             val tier1Result = classifier.classify(bitmap)
 
             Log.d("HybridScanRepository", "Tier1 result: $tier1Result")
@@ -269,8 +273,9 @@ class HybridScanRepository(
     }
 
     private fun mapFinalToScanResult(final: FinalResult, meta: Meta?): ScanResult {
-        val fallbackInstructions = if (final.recyclable) {
-            listOf("Clean and dry the item.", "Place it in the blue recycling bin.")
+        val effectiveRecyclable = final.recyclable || ScannedCategoryHelper.isSpecialRecyclable(final.category)
+        val fallbackInstructions = if (effectiveRecyclable) {
+            listOf("Clean and dry the item.", "Place it in the proper recycling stream.")
         } else {
             listOf("Dispose in general waste unless official guidance says otherwise.")
         }
@@ -283,18 +288,18 @@ class HybridScanRepository(
 
         return ScanResult(
             category = final.category,
-            recyclable = final.recyclable,
+            recyclable = effectiveRecyclable,
             confidence = final.confidence,
             instruction = final.instruction,
             instructions = finalInstructions,
-            binType = determineBinType(final.category, final.recyclable),
+            binType = ScannedCategoryHelper.toBinType(final.category, effectiveRecyclable),
             debugMessage = buildTier2DebugMessage(meta)
         )
     }
 
     private fun mapTier1ToScanResult(tier1: Tier1Result): ScanResult {
         val recyclable = when (tier1.category.lowercase()) {
-            "plastic", "metal", "glass", "paper" -> true
+            "plastic", "metal", "glass", "paper", "e-waste", "textile", "lighting" -> true
             else -> false
         }
 
@@ -310,24 +315,13 @@ class HybridScanRepository(
                 "Dispose through general or special waste handling."
             },
             instructions = if (recyclable) {
-                listOf("Clean and dry the item.", "Place it in the blue recycling bin.")
+                listOf("Clean and dry the item.", "Place it in the proper recycling stream.")
             } else {
                 listOf("Do not put this into the blue recycling bin.")
             },
             categoryId = "tier1.${tier1.category}",
-            binType = determineBinType(categoryName, recyclable)
+            binType = ScannedCategoryHelper.toBinType(categoryName, recyclable)
         )
-    }
-
-    private fun determineBinType(category: String, recyclable: Boolean): String {
-        val normalized = category.trim()
-        return when {
-            normalized.startsWith("E-waste - ", ignoreCase = true) -> "EWASTE"
-            normalized.startsWith("Lighting - ", ignoreCase = true) -> "LIGHTING"
-            recyclable -> "BLUEBIN"
-            // No dedicated textile/general bin endpoint in current backend dataset.
-            else -> ""
-        }
     }
 
     override suspend fun sendFeedback(feedback: FeedbackRequest): Result<Boolean> {
@@ -354,6 +348,7 @@ private fun buildTier2DebugMessage(meta: Meta?): String? {
 
     return null
 }
+
 private fun createImageUploadPart(imageFile: File): MultipartBody.Part {
     val uploadBytes = compressImageForUpload(imageFile)
     val requestBody = uploadBytes.toRequestBody("image/jpeg".toMediaTypeOrNull())
@@ -433,8 +428,3 @@ private fun compressBitmap(source: Bitmap): ByteArray {
         quality = INITIAL_JPEG_QUALITY
     }
 }
-
-
-
-
-

@@ -150,7 +150,8 @@ interface ApiService {
     suspend fun getNearbyBins(
         @Query("lat") lat: Double,
         @Query("lng") lng: Double,
-        @Query("radius") radius: Int
+        @Query("radius") radius: Int,
+        @Query("binType") binType: String? = null
     ): List<DropOffLocation>
 
     @POST("api/chat")

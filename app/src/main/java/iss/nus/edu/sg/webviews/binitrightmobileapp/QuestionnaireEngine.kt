@@ -11,8 +11,8 @@ class QuestionnaireEngine(
 ) {
 
     private lateinit var config: QuestionnaireConfig
-    private val answers = LinkedHashMap<String, String>() // QuestionId -> OptionId
-    private val backStack = Stack<String>() // QuestionIds visited
+    private val answers = LinkedHashMap<String, String>()
+    private val backStack = Stack<String>()
 
     var currentQuestionId: String? = null
         private set
@@ -34,22 +34,23 @@ class QuestionnaireEngine(
             currentQuestionId = config.startQuestionId
         } catch (e: Exception) {
             e.printStackTrace()
-            // Fallback empty config if parsing fails (should not happen in prod if JSON is valid).
             config = QuestionnaireConfig(startQuestionId = "", questions = emptyList(), outcomes = emptyList())
             currentQuestionId = null
         }
     }
 
     fun getCurrentQuestion(): QuestionNode? {
-        val q = config.questions.find { it.id == currentQuestionId } ?: return null
-        
-        // If not at start, append a "Back" option
-        return if (!isAtStart()) {
-             val backOption =
-                 OptionNode("BACK_ACTION", "Go back to previous question", "BACK_ACTION_NEXT")
-             q.copy(options = q.options + backOption)
+        val question = config.questions.find { it.id == currentQuestionId } ?: return null
+        if (isAtStart()) {
+            return question
+        }
+
+        val hasBackOption = question.options.any { it.id == BACK_OPTION_ID }
+        return if (hasBackOption) {
+            question
         } else {
-             q
+            val backOption = OptionNode(BACK_OPTION_ID, "Go back to previous question", BACK_NAV_ID)
+            question.copy(options = question.options + backOption)
         }
     }
 
@@ -61,13 +62,11 @@ class QuestionnaireEngine(
         return config.outcomes.find { it.id == id }
     }
 
-    // Returns next Question ID or null if it's an outcome
     fun selectOption(questionId: String, optionId: String): String {
-        // Special Back Handling
-        if (optionId == "BACK_ACTION") {
-            return "BACK_ACTION_TRIGGERED" // Signal to ViewModel to call goBack
+        if (optionId == BACK_OPTION_ID) {
+            return BACK_TRIGGER_SIGNAL
         }
-    
+
         answers[questionId] = optionId
         backStack.push(questionId)
 
@@ -75,24 +74,21 @@ class QuestionnaireEngine(
         val option = question?.options?.find { it.id == optionId }
         val nextId = option?.next ?: return "error"
 
-        // Check if nextId is a question or outcome
-        val isQuestion = config.questions.any { it.id == nextId }
-        val isOutcome = config.outcomes.any { it.id == nextId }
-
-        if (isQuestion) {
+        if (config.questions.any { it.id == nextId }) {
             currentQuestionId = nextId
         }
-        
-        // Return the ID for the caller to decide navigation (to next Q or Result)
+
         return nextId
     }
 
     fun goBack(): Boolean {
-        if (backStack.isEmpty()) return false
-        
-        val prevQuestionId = backStack.pop()
-        answers.remove(prevQuestionId) // Undo answer
-        currentQuestionId = prevQuestionId
+        if (backStack.isEmpty()) {
+            return false
+        }
+
+        val previousQuestionId = backStack.pop()
+        answers.remove(previousQuestionId)
+        currentQuestionId = previousQuestionId
         return true
     }
 
@@ -100,15 +96,12 @@ class QuestionnaireEngine(
         return backStack.isEmpty()
     }
 
-    fun getAnswersSummary(): List<Pair<String,String>> {
-        // Retrieve Question Text and Option Text for displayed summary
+    fun getAnswersSummary(): List<Pair<String, String>> {
         return answers.mapNotNull { (qId, optionId) ->
-            val q = getQuestionById(qId)
-            val opt = q?.options?.find { it.id == optionId }
-            if (q != null && opt != null) {
-                // Shorten question text for summary if needed, but per request "Question Text" - "Option"
-                // Using full text might be long, let's use Question Text - Option Text
-                q.question to opt.text
+            val question = getQuestionById(qId)
+            val selected = question?.options?.find { it.id == optionId }
+            if (question != null && selected != null) {
+                question.question to selected.text
             } else {
                 null
             }
@@ -116,12 +109,40 @@ class QuestionnaireEngine(
     }
 
     fun getProgress(): Pair<Int, Int> {
-        val current = backStack.size + 1
-        // Minimal logic: return current step. UI can decide how to render.
-        return Pair(current, 3) 
-        // 3 is a placeholder. A true dynamic calc requires traversing the graph.
-        // Given constraint "N is dynamic... compute once path is known",
-        // we update N when we assume the path. 
-        // For prototype, let's just increment "Question X"
+        val current = (backStack.size + 1).coerceAtLeast(1)
+        val remaining = estimateRemainingQuestions(currentQuestionId, mutableSetOf())
+        val total = (current + remaining).coerceAtLeast(current)
+        return current to total
+    }
+
+    private fun estimateRemainingQuestions(questionId: String?, visited: MutableSet<String>): Int {
+        if (questionId.isNullOrBlank() || !visited.add(questionId)) {
+            return 0
+        }
+
+        val question = getQuestionById(questionId) ?: return 0
+        var maxRemaining = 0
+
+        for (option in question.options) {
+            if (option.id == BACK_OPTION_ID) {
+                continue
+            }
+
+            val nextQuestion = getQuestionById(option.next)
+            val remainingFromNext = if (nextQuestion == null) {
+                0
+            } else {
+                1 + estimateRemainingQuestions(nextQuestion.id, visited.toMutableSet())
+            }
+            maxRemaining = maxOf(maxRemaining, remainingFromNext)
+        }
+
+        return maxRemaining
+    }
+
+    companion object {
+        private const val BACK_OPTION_ID = "BACK_ACTION"
+        private const val BACK_NAV_ID = "BACK_ACTION_NEXT"
+        private const val BACK_TRIGGER_SIGNAL = "BACK_ACTION_TRIGGERED"
     }
 }
