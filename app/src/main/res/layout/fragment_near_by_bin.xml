@@ -1,48 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:background="#F5F5F5">
+
+    <TextView
+        android:id="@+id/tvFlowHint"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingHorizontal="16dp"
+        android:paddingTop="12dp"
+        android:paddingBottom="8dp"
+        android:text="Showing nearest recycling bins"
+        android:textColor="#2E7D32"
+        android:textSize="14sp"
+        android:textStyle="bold" />
 
     <FrameLayout
         android:id="@+id/mapContainer"
         android:layout_width="match_parent"
         android:layout_height="300dp" />
 
-    <TextView
-        android:id="@+id/selectLocationText"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:padding="8dp"
-        android:text="Select a Location" />
-
-    <!-- Bin Type Filter -->
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:padding="8dp"
-        android:gravity="center_vertical">
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Filter by Bin Type: "
-            android:textSize="14sp"
-            android:textColor="#2E7D32"
-            android:layout_marginEnd="8dp"/>
-
-        <Spinner
-            android:id="@+id/spinnerBinType"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:minHeight="48dp"/>
-
-    </LinearLayout>
-
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/binsRecyclerView"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1"/>
+        android:layout_weight="1"
+        android:padding="12dp"
+        android:clipToPadding="false" />
 </LinearLayout>

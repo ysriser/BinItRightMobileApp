@@ -76,4 +76,9 @@ class BinJsonParserTest {
         assertNotNull(list.first())
         assertEquals(0.0, list.first().distanceMeters, 0.0001)
     }
+    @Test(expected = RuntimeException::class)
+    fun parse_throwsForInvalidJson() {
+        val invalid = "{ this is not valid json }"
+        BinJsonParser.parse(invalid)
+    }
 }
