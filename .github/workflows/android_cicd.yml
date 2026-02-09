@@ -35,7 +35,7 @@ jobs:
           name: compiled-apk
           path: app/build/outputs/apk/local/debug/app-local-debug.apk
 
-  # STAGE 2: UNIT (Always Runs)
+  # STAGE 2: UNIT (Always Runs) + Coverage
   unit-tests:
     name: UNIT
     needs: build
@@ -52,6 +52,7 @@ jobs:
         run: |
           ./gradlew testLocalDebugUnitTest jacocoLocalDebugUnitTestReport jacocoLocalDebugCoreUnitTestReport jacocoLocalDebugUnitTestCoverageVerification \
           -PLOCALHOST_IP="${{ secrets.LOCALHOST_IP }}"
+      
       - name: Upload Test Results
         if: always()
         uses: actions/upload-artifact@v4
