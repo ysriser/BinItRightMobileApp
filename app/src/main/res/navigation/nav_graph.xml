@@ -140,6 +140,11 @@
             app:destination="@id/loginFragment"
             app:popUpTo="@id/nav_graph"
             app:popUpToInclusive="true" />
+        <action
+            android:id="@+id/action_profile_to_leaderboard"
+            app:destination="@id/leaderboardFragment"
+            app:enterAnim="@anim/nav_default_enter_anim"
+            app:exitAnim="@anim/nav_default_exit_anim" />
 
     </fragment>
 
@@ -308,5 +313,11 @@
         <argument android:name="iconUrl" app:argType="string" android:defaultValue=""/>
         <argument android:name="isUnlocked" app:argType="boolean" android:defaultValue="false"/>
     </fragment>
+
+    <fragment
+        android:id="@+id/leaderboardFragment"
+        android:name="iss.nus.edu.sg.webviews.binitrightmobileapp.LeaderboardFragment"
+        android:label="Leaderboard"
+        tools:layout="@layout/fragment_leaderboard" />
 
 </navigation>

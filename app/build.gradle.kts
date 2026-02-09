@@ -5,6 +5,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     id("androidx.navigation.safeargs.kotlin")
+    id("jacoco")
 }
 
 // Define the helper function at the top level of the script
@@ -153,4 +154,35 @@ dependencies {
     testImplementation(libs.androidx.test.core)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
+}
+
+tasks.register<JacocoReport>("jacocoTestReport") {
+    dependsOn("testLocalDebugUnitTest")
+    
+    reports {
+        xml.required.set(true)
+        html.required.set(true)
+    }
+    
+    val fileFilter = listOf(
+        "**/R.class",
+        "**/R$*.class",
+        "**/BuildConfig.*",
+        "**/Manifest*.*",
+        "**/*Test*.*",
+        "android/**/*.*"
+    )
+    
+    val debugTree = fileTree("${project.buildDir}/intermediates/javac/localDebug/classes") {
+        exclude(fileFilter)
+    }
+    val kotlinTree = fileTree("${project.buildDir}/tmp/kotlin-classes/localDebug") {
+        exclude(fileFilter)
+    }
+    
+    sourceDirectories.setFrom(files("${project.projectDir}/src/main/java", "${project.projectDir}/src/main/kotlin"))
+    classDirectories.setFrom(files(debugTree, kotlinTree))
+    executionData.setFrom(fileTree(project.buildDir) {
+        include("jacoco/testLocalDebugUnitTest.exec")
+    })
 }

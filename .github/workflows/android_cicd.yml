@@ -35,7 +35,7 @@ jobs:
           name: compiled-apk
           path: app/build/outputs/apk/local/debug/app-local-debug.apk
 
-  # STAGE 2: UNIT (Always Runs)
+  # STAGE 2: UNIT (Always Runs) + Coverage
   unit-tests:
     name: UNIT
     needs: build
@@ -48,16 +48,30 @@ jobs:
           java-version: '21'
           distribution: 'temurin'
           cache: gradle
-      - name: Run JUnit Tests
+      
+      # Run tests AND generate coverage in one command
+      - name: Run JUnit Tests with Coverage
         run: |
-          ./gradlew testLocalDebugUnitTest \
+          ./gradlew testLocalDebugUnitTest jacocoTestReport \
           -PLOCALHOST_IP="${{ secrets.LOCALHOST_IP }}"
+      
       - name: Upload Test Results
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: unit-test-results
           path: app/build/test-results/testLocalDebugUnitTest/
+      
+      # NEW: Upload coverage for aggregation
+      - name: Upload Coverage Reports
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-coverage-reports
+          path: |
+            app/build/reports/jacoco/jacocoTestReport/jacocoTestReport.xml
+            app/build/reports/lint-results-localDebug.xml
+          retention-days: 7
 
   # STAGE 3: LINT (Now runs on every check-in)
   lint:
