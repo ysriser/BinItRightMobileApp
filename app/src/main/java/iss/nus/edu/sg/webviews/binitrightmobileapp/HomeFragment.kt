@@ -31,10 +31,6 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
             navigateToFindBins()
         }
 
-        binding.btnFindRecyclingBins.setOnClickListener {
-            navigateToFindBins()
-        }
-
         binding.btnRecycleNow.setOnClickListener {
             findNavController().navigate(R.id.action_home_to_scanHome)
         }
@@ -94,3 +90,4 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         _binding = null
     }
 }
+
