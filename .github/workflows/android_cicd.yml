@@ -50,7 +50,7 @@ jobs:
           cache: gradle
       - name: Run JUnit Tests + Coverage
         run: |
-          ./gradlew testLocalDebugUnitTest jacocoLocalDebugUnitTestReport \
+          ./gradlew testLocalDebugUnitTest jacocoLocalDebugUnitTestReport jacocoLocalDebugCoreUnitTestReport jacocoLocalDebugUnitTestCoverageVerification \
           -PLOCALHOST_IP="${{ secrets.LOCALHOST_IP }}"
       - name: Upload Test Results
         if: always()
@@ -66,6 +66,9 @@ jobs:
           path: |
             app/build/reports/jacoco/jacocoLocalDebugUnitTestReport/
             app/build/reports/jacoco/jacocoLocalDebugUnitTestReport/jacocoLocalDebugUnitTestReport.xml
+            app/build/reports/jacoco/jacocoLocalDebugCoreUnitTestReport/
+            app/build/reports/jacoco/jacocoLocalDebugCoreUnitTestReport/jacocoLocalDebugCoreUnitTestReport.xml
+            docs/UNIT_TEST_COVERAGE_SCOPE.md
   # STAGE 3: LINT (Now runs on every check-in)
   lint:
     name: LINT
@@ -131,3 +134,4 @@ jobs:
           else
             echo "No high-severity vulnerabilities found."
           fi
+

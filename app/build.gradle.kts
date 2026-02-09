@@ -1,4 +1,5 @@
 import org.gradle.kotlin.dsl.implementation
+import org.gradle.testing.jacoco.tasks.JacocoCoverageVerification
 import org.gradle.testing.jacoco.tasks.JacocoReport
 import java.util.Properties
 
@@ -153,6 +154,7 @@ dependencies {
     testImplementation(libs.androidx.arch.core.testing)
     testImplementation(libs.robolectric)
     testImplementation(libs.androidx.test.core)
+    testImplementation("com.squareup.okhttp3:mockwebserver:4.12.0")
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
 }
@@ -161,43 +163,110 @@ jacoco {
     toolVersion = "0.8.12"
 }
 
+fun generatedCodeExcludes(): List<String> = listOf(
+    "**/R.class",
+    "**/R$*.class",
+    "**/BuildConfig.*",
+    "**/Manifest*.*",
+    "**/*Test*.*",
+    "**/*Binding*.*",
+    "**/databinding/**",
+    "**/BR.*",
+    "android/**/*.*",
+    "**/*\$Lambda\$*.*",
+    "**/*\$inlined\$*.*"
+)
+
+fun localDebugAllUnitTestableClasses(buildDirPath: String) = files(
+    fileTree("$buildDirPath/tmp/kotlin-classes/localDebug") {
+        exclude(generatedCodeExcludes())
+    },
+    fileTree("$buildDirPath/intermediates/javac/localDebug/compileLocalDebugJavaWithJavac/classes") {
+        exclude(generatedCodeExcludes())
+    }
+)
+
+fun localDebugCoreLogicClasses(buildDirPath: String) = localDebugAllUnitTestableClasses(buildDirPath).asFileTree.matching {
+    include("**/BinJsonParser*.*")
+    include("**/LocationChecker*.*")
+    include("**/QuestionnaireEngine*.*")
+    include("**/QuestionnaireModels*.*")
+    include("**/ScannedCategoryHelper*.*")
+    include("**/ScanViewModel*.*")
+    include("**/ScanResult*.*")
+    include("**/Tier1PreprocessConfig*.*")
+    include("**/model/AuthInterceptor*.*")
+    include("**/utils/JwtUtils*.*")
+}
+
+fun localDebugExecData(buildDirPath: String) = fileTree(buildDirPath) {
+    include("jacoco/testLocalDebugUnitTest.exec")
+    include("outputs/unit_test_code_coverage/localDebugUnitTest/*.exec")
+    include("outputs/unit_test_code_coverage/localDebugUnitTest/testLocalDebugUnitTest.exec")
+}
+
 tasks.register<JacocoReport>("jacocoLocalDebugUnitTestReport") {
     group = "verification"
-    description = "Generate JaCoCo coverage report for localDebug unit tests"
+    description = "Generate JaCoCo full report for localDebug unit tests (excluding generated code only)"
 
     dependsOn("testLocalDebugUnitTest")
 
-    val excludes = listOf(
-        "**/R.class",
-        "**/R$*.class",
-        "**/BuildConfig.*",
-        "**/Manifest*.*",
-        "**/*Test*.*",
-        "android/**/*.*",
-        "**/*\$Lambda\$*.*",
-        "**/*\$inlined\$*.*"
-    )
-
-    val kotlinClasses = fileTree("$buildDir/tmp/kotlin-classes/localDebug") {
-        exclude(excludes)
-    }
-    val javaClasses = fileTree("$buildDir/intermediates/javac/localDebug/compileLocalDebugJavaWithJavac/classes") {
-        exclude(excludes)
-    }
-
-    classDirectories.setFrom(files(kotlinClasses, javaClasses))
+    classDirectories.setFrom(localDebugAllUnitTestableClasses(buildDir.toString()))
     sourceDirectories.setFrom(files("src/main/java"))
-    executionData.setFrom(
-        fileTree(buildDir) {
-            include("jacoco/testLocalDebugUnitTest.exec")
-            include("outputs/unit_test_code_coverage/localDebugUnitTest/*.exec")
-            include("outputs/unit_test_code_coverage/localDebugUnitTest/testLocalDebugUnitTest.exec")
-        }
-    )
+    executionData.setFrom(localDebugExecData(buildDir.toString()))
 
     reports {
         xml.required.set(true)
         html.required.set(true)
         csv.required.set(false)
+    }
+}
+
+tasks.register<JacocoReport>("jacocoLocalDebugCoreUnitTestReport") {
+    group = "verification"
+    description = "Generate JaCoCo core report for key business logic classes"
+
+    dependsOn("testLocalDebugUnitTest")
+
+    classDirectories.setFrom(localDebugCoreLogicClasses(buildDir.toString()))
+    sourceDirectories.setFrom(files("src/main/java"))
+    executionData.setFrom(localDebugExecData(buildDir.toString()))
+
+    reports {
+        xml.required.set(true)
+        html.required.set(true)
+        csv.required.set(false)
+    }
+}
+
+tasks.register<JacocoCoverageVerification>("jacocoLocalDebugUnitTestCoverageVerification") {
+    group = "verification"
+    description = "Verify minimum coverage for key business logic classes"
+
+    dependsOn("testLocalDebugUnitTest")
+
+    classDirectories.setFrom(localDebugCoreLogicClasses(buildDir.toString()))
+    sourceDirectories.setFrom(files("src/main/java"))
+    executionData.setFrom(localDebugExecData(buildDir.toString()))
+
+    violationRules {
+        rule {
+            element = "CLASS"
+            includes = listOf(
+                "iss.nus.edu.sg.webviews.binitrightmobileapp.BinJsonParser*",
+                "iss.nus.edu.sg.webviews.binitrightmobileapp.LocationChecker*",
+                "iss.nus.edu.sg.webviews.binitrightmobileapp.QuestionnaireEngine*",
+                "iss.nus.edu.sg.webviews.binitrightmobileapp.ScannedCategoryHelper*",
+                "iss.nus.edu.sg.webviews.binitrightmobileapp.ScanViewModel*",
+                "iss.nus.edu.sg.webviews.binitrightmobileapp.Tier1PreprocessConfig*",
+                "iss.nus.edu.sg.webviews.binitrightmobileapp.model.AuthInterceptor*",
+                "iss.nus.edu.sg.webviews.binitrightmobileapp.utils.JwtUtils*"
+            )
+            limit {
+                counter = "LINE"
+                value = "COVEREDRATIO"
+                minimum = "0.65".toBigDecimal()
+            }
+        }
     }
 }
