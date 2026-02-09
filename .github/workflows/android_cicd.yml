@@ -48,9 +48,9 @@ jobs:
           java-version: '21'
           distribution: 'temurin'
           cache: gradle
-      - name: Run JUnit Tests
+      - name: Run JUnit Tests + Coverage
         run: |
-          ./gradlew testLocalDebugUnitTest \
+          ./gradlew testLocalDebugUnitTest jacocoLocalDebugUnitTestReport \
           -PLOCALHOST_IP="${{ secrets.LOCALHOST_IP }}"
       - name: Upload Test Results
         if: always()
@@ -58,7 +58,14 @@ jobs:
         with:
           name: unit-test-results
           path: app/build/test-results/testLocalDebugUnitTest/
-
+      - name: Upload Unit Test Coverage
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: unit-test-coverage
+          path: |
+            app/build/reports/jacoco/jacocoLocalDebugUnitTestReport/
+            app/build/reports/jacoco/jacocoLocalDebugUnitTestReport/jacocoLocalDebugUnitTestReport.xml
   # STAGE 3: LINT (Now runs on every check-in)
   lint:
     name: LINT

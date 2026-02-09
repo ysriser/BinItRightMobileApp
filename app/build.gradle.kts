@@ -1,10 +1,12 @@
 import org.gradle.kotlin.dsl.implementation
+import org.gradle.testing.jacoco.tasks.JacocoReport
 import java.util.Properties
 
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     id("androidx.navigation.safeargs.kotlin")
+    id("jacoco")
 }
 
 // Define the helper function at the top level of the script
@@ -153,4 +155,49 @@ dependencies {
     testImplementation(libs.androidx.test.core)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
+}
+
+jacoco {
+    toolVersion = "0.8.12"
+}
+
+tasks.register<JacocoReport>("jacocoLocalDebugUnitTestReport") {
+    group = "verification"
+    description = "Generate JaCoCo coverage report for localDebug unit tests"
+
+    dependsOn("testLocalDebugUnitTest")
+
+    val excludes = listOf(
+        "**/R.class",
+        "**/R$*.class",
+        "**/BuildConfig.*",
+        "**/Manifest*.*",
+        "**/*Test*.*",
+        "android/**/*.*",
+        "**/*\$Lambda\$*.*",
+        "**/*\$inlined\$*.*"
+    )
+
+    val kotlinClasses = fileTree("$buildDir/tmp/kotlin-classes/localDebug") {
+        exclude(excludes)
+    }
+    val javaClasses = fileTree("$buildDir/intermediates/javac/localDebug/compileLocalDebugJavaWithJavac/classes") {
+        exclude(excludes)
+    }
+
+    classDirectories.setFrom(files(kotlinClasses, javaClasses))
+    sourceDirectories.setFrom(files("src/main/java"))
+    executionData.setFrom(
+        fileTree(buildDir) {
+            include("jacoco/testLocalDebugUnitTest.exec")
+            include("outputs/unit_test_code_coverage/localDebugUnitTest/*.exec")
+            include("outputs/unit_test_code_coverage/localDebugUnitTest/testLocalDebugUnitTest.exec")
+        }
+    )
+
+    reports {
+        xml.required.set(true)
+        html.required.set(true)
+        csv.required.set(false)
+    }
 }
