@@ -11,6 +11,7 @@ import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -81,6 +82,31 @@ class AuthInterceptorTest {
 
         val recorded = server.takeRequest()
         assertNull(recorded.getHeader("Authorization"))
+    }
+
+    @Test
+    fun intercept_on200_doesNotClearTokenOrBroadcast() {
+        saveToken("valid-token")
+        server.enqueue(MockResponse().setResponseCode(200).setBody("{}"))
+
+        val client = OkHttpClient.Builder()
+            .addInterceptor(AuthInterceptor(context))
+            .build()
+
+        val request = Request.Builder()
+            .url(server.url("/secure"))
+            .get()
+            .build()
+
+        client.newCall(request).execute().use { response ->
+            assertEquals(200, response.code)
+        }
+
+        val prefs = context.getSharedPreferences("APP_PREFS", Context.MODE_PRIVATE)
+        assertEquals("valid-token", prefs.getString("TOKEN", null))
+
+        val broadcasts = shadowOf(context).broadcastIntents
+        assertTrue(broadcasts.isEmpty())
     }
 
     @Test

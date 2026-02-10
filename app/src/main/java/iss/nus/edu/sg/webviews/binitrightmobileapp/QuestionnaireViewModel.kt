@@ -5,9 +5,19 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 
-class QuestionnaireViewModel(application: Application) : AndroidViewModel(application) {
+class QuestionnaireViewModel : AndroidViewModel {
 
-    private val engine = QuestionnaireEngine(application)
+    private val engine: QuestionnaireEngine
+
+    constructor(application: Application) : this(application, QuestionnaireEngine(application))
+
+    constructor(
+        application: Application,
+        engine: QuestionnaireEngine
+    ) : super(application) {
+        this.engine = engine
+        loadCurrentState()
+    }
 
     private val _currentQuestion = MutableLiveData<QuestionNode?>()
     val currentQuestion: LiveData<QuestionNode?> = _currentQuestion
@@ -21,10 +31,6 @@ class QuestionnaireViewModel(application: Application) : AndroidViewModel(applic
     private val _navigationEvent = MutableLiveData<String?>() // Next ID (Question or Outcome)
     val navigationEvent: LiveData<String?> = _navigationEvent
 
-    init {
-        loadCurrentState()
-    }
-
     private fun loadCurrentState() {
         _currentQuestion.value = engine.getCurrentQuestion()
         _currentProgress.value = engine.getProgress()
@@ -34,16 +40,14 @@ class QuestionnaireViewModel(application: Application) : AndroidViewModel(applic
     fun selectOption(optionId: String) {
         val qId = engine.currentQuestionId ?: return
         val nextId = engine.selectOption(qId, optionId)
-        
+
         if (nextId == "BACK_ACTION_TRIGGERED") {
             navigateBack()
             return
         }
-        
-        // If next is different, it means we moved forward
+
         _navigationEvent.value = nextId
 
-        // If it's a question, update state immediately (for UI refresh)
         if (engine.getQuestionById(nextId) != null) {
             loadCurrentState()
         }
@@ -56,7 +60,7 @@ class QuestionnaireViewModel(application: Application) : AndroidViewModel(applic
         }
         return false
     }
-    
+
     fun getOutcome(id: String): OutcomeNode? {
         return engine.getOutcomeById(id)
     }

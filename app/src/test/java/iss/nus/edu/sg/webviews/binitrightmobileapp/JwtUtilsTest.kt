@@ -26,6 +26,16 @@ class JwtUtilsTest {
     }
 
     @Test
+    fun getUserIdFromToken_returnsNullWhenSubIsNotNumber() {
+        val token = buildToken("{" +
+            "\"sub\":\"abc\"," +
+            "\"username\":\"alice\"" +
+            "}")
+
+        assertNull(JwtUtils.getUserIdFromToken(token))
+    }
+
+    @Test
     fun getUsernameFromToken_returnsNullWhenMissing() {
         val token = buildToken("{" +
             "\"sub\":\"123\"" +
