@@ -14,7 +14,7 @@ import coil.load
 import iss.nus.edu.sg.webviews.binitrightmobileapp.databinding.ItemAchievementBinding
 import iss.nus.edu.sg.webviews.binitrightmobileapp.model.Achievement
 
-class AchievementAdapter(private val onItemClick: (Achievement) -> Unit) :
+open class AchievementAdapter(private val onItemClick: (Achievement) -> Unit) :
     ListAdapter<Achievement, AchievementAdapter.AchievementViewHolder>(AchievementDiffCallback()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): AchievementViewHolder {

@@ -49,6 +49,13 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    buildTypes {
+        getByName("debug") {
+            enableAndroidTestCoverage = true
+            enableUnitTestCoverage = true
+        }
+    }
+
     buildFeatures {
         buildConfig = true
     }
@@ -78,6 +85,14 @@ android {
     }
     kotlinOptions {
         jvmTarget = "11"
+    }
+
+    packaging {
+        resources {
+            pickFirsts += "/META-INF/LICENSE.md"
+            pickFirsts += "/META-INF/LICENSE-notice.md"
+            pickFirsts += "/META-INF/{AL2.0,LGPL2.1}"
+        }
     }
 }
 
@@ -155,20 +170,31 @@ dependencies {
     testImplementation(libs.robolectric)
     testImplementation(libs.androidx.test.core)
     testImplementation("com.squareup.okhttp3:mockwebserver:4.12.0")
-    androidTestImplementation(libs.androidx.junit)
-    androidTestImplementation(libs.androidx.espresso.core)
 
     // Testing for Mock data
     testImplementation("org.mockito:mockito-core:5.5.0")
     testImplementation("org.mockito.kotlin:mockito-kotlin:5.1.0")
     testImplementation("net.bytebuddy:byte-buddy:1.14.5")
-    debugImplementation("androidx.fragment:fragment-testing:1.6.1")
 
     testImplementation("org.robolectric:robolectric:4.10.3")
     testImplementation("androidx.navigation:navigation-testing:2.7.3")
     testImplementation("androidx.test.ext:junit:1.1.5")
     implementation("androidx.fragment:fragment-ktx:1.6.1")
     testImplementation("androidx.arch.core:core-testing:2.2.0")
+
+    // Instrument Test Dependencies
+    androidTestImplementation("androidx.test.ext:junit:1.1.5")
+    androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
+    androidTestImplementation("androidx.test.espresso:espresso-contrib:3.5.1")
+    debugImplementation("androidx.fragment:fragment-testing:1.6.2")
+    androidTestImplementation("io.mockk:mockk-android:1.13.9")
+    androidTestImplementation("androidx.arch.core:core-testing:2.2.0")
+    androidTestImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3")
+    androidTestImplementation("org.mockito:mockito-android:5.7.0")
+    androidTestImplementation("androidx.test:runner:1.5.2")
+    androidTestImplementation("androidx.test:rules:1.5.0")
+    androidTestImplementation("androidx.test:monitor:1.6.0")
+    androidTestImplementation("androidx.test.espresso:espresso-intents:3.5.1")
 }
 
 jacoco {
@@ -218,6 +244,7 @@ fun localDebugExecData(buildDirPath: String) = fileTree(buildDirPath) {
     include("jacoco/testLocalDebugUnitTest.exec")
     include("outputs/unit_test_code_coverage/localDebugUnitTest/*.exec")
     include("outputs/unit_test_code_coverage/localDebugUnitTest/testLocalDebugUnitTest.exec")
+    include("outputs/code_coverage/localDebugAndroidTest/connected/**/*.ec")
 }
 
 tasks.register<JacocoReport>("jacocoLocalDebugUnitTestReport") {
@@ -273,4 +300,3 @@ tasks.register<JacocoCoverageVerification>("jacocoLocalDebugUnitTestCoverageVeri
         }
     }
 }
-
