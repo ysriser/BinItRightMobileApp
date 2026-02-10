@@ -35,39 +35,40 @@ jobs:
           name: compiled-apk
           path: app/build/outputs/apk/local/debug/app-local-debug.apk
 
-  # ==========================================
-  # BOX 2: UNIT TESTS + COVERAGE
-  # ==========================================
+  # STAGE 2: UNIT (Always Runs) + Coverage
   unit-tests:
-    name: Unit Tests (Pytest)
+    name: UNIT
+    needs: build
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
         with:
-          python-version: "3.11"
-          cache: "pip"
+          java-version: '21'
+          distribution: 'temurin'
+          cache: gradle
 
-      - name: Install Dependencies
+      # Run tests AND generate coverage in one command
+      - name: Run JUnit Tests with Coverage
         run: |
-          python -m pip install --upgrade pip
-          # ADD pytest-cov HERE
-          pip install -r requirements.txt pytest-cov 
+          ./gradlew testLocalDebugUnitTest jacocoTestReport \
+          -PLOCALHOST_IP="${{ secrets.LOCALHOST_IP }}"
 
-      - name: Run Pytest with Coverage
-        run: |
-          # ADD the --cov flags to generate coverage.xml
-          pytest test_main.py CNN/shared/tests CNN/clf_7cats_tier1/tests CNN/services/tests \
-          --junitxml=reports/unit-test.xml \
-          --cov=. --cov-report=xml:coverage.xml
-
-      - name: Upload Coverage Reports
-        if: always() # Changed to always so we can debug if it fails
+      - name: Upload Test Results
+        if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: python-coverage-reports
-          path: coverage.xml
+          name: unit-test-results
+          path: app/build/test-results/testLocalDebugUnitTest/
+
+      - name: Upload Coverage Reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-coverage-reports
+          # We point directly to the folder so the artifact contains ONLY the files
+          path: app/build/reports/jacoco/jacocoLocalDebugUnitTestReport/
 
   # STAGE 3: LINT (Now runs on every check-in)
   lint:
