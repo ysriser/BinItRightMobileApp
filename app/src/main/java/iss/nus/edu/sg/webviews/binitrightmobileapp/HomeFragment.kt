@@ -39,10 +39,6 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
             findNavController().navigate(R.id.action_home_to_chatFragment)
         }
 
-        binding.cardAchievements.setOnClickListener {
-            findNavController().navigate(R.id.action_home_to_achievements)
-        }
-
         setupReportIssueButton()
         fetchUserStats()
     }
@@ -90,4 +86,3 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         _binding = null
     }
 }
-

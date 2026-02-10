@@ -30,31 +30,28 @@ class ProfileFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // Fetch data from API as soon as view is created
         loadProfileData()
 
-        // Navigation to Leaderboard
         binding.leaderboardCard.setOnClickListener {
             findNavController().navigate(R.id.action_profile_to_leaderboard)
         }
 
-        // Navigation to Reward Shop using SafeArgs
         binding.rewardShopCard.setOnClickListener {
-            // Retrieve current points from the UI state
             val totalPoints = binding.gridPoints.text.toString().toIntOrNull() ?: 0
-
             val action = ProfileFragmentDirections.actionProfileToRewardShopFragment(totalPoints)
             findNavController().navigate(action)
         }
 
-        // Navigation to Recycle History
         binding.recycleHistory.setOnClickListener {
             findNavController().navigate(R.id.action_profile_to_recycleHistory)
         }
 
-        // Navigation to Avatar Customization
         binding.customizeAvatarBtn.setOnClickListener {
             findNavController().navigate(R.id.action_profile_to_avatarCustomizationFragment)
+        }
+
+        binding.achievementsCard.setOnClickListener {
+            findNavController().navigate(R.id.action_profile_to_achievements)
         }
 
         binding.logoutBtn.setOnClickListener {
@@ -65,22 +62,21 @@ class ProfileFragment : Fragment() {
     private fun loadProfileData() {
         viewLifecycleOwner.lifecycleScope.launch {
             try {
-                // Notice: using the apiService() function as defined in your RetrofitClient
                 val response = RetrofitClient.apiService().getProfileSummary()
 
                 if (response.isSuccessful) {
                     val profile = response.body()
                     profile?.let {
-                        // 1. Update Header Info
                         binding.profileName.text = it.name
                         binding.pointsDisplay.text = "${it.pointBalance} Points"
                         binding.summaryRecycled.text = "${it.totalRecycled}"
 
-                        // 2. Update Stats Grid
                         binding.gridPoints.text = it.pointBalance.toString()
                         binding.gridItems.text = it.totalRecycled.toString()
 
-                        // 3. Update Avatar Image
+                        binding.gridAwards.text = it.totalAchievement.toString()
+                        binding.summaryBadges.text = it.totalAchievement.toString()
+
                         val drawableName = it.equippedAvatarName.lowercase().replace(" ", "_")
                         val resId = requireContext().resources.getIdentifier(
                             drawableName, "drawable", requireContext().packageName
