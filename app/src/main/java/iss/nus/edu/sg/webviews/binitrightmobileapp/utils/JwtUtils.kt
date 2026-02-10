@@ -32,7 +32,7 @@ object JwtUtils {
             )
 
             val json = JSONObject(payload)
-            json.optString("username", null)
+            if (json.has("username")) json.getString("username") else null
         } catch (e: Exception) {
             e.printStackTrace()
             null

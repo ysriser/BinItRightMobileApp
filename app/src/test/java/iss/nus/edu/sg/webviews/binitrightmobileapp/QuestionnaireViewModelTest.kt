@@ -59,7 +59,7 @@ class QuestionnaireViewModelTest {
             ),
         )
 
-        val app = RuntimeEnvironment.getApplication<android.app.Application>()
+        val app = RuntimeEnvironment.getApplication() as android.app.Application
         val engine = QuestionnaireEngine(app, config)
         return QuestionnaireViewModel(app, engine)
     }
