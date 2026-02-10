@@ -262,6 +262,13 @@
                         android:checkable="true"
                         style="@style/Widget.MaterialComponents.Chip.Choice"/>
 
+                    <com.google.android.material.chip.Chip
+                        android:id="@+id/chipOthers"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Others"
+                        android:checkable="true"
+                        style="@style/Widget.MaterialComponents.Chip.Choice"/>
                 </com.google.android.material.chip.ChipGroup>
 
             </LinearLayout>
@@ -401,6 +408,7 @@
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnSubmit"
+                android:contentDescription="submit_checkin"
                 android:layout_width="0dp"
                 android:layout_weight="1"
                 android:layout_height="56dp"
@@ -410,7 +418,7 @@
                 app:cornerRadius="28dp"
                 app:icon="@drawable/ic_check_circle_24"
                 app:iconGravity="start"
-                android:enabled="false"
+                android:enabled="true"
                 android:layout_marginStart="8dp"/>
 
         </LinearLayout>

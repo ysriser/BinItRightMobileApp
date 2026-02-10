@@ -1,20 +1,23 @@
 package iss.nus.edu.sg.webviews.binitrightmobileapp
 
-import android.content.Context
-import android.graphics.Bitmap
-import android.util.Log
 import ai.onnxruntime.OnnxTensor
 import ai.onnxruntime.OrtEnvironment
 import ai.onnxruntime.OrtSession
+import android.content.Context
+import android.graphics.Bitmap
+import android.util.Log
 import java.nio.FloatBuffer
-import java.util.*
+import kotlin.math.roundToInt
 
-class ImageClassifier(private val context: Context) {
+class ImageClassifier(
+    private val context: Context,
+    private val inputSize: Int = Tier1PreprocessConfig.INPUT_SIZE,
+    private val resizeScale: Float = Tier1PreprocessConfig.RESIZE_SCALE,
+) {
 
     private var ortEnvironment: OrtEnvironment? = null
     private var ortSession: OrtSession? = null
 
-    // Hardcoded labels as requested by user
     private val labels = listOf(
         "paper",
         "plastic",
@@ -32,80 +35,68 @@ class ImageClassifier(private val context: Context) {
     private fun initialize() {
         try {
             ortEnvironment = OrtEnvironment.getEnvironment()
-            // Load model from assets
-            val modelBytes = context.assets.open("tier1.onnx").readBytes()
+            val modelBytes = context.assets.open(Tier1PreprocessConfig.MODEL_ASSET_NAME).readBytes()
             ortSession = ortEnvironment?.createSession(modelBytes)
             Log.d("ImageClassifier", "Model loaded successfully")
-        } catch (e: Throwable) {
-            Log.e("ImageClassifier", "Error initializing model", e)
+        } catch (error: Throwable) {
+            Log.e("ImageClassifier", "Error initializing model", error)
         }
     }
 
     fun classify(bitmap: Bitmap): Tier1Result {
-        if (ortSession == null) return Tier1Result("error", 0f, emptyList(), true)
+        if (ortSession == null) {
+            return Tier1Result("error", 0f, emptyList(), true)
+        }
 
-        try {
-            // 1. Preprocess
+        return try {
             val floatBuffer = preprocess(bitmap)
-
-            // 2. Create Input Tensor
             val inputName = ortSession?.inputNames?.iterator()?.next() ?: "input"
-            val shape = longArrayOf(1, 3, 224, 224)
+            val shape = longArrayOf(1, 3, inputSize.toLong(), inputSize.toLong())
             val inputTensor = OnnxTensor.createTensor(ortEnvironment, floatBuffer, shape)
 
-            // 3. Run Inference
             val results = ortSession?.run(mapOf(inputName to inputTensor))
-            
-            // 4. Postprocess
+            @Suppress("UNCHECKED_CAST")
             val outputTensor = results?.get(0)?.value as Array<FloatArray>
             val logits = outputTensor[0]
-            
+
+            results?.close()
             inputTensor.close()
 
-            // Calculate Softmax
             val probabilities = softmax(logits)
-            
-            // Get Top 3
             val top3Indices = getTopKIndices(probabilities, 3)
             val top3 = top3Indices.map { index ->
-                mapOf(
-                    "label" to labels[index],
-                    "p" to probabilities[index]
-                )
+                mapOf("label" to labels[index], "p" to probabilities[index])
             }
-            
+
             val top1Index = top3Indices[0]
             val top1Label = labels[top1Index]
             val top1Confidence = probabilities[top1Index]
 
-            // Escalation Logic (Updated v0.1 Spec)
-            val defaultConfThreshold = 0.70f
-            val highConfThreshold = 0.80f // Higher threshold for tricky categories
-            val marginThreshold = 0.05f
-
             val confThreshold = when (top1Label.lowercase()) {
-                "glass", "plastic" -> highConfThreshold
-                else -> defaultConfThreshold
+                "plastic" -> Tier1PreprocessConfig.CONF_THRESHOLD_PLASTIC
+                "glass" -> Tier1PreprocessConfig.CONF_THRESHOLD_GLASS
+                else -> Tier1PreprocessConfig.CONF_THRESHOLD_DEFAULT
             }
-            
+
             val margin = if (probabilities.size > 1) {
                 probabilities[top3Indices[0]] - probabilities[top3Indices[1]]
             } else {
                 1.0f
             }
 
-            val escalate = top1Label == "other_uncertain" || top1Confidence < confThreshold || margin < marginThreshold
+            val escalate = top1Label == "other_uncertain"
+                    || top1Confidence < confThreshold
+                    || margin < Tier1PreprocessConfig.MARGIN_THRESHOLD
 
-            return Tier1Result(
+            Tier1Result(
                 category = top1Label,
                 confidence = top1Confidence,
                 top3 = top3,
                 escalate = escalate
             )
-
-        } catch (e: Exception) {
-            Log.e("ImageClassifier", "Error during classification", e)
-             return Tier1Result("error", 0f, emptyList(), true)
+        } catch (error: Exception) {
+            Log.e("ImageClassifier", "Error during classification", error)
+            Tier1Result("error", 0f, emptyList(), true)
         }
     }
 
@@ -113,7 +104,7 @@ class ImageClassifier(private val context: Context) {
         val maxLogit = logits.maxOrNull() ?: 0f
         val exp = logits.map { kotlin.math.exp(it - maxLogit) }
         val sumExp = exp.sum()
-        return exp.map { (it / sumExp) }.toFloatArray()
+        return exp.map { it / sumExp }.toFloatArray()
     }
 
     private fun getTopKIndices(array: FloatArray, k: Int): List<Int> {
@@ -124,70 +115,55 @@ class ImageClassifier(private val context: Context) {
     }
 
     private fun preprocess(bitmap: Bitmap): FloatBuffer {
-        // Resize to 257x257 (as per docs: int(224*1.15)=257)
-        val resizeScale = 257
-        val resized = Bitmap.createScaledBitmap(bitmap, resizeScale, resizeScale, true)
+        val targetShortSide = (inputSize.toFloat() * resizeScale).roundToInt().coerceAtLeast(inputSize)
+        val resized = resizeShorterSide(bitmap, targetShortSide)
 
-        // Center Crop to 224x224
-        val targetSize = 224
-        val xOffset = (resizeScale - targetSize) / 2
-        val yOffset = (resizeScale - targetSize) / 2
-        val cropped = Bitmap.createBitmap(resized, xOffset, yOffset, targetSize, targetSize)
+        val xOffset = ((resized.width - inputSize) / 2).coerceAtLeast(0)
+        val yOffset = ((resized.height - inputSize) / 2).coerceAtLeast(0)
+        val cropped = Bitmap.createBitmap(resized, xOffset, yOffset, inputSize, inputSize)
 
-        // Normalize & Convert to NCHW
-        // mean: [0.485, 0.456, 0.406]
-        // std: [0.229, 0.224, 0.225]
-        val totalPixels = targetSize * targetSize
+        if (resized !== bitmap) {
+            resized.recycle()
+        }
+
+        val totalPixels = inputSize * inputSize
         val buffer = FloatBuffer.allocate(3 * totalPixels)
-        
-        // We will fill the buffer channel by channel: R first, then G, then B
-        // Because ONNX expects NCHW, but Android Bitmap is usually packed pixels (RGBRGB...)
-        // We need to iterate pixels and put them into separate regions of the buffer
-        
-        // However, standard intuitive loop for simpler reading:
-        // Create 3 separate arrays or just write to specific offsets in one buffer
-        
-        // Let's use the user's provided snippet logic style but adapted for FloatBuffer
-        for (y in 0 until targetSize) {
-            for (x in 0 until targetSize) {
+
+        for (y in 0 until inputSize) {
+            for (x in 0 until inputSize) {
                 val pixel = cropped.getPixel(x, y)
-                
-                // Extract RGB (0-255)
+
                 val r = ((pixel shr 16) and 0xFF) / 255f
                 val g = ((pixel shr 8) and 0xFF) / 255f
                 val b = (pixel and 0xFF) / 255f
 
-                // Normalize
-                val rNorm = (r - 0.485f) / 0.229f
-                val gNorm = (g - 0.456f) / 0.224f
-                val bNorm = (b - 0.406f) / 0.225f
-                
-                // Calculate NCHW indices
-                // Index in the flattened [3, 224, 224] array
-                // channel 0 (R): y * width + x
-                // channel 1 (G): width*height + y * width + x
-                // channel 2 (B): 2*width*height + y * width + x
-                
-                val pixelIndex = y * targetSize + x
-                
+                val rNorm = (r - Tier1PreprocessConfig.NORMALIZE_MEAN[0]) / Tier1PreprocessConfig.NORMALIZE_STD[0]
+                val gNorm = (g - Tier1PreprocessConfig.NORMALIZE_MEAN[1]) / Tier1PreprocessConfig.NORMALIZE_STD[1]
+                val bNorm = (b - Tier1PreprocessConfig.NORMALIZE_MEAN[2]) / Tier1PreprocessConfig.NORMALIZE_STD[2]
+
+                val pixelIndex = y * inputSize + x
                 buffer.put(pixelIndex, rNorm)
                 buffer.put(totalPixels + pixelIndex, gNorm)
                 buffer.put(2 * totalPixels + pixelIndex, bNorm)
             }
         }
-        
+
+        cropped.recycle()
         return buffer
     }
 
-    private fun getMaxIndex(array: FloatArray): Int {
-        var maxIndex = -1
-        var maxVal = Float.NEGATIVE_INFINITY
-        for (i in array.indices) {
-            if (array[i] > maxVal) {
-                maxVal = array[i]
-                maxIndex = i
-            }
+    private fun resizeShorterSide(source: Bitmap, targetShortSide: Int): Bitmap {
+        val width = source.width
+        val height = source.height
+        val shortSide = minOf(width, height).coerceAtLeast(1)
+        val scale = targetShortSide.toFloat() / shortSide.toFloat()
+
+        val newWidth = (width * scale).roundToInt().coerceAtLeast(inputSize)
+        val newHeight = (height * scale).roundToInt().coerceAtLeast(inputSize)
+
+        if (newWidth == width && newHeight == height) {
+            return source
         }
-        return maxIndex
+        return Bitmap.createScaledBitmap(source, newWidth, newHeight, true)
     }
 }

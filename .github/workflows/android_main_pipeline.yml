@@ -3,7 +3,7 @@ name: Android Main Pipeline (Post-Merge)
 permissions:
   contents: write
   
-on: 
+on:
   push:
     branches: [ "master" ]
 
@@ -53,7 +53,7 @@ jobs:
       - name: Checkout Appium Tests
         uses: actions/checkout@v4
         with:
-          repository: ysriser/BinItRightAppiumScripts
+          repository: CarlinJunHuang/BinItRightAppiumScripts
           path: appium-tests
 
       - name: Download Staging APK
