@@ -48,25 +48,31 @@ jobs:
           java-version: '21'
           distribution: 'temurin'
           cache: gradle
-      - name: Run JUnit Tests + Coverage
+
+      # Run tests AND generate coverage in one command
+      - name: Run JUnit Tests with Coverage
         run: |
-          ./gradlew testLocalDebugUnitTest jacocoLocalDebugUnitTestReport \
+          ./gradlew testLocalDebugUnitTest jacocoTestReport \
           -PLOCALHOST_IP="${{ secrets.LOCALHOST_IP }}"
-      
+
       - name: Upload Test Results
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: unit-test-results
           path: app/build/test-results/testLocalDebugUnitTest/
-      - name: Upload Unit Test Coverage
-        if: always()
+
+      # NEW: Upload coverage for aggregation
+      - name: Upload Coverage Reports
+        if: success()
         uses: actions/upload-artifact@v4
         with:
-          name: unit-test-coverage
+          name: android-coverage-reports
           path: |
-            app/build/reports/jacoco/jacocoLocalDebugUnitTestReport/
-            app/build/reports/jacoco/jacocoLocalDebugUnitTestReport/jacocoLocalDebugUnitTestReport.xml
+            app/build/reports/jacoco/jacocoTestReport/jacocoTestReport.xml
+            app/build/reports/lint-results-localDebug.xml
+          retention-days: 7
+
   # STAGE 3: LINT (Now runs on every check-in)
   lint:
     name: LINT
@@ -80,22 +86,28 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: lint-report
-          path: app/build/reports/lint-results-localDebug.html
+          name: android-lint-reports
+          path: app/build/reports/lint-results-localDebug.xml
 
-      - name: Run Trivy (SCA)
-        uses: aquasecurity/trivy-action@master
-        with:
-          scan-type: 'fs'
-          format: 'sarif' # CHANGED
-          output: 'android-sca.sarif' # CHANGED
-          exit-code: '0'
-          severity: 'CRITICAL,HIGH'
-      - name: Upload SCA Report
-        uses: actions/upload-artifact@v4
-        with:
-          name: android-sca-results # Standardized name
-          path: android-sca.sarif
+  # STAGE 4: SCA (Now runs on every check-in)
+  sca-scan:
+    name: SCA
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+    - name: Run Trivy (SCA)
+      uses: aquasecurity/trivy-action@master
+      with:
+        scan-type: 'fs'
+        format: 'sarif' # CHANGED
+        output: 'android-sca.sarif' # CHANGED
+        exit-code: '0'
+        severity: 'CRITICAL,HIGH'
+    - name: Upload SCA Report
+      uses: actions/upload-artifact@v4
+      with:
+        name: android-sca-results # Standardized name
+        path: android-sca.sarif
 
   # STAGE 5: SAST (Now runs on every check-in)
   sast-scan:
