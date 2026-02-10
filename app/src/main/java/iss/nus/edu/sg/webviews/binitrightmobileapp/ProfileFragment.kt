@@ -60,9 +60,14 @@ class ProfileFragment : Fragment() {
     }
 
     private fun loadProfileData() {
+        val userId = requireActivity()
+            .getSharedPreferences("APP_PREFS", Context.MODE_PRIVATE)
+            .getLong("USER_ID", -1L)
+
         viewLifecycleOwner.lifecycleScope.launch {
             try {
-                val response = RetrofitClient.apiService().getProfileSummary()
+                val api = RetrofitClient.apiService()
+                val response = api.getProfileSummary()
 
                 if (response.isSuccessful) {
                     val profile = response.body()
@@ -74,8 +79,15 @@ class ProfileFragment : Fragment() {
                         binding.gridPoints.text = it.pointBalance.toString()
                         binding.gridItems.text = it.totalRecycled.toString()
 
-                        binding.gridAwards.text = it.totalAchievement.toString()
-                        binding.summaryBadges.text = it.totalAchievement.toString()
+                        if (userId != -1L) {
+                            val achievementsRes = api.getAchievementsWithStatus(userId)
+                            if (achievementsRes.isSuccessful) {
+                                val remoteData = achievementsRes.body() ?: emptyList()
+                                val unlockedCount = remoteData.count { it.isUnlocked }
+                                binding.gridAwards.text = unlockedCount.toString()
+                                binding.summaryBadges.text = unlockedCount.toString()
+                            }
+                        }
 
                         val drawableName = it.equippedAvatarName.lowercase().replace(" ", "_")
                         val resId = requireContext().resources.getIdentifier(
