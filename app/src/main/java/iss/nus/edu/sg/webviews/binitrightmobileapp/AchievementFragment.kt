@@ -30,15 +30,14 @@ class AchievementsFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         adapter = AchievementAdapter { clickedItem ->
-            val bundle = Bundle().apply {
-                putString("name", clickedItem.name)
-                putString("description", clickedItem.description)
-                putString("criteria", clickedItem.criteria)
-                putString("iconUrl", clickedItem.badgeIconUrl)
-                putBoolean("isUnlocked", clickedItem.isUnlocked)
-                putString("dateAchieved", clickedItem.dateAchieved)
-            }
-            findNavController().navigate(R.id.action_achievementsFragment_to_achievementDetailFragment, bundle)
+            val action = AchievementsFragmentDirections.actionAchievementsFragmentToAchievementDetailFragment(
+                name = clickedItem.name,
+                description = clickedItem.description,
+                criteria = clickedItem.criteria,
+                iconUrl = clickedItem.badgeIconUrl,
+                isUnlocked = clickedItem.isUnlocked
+            )
+            findNavController().navigate(action)
         }
 
         binding.rvAchievements.apply {

@@ -116,7 +116,7 @@ dependencies {
 
     // Material Design
     implementation(libs.material)
-    
+
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.4")
 
 
@@ -157,6 +157,18 @@ dependencies {
     testImplementation("com.squareup.okhttp3:mockwebserver:4.12.0")
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
+
+    // Testing for Mock data
+    testImplementation("org.mockito:mockito-core:5.5.0")
+    testImplementation("org.mockito.kotlin:mockito-kotlin:5.1.0")
+    testImplementation("net.bytebuddy:byte-buddy:1.14.5")
+    debugImplementation("androidx.fragment:fragment-testing:1.6.1")
+
+    testImplementation("org.robolectric:robolectric:4.10.3")
+    testImplementation("androidx.navigation:navigation-testing:2.7.3")
+    testImplementation("androidx.test.ext:junit:1.1.5")
+    implementation("androidx.fragment:fragment-ktx:1.6.1")
+    testImplementation("androidx.arch.core:core-testing:2.2.0")
 }
 
 jacoco {
