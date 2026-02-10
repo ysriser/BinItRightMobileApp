@@ -4,5 +4,8 @@ data class UserProfile(
     val name: String,
     val pointBalance: Int,
     val equippedAvatarName: String,
-    val totalRecycled: Int
+    val totalRecycled: Int,
+    val aiSummary: String,
+    val totalAchievement:Int,
+    val carbonEmissionSaved: Double
 )

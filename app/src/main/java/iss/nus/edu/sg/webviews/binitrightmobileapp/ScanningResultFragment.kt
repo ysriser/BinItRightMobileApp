@@ -1,6 +1,5 @@
 package iss.nus.edu.sg.webviews.binitrightmobileapp
 
-import android.content.ContentValues.TAG
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
@@ -25,10 +24,11 @@ class ScanningResultFragment : Fragment() {
         ScanViewModelFactory(requireContext())
     }
 
-    private var scanAnimator: android.animation.ObjectAnimator? = null
+    private var currentScanResult: ScanResult? = null
 
     override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
+        inflater: LayoutInflater,
+        container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentScanningResultBinding.inflate(inflater, container, false)
@@ -38,9 +38,7 @@ class ScanningResultFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // Retrieve using Bundle
         val imageUriString = arguments?.getString("imageUri")
-        // Retrieve result object
         val scanResult = arguments?.getSerializable("scanResult") as? ScanResult
 
         if (imageUriString != null) {
@@ -48,14 +46,10 @@ class ScanningResultFragment : Fragment() {
             binding.ivCapturedImage.load(uri)
 
             if (scanResult != null) {
-                // Display result directly
                 displayResult(scanResult)
-            } else {
-                // Fallback: Auto-trigger scan if file exists and no result passed
-                if (uri.scheme == "file") {
-                    val file = File(uri.path!!)
-                    viewModel.scanImage(file)
-                }
+            } else if (uri.scheme == "file") {
+                val file = File(uri.path!!)
+                viewModel.scanImage(file)
             }
         }
 
@@ -83,13 +77,14 @@ class ScanningResultFragment : Fragment() {
         }
     }
 
-    private var currentScanResult: ScanResult? = null
-
     private fun displayResult(scanResult: ScanResult) {
         currentScanResult = scanResult
-        binding.tvCategory.text = mappingCategory(scanResult.category)
 
-        val isNotSure = isNotSureCategory(scanResult.category)
+        val displayCategory = ScannedCategoryHelper.toDisplayCategory(scanResult.category)
+        val isNotSure = ScannedCategoryHelper.isUncertain(scanResult.category)
+        val effectiveRecyclable = scanResult.recyclable || ScannedCategoryHelper.isSpecialRecyclable(scanResult.category)
+
+        binding.tvCategory.text = displayCategory
 
         if (isNotSure) {
             binding.tvBadge.text = "Not sure"
@@ -107,7 +102,7 @@ class ScanningResultFragment : Fragment() {
             binding.tvDescriptionWait.setTextColor(
                 androidx.core.content.ContextCompat.getColor(requireContext(), android.R.color.holo_orange_dark)
             )
-        } else if (scanResult.recyclable) {
+        } else if (effectiveRecyclable) {
             binding.tvBadge.text = "Recyclable"
             binding.tvBadge.setTextColor(
                 androidx.core.content.ContextCompat.getColor(requireContext(), android.R.color.holo_green_dark)
@@ -119,7 +114,7 @@ class ScanningResultFragment : Fragment() {
                 androidx.core.content.ContextCompat.getColor(requireContext(), android.R.color.holo_green_dark)
             )
 
-            binding.tvDescriptionWait.text = "Great news! This item can be recycled."
+            binding.tvDescriptionWait.text = "This item can be recycled in an appropriate stream."
             binding.tvDescriptionWait.setTextColor(
                 androidx.core.content.ContextCompat.getColor(requireContext(), android.R.color.holo_green_dark)
             )
@@ -164,45 +159,31 @@ class ScanningResultFragment : Fragment() {
         }
     }
 
-    private fun mappingCategory(fullCategory: String): String {
-        val trimmed = fullCategory.trim()
-        return when {
-            trimmed.startsWith("E-waste - ", ignoreCase = true) -> "E-waste"
-            trimmed.startsWith("Textile - ", ignoreCase = true) -> "Textile"
-            else -> trimmed
-        }
-    }
-
-    private fun isNotSureCategory(category: String): Boolean {
-        val normalized = category.trim().lowercase()
-        return normalized.contains("not sure")
-                || normalized.contains("uncertain")
-                || normalized.contains("unknown")
-                || normalized.contains("other_uncertain")
-    }
-
     private fun setupListeners() {
         binding.btnScanAgain.setOnClickListener {
             findNavController().popBackStack()
         }
 
         binding.btnNotNow.setOnClickListener {
-            // Navigate home or exit
-            // Navigate to Home
             findNavController().popBackStack(R.id.nav_home, false)
-
         }
 
         binding.btnRecycle.setOnClickListener {
-            val scannedCategory = mappingCategory(currentScanResult?.category ?: "")
-            val binType = currentScanResult?.binType ?: ""
+            val rawCategory = currentScanResult?.category.orEmpty()
+            val effectiveRecyclable = (currentScanResult?.recyclable == true) || ScannedCategoryHelper.isSpecialRecyclable(rawCategory)
+            val mappedWasteCategory = ScannedCategoryHelper.toCheckInWasteType(rawCategory)
+            val selectedBinType = currentScanResult?.binType
+                ?.takeIf { it.isNotBlank() }
+                ?: ScannedCategoryHelper.toBinType(rawCategory, effectiveRecyclable)
 
-            Log.d("ScanningResult", "### Passing wasteCategory: $scannedCategory")
-            Log.d("ScanningResult", "### Passing binType: $binType")
+            Log.d("ScanningResult", "Passing wasteCategory: $rawCategory")
+            Log.d("ScanningResult", "Passing mappedWasteCategory: $mappedWasteCategory")
+            Log.d("ScanningResult", "Passing selectedBinType: $selectedBinType")
 
             val bundle = Bundle().apply {
-                putString("selectedBinType", binType)
-                putString("wasteCategory", scannedCategory)
+                putString("selectedBinType", selectedBinType)
+                putString("wasteCategory", rawCategory)
+                putString("mappedWasteCategory", mappedWasteCategory)
             }
 
             findNavController().navigate(
@@ -221,7 +202,7 @@ class ScanningResultFragment : Fragment() {
     }
 
     private fun sendFeedback(isAccurate: Boolean) {
-        val imageId = "temp_image_id" // In real app, get from ScanResult
+        val imageId = "temp_image_id"
         val feedback = FeedbackRequest(
             imageId = imageId,
             userFeedback = isAccurate,

@@ -228,6 +228,9 @@
                     android:layout_height="110dp"
                     android:layout_margin="8dp"
                     android:layout_weight="1"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:foreground="?android:attr/selectableItemBackground"
                     app:cardCornerRadius="12dp">
 
                     <LinearLayout
@@ -268,6 +271,9 @@
                     android:layout_height="110dp"
                     android:layout_margin="8dp"
                     android:layout_weight="1"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:foreground="?android:attr/selectableItemBackground"
                     app:cardCornerRadius="12dp">
 
                     <LinearLayout
@@ -309,10 +315,14 @@
                 android:orientation="horizontal">
 
                 <androidx.cardview.widget.CardView
+                    android:id="@+id/leaderboardCard"
                     android:layout_width="0dp"
                     android:layout_height="110dp"
                     android:layout_margin="8dp"
                     android:layout_weight="1"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:foreground="?android:attr/selectableItemBackground"
                     app:cardCornerRadius="12dp">
 
                     <LinearLayout
@@ -348,10 +358,14 @@
                 </androidx.cardview.widget.CardView>
 
                 <androidx.cardview.widget.CardView
+                    android:id="@+id/achievementsCard"
                     android:layout_width="0dp"
                     android:layout_height="110dp"
                     android:layout_margin="8dp"
                     android:layout_weight="1"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:foreground="?android:attr/selectableItemBackground"
                     app:cardCornerRadius="12dp">
 
                     <LinearLayout

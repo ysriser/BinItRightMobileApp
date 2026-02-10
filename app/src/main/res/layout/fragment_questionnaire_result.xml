@@ -13,29 +13,28 @@
         android:layout_height="wrap_content"
         android:paddingBottom="24dp">
 
-        <!-- Green Check Circle -->
         <ImageView
             android:id="@+id/ivSuccess"
             android:layout_width="80dp"
             android:layout_height="80dp"
             android:layout_marginTop="48dp"
             android:src="@drawable/ic_check_circle_24"
-            app:tint="#00C853"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toTopOf="parent"
+            app:tint="#00C853" />
 
         <TextView
             android:id="@+id/tvCategory"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
-            android:text="Metal Device/Appliance"
+            android:gravity="center"
+            android:paddingHorizontal="24dp"
+            android:text="Recyclable Item"
             android:textColor="#212121"
             android:textSize="24sp"
             android:textStyle="bold"
-            android:gravity="center"
-            android:paddingHorizontal="24dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/ivSuccess" />
@@ -48,14 +47,13 @@
             android:background="@drawable/bg_badge_recyclable"
             android:paddingHorizontal="16dp"
             android:paddingVertical="6dp"
-            android:text="♻ Recyclable"
+            android:text="Recyclable"
             android:textColor="#00695C"
             android:textStyle="bold"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/tvCategory" />
 
-        <!-- Accuracy Card (Optional reuse) -->
         <androidx.cardview.widget.CardView
             android:id="@+id/cardAccuracy"
             android:layout_width="0dp"
@@ -93,12 +91,12 @@
                         style="@style/Widget.MaterialComponents.Button.OutlinedButton"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:layout_weight="1"
                         android:layout_marginEnd="8dp"
-                        android:text="Yes, accurate"
+                        android:layout_weight="1"
                         android:maxLines="1"
-                        app:autoSizeTextType="uniform"
+                        android:text="Yes, accurate"
                         android:textColor="#00C853"
+                        app:autoSizeTextType="uniform"
                         app:strokeColor="#00C853" />
 
                     <com.google.android.material.button.MaterialButton
@@ -106,18 +104,17 @@
                         style="@style/Widget.MaterialComponents.Button.OutlinedButton"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:layout_weight="1"
                         android:layout_marginStart="8dp"
-                        android:text="No, incorrect"
+                        android:layout_weight="1"
                         android:maxLines="1"
-                        app:autoSizeTextType="uniform"
+                        android:text="No, incorrect"
                         android:textColor="#D32F2F"
+                        app:autoSizeTextType="uniform"
                         app:strokeColor="#D32F2F" />
                 </LinearLayout>
             </LinearLayout>
         </androidx.cardview.widget.CardView>
 
-        <!-- Info Card -->
         <androidx.cardview.widget.CardView
             android:id="@+id/cardInfo"
             android:layout_width="0dp"
@@ -141,19 +138,19 @@
                     android:id="@+id/tvExplanation"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Great news! This item can be recycled. ✨"
+                    android:text="This item can be processed through recycling."
                     android:textColor="#1B5E20"
-                    android:textStyle="bold"
-                    android:textSize="16sp"/>
+                    android:textSize="16sp"
+                    android:textStyle="bold" />
 
                 <TextView
                     android:id="@+id/tvExplanationDetail"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
-                    android:text="Recycling this item helps reduce waste and conserve natural resources."
-                    android:textColor="#2E7D32"
-                    android:lineSpacingExtra="4dp" />
+                    android:lineSpacingExtra="4dp"
+                    android:text="Follow the disposal steps below."
+                    android:textColor="#2E7D32" />
 
                 <androidx.cardview.widget.CardView
                     android:layout_width="match_parent"
@@ -167,23 +164,24 @@
                         android:layout_height="wrap_content"
                         android:orientation="vertical"
                         android:padding="12dp">
+
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="Instructions:"
-                            android:textStyle="bold"
-                            android:textColor="#424242"/>
-                         <TextView
-                             android:id="@+id/tvTips"
-                             android:layout_width="wrap_content"
-                             android:layout_height="wrap_content"
-                             android:layout_marginTop="4dp"
-                             android:text="• Tip 1\n• Tip 2"
-                             android:textColor="#616161"
-                             android:lineSpacingExtra="4dp"/>
+                            android:textColor="#424242"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:id="@+id/tvTips"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="4dp"
+                            android:lineSpacingExtra="4dp"
+                            android:text="1. Keep items clean and dry."
+                            android:textColor="#616161" />
                     </LinearLayout>
                 </androidx.cardview.widget.CardView>
-
             </LinearLayout>
         </androidx.cardview.widget.CardView>
 
@@ -191,16 +189,16 @@
             android:id="@+id/btnRecycle"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:minHeight="48dp"
-            android:paddingVertical="12dp"
             android:layout_marginHorizontal="24dp"
             android:layout_marginTop="32dp"
             android:backgroundTint="#00C853"
-            android:text="Yes, I want to recycle this →"
-            android:textSize="14sp"
-            android:maxLines="2"
             android:ellipsize="end"
+            android:maxLines="2"
+            android:minHeight="48dp"
+            android:paddingVertical="12dp"
+            android:text="Find nearby bins"
             android:textColor="@android:color/white"
+            android:textSize="14sp"
             app:cornerRadius="8dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -210,38 +208,56 @@
             android:id="@+id/btnScanAgain"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_marginHorizontal="24dp"
+            android:backgroundTint="#2962FF"
+            android:ellipsize="end"
+            android:maxLines="2"
             android:minHeight="48dp"
             android:paddingVertical="12dp"
-            android:layout_marginHorizontal="24dp"
-            android:layout_marginTop="0dp"
-            android:backgroundTint="#2962FF"
-            android:text="Scan Another Item"
-            android:textSize="14sp"
-            android:maxLines="2"
-            android:ellipsize="end"
+            android:text="Do another questionnaire"
             android:textColor="@android:color/white"
+            android:textSize="14sp"
+            app:cornerRadius="8dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/btnRecycle" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnTryAiScan"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="24dp"
+            android:layout_marginTop="8dp"
+            android:backgroundTint="#455A64"
+            android:ellipsize="end"
+            android:maxLines="2"
+            android:minHeight="48dp"
+            android:paddingVertical="12dp"
+            android:text="Try our AI Trash Scan"
+            android:textColor="@android:color/white"
+            android:textSize="14sp"
             app:cornerRadius="8dp"
             app:icon="@drawable/ic_camera_alt_24"
             app:iconGravity="textStart"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/btnRecycle" />
+            app:layout_constraintTop_toBottomOf="@id/btnScanAgain" />
 
         <TextView
             android:id="@+id/btnNotNow"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="24dp"
-            android:text="Not now"
-            android:textSize="16sp"
-            android:textColor="#757575"
+            android:background="?attr/selectableItemBackground"
             android:clickable="true"
             android:focusable="true"
-            android:background="?attr/selectableItemBackground"
             android:padding="8dp"
+            android:text="Not now"
+            android:textColor="#757575"
+            android:textSize="16sp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/btnScanAgain" />
+            app:layout_constraintTop_toBottomOf="@id/btnTryAiScan" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </ScrollView>

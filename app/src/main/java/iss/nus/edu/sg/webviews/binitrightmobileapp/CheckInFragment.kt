@@ -49,6 +49,7 @@ class CheckInFragment : Fragment() {
     private var binLongitude: Double = 0.0
     private var selectedBinType: String? = null
     private var wasteCategory: String? = null
+    private var mappedWasteCategory: String? = null
     private var currentCount = 0
     private var _binding: FragmentCheckInBinding? = null
     private val binding get() = _binding!!
@@ -107,36 +108,31 @@ class CheckInFragment : Fragment() {
     }
 
     private fun preselectWasteTypeChip() {
-        Log.d(TAG, "### preselectWasteTypeChip called with wasteCategory: $wasteCategory")
+        val fromCategory = ScannedCategoryHelper.toCheckInWasteType(wasteCategory)
+        val fromBinType = ScannedCategoryHelper.toCheckInWasteTypeFromBinType(selectedBinType ?: binType)
 
-        if (wasteCategory.isNullOrEmpty()) {
-            Log.d(TAG, "### wasteCategory is null or empty, skipping preselection")
-            return
-        }
+        val preferredType = mappedWasteCategory
+            ?.takeIf { it.isNotBlank() }
+            ?: if (fromCategory != "Others") fromCategory else fromBinType
 
-        val normalizedCategory = wasteCategory?.trim()?.lowercase() ?: ""
-        Log.d(TAG, "### Normalized category: $normalizedCategory")
+        Log.d(
+            TAG,
+            "preselectWasteTypeChip mapped=$preferredType raw=$wasteCategory selectedBinType=$selectedBinType"
+        )
 
-        // Match based on contains instead of exact match
-        val chipId = when {
-            normalizedCategory.contains("plastic") -> R.id.chipPlastic
-            normalizedCategory.contains("paper") -> R.id.chipPaper
-            normalizedCategory.contains("glass") -> R.id.chipGlass
-            normalizedCategory.contains("metal") -> R.id.chipMetal
-            normalizedCategory.contains("e-waste") ||
-                    normalizedCategory.contains("ewaste") ||
-                    normalizedCategory.contains("electronic") -> R.id.chipEWaste
-            normalizedCategory.contains("lighting") ||
-                    normalizedCategory.contains("lamp") -> R.id.chipLighting
-            else -> {
-                Log.d(TAG, "### No matching chip for category: $normalizedCategory")
-                null
-            }
+        val chipId = when (preferredType.lowercase()) {
+            "plastic" -> R.id.chipPlastic
+            "paper" -> R.id.chipPaper
+            "glass" -> R.id.chipGlass
+            "metal" -> R.id.chipMetal
+            "e-waste" -> R.id.chipEWaste
+            "lighting" -> R.id.chipLighting
+            "others" -> R.id.chipOthers
+            else -> null
         }
 
         chipId?.let {
             binding.cgItemType.check(it)
-            // Extract the base category for wasteType
             wasteType = when (it) {
                 R.id.chipPlastic -> "Plastic"
                 R.id.chipPaper -> "Paper"
@@ -144,10 +140,10 @@ class CheckInFragment : Fragment() {
                 R.id.chipMetal -> "Metal"
                 R.id.chipEWaste -> "E-Waste"
                 R.id.chipLighting -> "Lighting"
+                R.id.chipOthers -> "Others"
                 else -> ""
             }
-            Log.d(TAG, "### Pre-selected chip ID: $it for category: $wasteCategory")
-            Log.d(TAG, "### wasteType set to: $wasteType")
+            Log.d(TAG, "Pre-selected chip ID: $it, wasteType: $wasteType")
         }
     }
 
@@ -159,11 +155,20 @@ class CheckInFragment : Fragment() {
             binType = bundle.getString("binType", "") ?: ""
             binLatitude = bundle.getDouble("binLatitude", 0.0)
             binLongitude = bundle.getDouble("binLongitude", 0.0)
-            selectedBinType = bundle.getString("selectedBinType", "") ?: ""
+            selectedBinType = ScannedCategoryHelper.normalizeBinType(bundle.getString("selectedBinType"))
             wasteCategory = bundle.getString("wasteCategory")
+            mappedWasteCategory = bundle.getString("mappedWasteCategory")
+
+            if (mappedWasteCategory.isNullOrBlank()) {
+                val fromCategory = ScannedCategoryHelper.toCheckInWasteType(wasteCategory)
+                mappedWasteCategory = if (fromCategory != "Others") {
+                    fromCategory
+                } else {
+                    ScannedCategoryHelper.toCheckInWasteTypeFromBinType(selectedBinType ?: binType)
+                }
+            }
         }
     }
-
     private fun displayBinInformation() {
         binding.apply {
             tvLocationName.text = binName.ifEmpty { "Recycling Bin" }
@@ -179,6 +184,11 @@ class CheckInFragment : Fragment() {
         binding.btnSubmit.setOnClickListener {
             handleSubmitWithValidation()
         }
+
+        binding.btnBackToHome.setOnClickListener {
+            findNavController().popBackStack()
+        }
+
     }
 
     private fun setupCounter() {
@@ -190,9 +200,9 @@ class CheckInFragment : Fragment() {
 
     private fun setupChipListeners() {
         try {
-            binding.cgItemType.setOnCheckedStateChangeListener { group, checkedIds ->
+            binding.cgItemType.setOnCheckedStateChangeListener { _, checkedIds ->
                 if (checkedIds.isEmpty()) {
-                    Log.d(TAG, "### No chip selected")
+                    Log.d(TAG, "No chip selected")
                     return@setOnCheckedStateChangeListener
                 }
 
@@ -204,13 +214,14 @@ class CheckInFragment : Fragment() {
                     R.id.chipMetal -> "Metal"
                     R.id.chipEWaste -> "E-Waste"
                     R.id.chipLighting -> "Lighting"
+                    R.id.chipOthers -> "Others"
                     else -> ""
                 }
             }
         } catch (e: Exception) {
+            Log.e(TAG, "Failed to bind chip listeners", e)
         }
     }
-
     private fun updateSubmitButtonState(enabled: Boolean) {
         binding.btnSubmit.apply {
             isEnabled = enabled

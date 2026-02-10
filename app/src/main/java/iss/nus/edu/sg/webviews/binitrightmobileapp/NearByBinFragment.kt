@@ -1,7 +1,6 @@
 package iss.nus.edu.sg.webviews.binitrightmobileapp
 
 import android.Manifest
-import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.util.Log
@@ -22,11 +21,7 @@ import com.google.android.gms.maps.model.MarkerOptions
 import iss.nus.edu.sg.webviews.binitrightmobileapp.databinding.FragmentNearByBinBinding
 import iss.nus.edu.sg.webviews.binitrightmobileapp.model.DropOffLocation
 import iss.nus.edu.sg.webviews.binitrightmobileapp.network.RetrofitClient
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import java.io.BufferedReader
-import java.io.InputStreamReader
 
 class NearByBinFragment : Fragment(R.layout.fragment_near_by_bin), OnMapReadyCallback {
 
@@ -37,10 +32,12 @@ class NearByBinFragment : Fragment(R.layout.fragment_near_by_bin), OnMapReadyCal
     private lateinit var locationClient: FusedLocationProviderClient
 
     private val nearbyBins = mutableListOf<DropOffLocation>()
+    private val displayedBins = mutableListOf<DropOffLocation>()
     private var adapter: NearByBinsAdapter? = null
 
     private var selectedBinType: String? = null
     private var wasteCategory: String? = null
+    private var mappedWasteCategory: String? = null
 
     private var pendingBins: List<DropOffLocation>? = null
     private var isMapReady = false
@@ -61,23 +58,51 @@ class NearByBinFragment : Fragment(R.layout.fragment_near_by_bin), OnMapReadyCal
         locationClient = LocationServices.getFusedLocationProviderClient(requireActivity())
 
         retrieveScanArguments()
+        updateFlowHint()
         setupMap()
         setupRecyclerView()
     }
 
     private fun retrieveScanArguments() {
         arguments?.let { bundle ->
-            selectedBinType = bundle.getString("selectedBinType") ?: bundle.getString("binType")
-            wasteCategory = bundle.getString("wasteCategory") ?: bundle.getString("scannedCategory")
+            val receivedBinType = bundle.getString("selectedBinType") ?: bundle.getString("binType")
+            selectedBinType = ScannedCategoryHelper.normalizeBinType(receivedBinType)
 
-            Log.d(TAG, "### Received selectedBinType: $selectedBinType")
-            Log.d(TAG, "### Received wasteCategory: $wasteCategory")
+            wasteCategory = bundle.getString("wasteCategory") ?: bundle.getString("scannedCategory")
+            mappedWasteCategory = bundle.getString("mappedWasteCategory")
+
+            if (selectedBinType.isNullOrBlank()) {
+                val inferredRecyclable = ScannedCategoryHelper.isLikelyRecyclableCategory(wasteCategory)
+                selectedBinType = ScannedCategoryHelper.toBinType(wasteCategory, inferredRecyclable)
+                    .takeIf { it.isNotBlank() }
+            }
+
+            if (mappedWasteCategory.isNullOrBlank()) {
+                val fromCategory = ScannedCategoryHelper.toCheckInWasteType(wasteCategory)
+                mappedWasteCategory = if (fromCategory != "Others") {
+                    fromCategory
+                } else {
+                    ScannedCategoryHelper.toCheckInWasteTypeFromBinType(selectedBinType)
+                }
+            }
+
+            Log.d(TAG, "Received selectedBinType=$selectedBinType wasteCategory=$wasteCategory mapped=$mappedWasteCategory")
         }
+    }
+
+    private fun updateFlowHint() {
+        val hint = when (selectedBinType) {
+            "BLUEBIN" -> "Showing nearest blue recycling bins"
+            "EWASTE" -> "Showing nearest e-waste bins"
+            "LIGHTING" -> "Showing nearest lighting bins"
+            else -> "Showing nearest recycling bins"
+        }
+        binding.tvFlowHint.text = hint
     }
 
     private fun setupMap() {
         val mapFragment = childFragmentManager.findFragmentById(R.id.mapContainer)
-            as? SupportMapFragment ?: SupportMapFragment.newInstance().also { fragment ->
+                as? SupportMapFragment ?: SupportMapFragment.newInstance().also { fragment ->
             childFragmentManager.beginTransaction()
                 .replace(R.id.mapContainer, fragment)
                 .commit()
@@ -102,14 +127,39 @@ class NearByBinFragment : Fragment(R.layout.fragment_near_by_bin), OnMapReadyCal
 
     private fun setupRecyclerView() {
         binding.binsRecyclerView.layoutManager = LinearLayoutManager(requireContext())
-        adapter = NearByBinsAdapter(nearbyBins) { selectedBin ->
+        adapter = NearByBinsAdapter(displayedBins) { selectedBin ->
             navigateToCheckIn(selectedBin)
         }
         binding.binsRecyclerView.adapter = adapter
     }
 
+    private fun applyFlowFilter() {
+        displayedBins.clear()
+        displayedBins.addAll(nearbyBins)
+
+        adapter?.notifyDataSetChanged()
+        updateMapMarkers(displayedBins)
+
+        Log.d(
+            TAG,
+            "Flow list updated without filtering. selectedBinType=$selectedBinType total=${nearbyBins.size}"
+        )
+    }
+
     private fun navigateToCheckIn(bin: DropOffLocation) {
-        Log.d(TAG, "### Navigating to CheckIn with wasteCategory: $wasteCategory")
+        val resolvedMappedCategory = mappedWasteCategory
+            ?.takeIf { it.isNotBlank() }
+            ?: run {
+                val fromCategory = ScannedCategoryHelper.toCheckInWasteType(wasteCategory)
+                if (fromCategory != "Others") {
+                    fromCategory
+                } else {
+                    ScannedCategoryHelper.toCheckInWasteTypeFromBinType(bin.binType)
+                }
+            }
+
+        val resolvedSelectedBinType = ScannedCategoryHelper.normalizeBinType(bin.binType)
+            .ifBlank { selectedBinType.orEmpty() }
 
         val bundle = Bundle().apply {
             putString("binId", bin.id)
@@ -119,25 +169,15 @@ class NearByBinFragment : Fragment(R.layout.fragment_near_by_bin), OnMapReadyCal
             putDouble("binLatitude", bin.latitude)
             putDouble("binLongitude", bin.longitude)
 
-            // Pass both fields forward
-            selectedBinType?.let {
-                putString("selectedBinType", it)
-                Log.d(TAG, "### Passing selectedBinType: $it")
-            }
-            wasteCategory?.let {
-                putString("wasteCategory", it)
-                Log.d(TAG, "### Passing wasteCategory: $it")
-            }
+            putString("selectedBinType", resolvedSelectedBinType)
+            wasteCategory?.let { putString("wasteCategory", it) }
+            putString("mappedWasteCategory", resolvedMappedCategory)
         }
 
-        try {
-            findNavController().navigate(
-                R.id.action_nearByBinFragment_to_checkInFragment,
-                bundle
-            )
-        } catch (e: Exception) {
-            Log.e(TAG, "Navigation to check-in failed: ${e.message}", e)
-        }
+        findNavController().navigate(
+            R.id.action_nearByBinFragment_to_checkInFragment,
+            bundle
+        )
     }
 
     private fun fetchUserLocation() {
@@ -145,7 +185,8 @@ class NearByBinFragment : Fragment(R.layout.fragment_near_by_bin), OnMapReadyCal
             return
         }
 
-        if (ActivityCompat.checkSelfPermission(
+        if (
+            ActivityCompat.checkSelfPermission(
                 requireContext(),
                 Manifest.permission.ACCESS_FINE_LOCATION
             ) != PackageManager.PERMISSION_GRANTED
@@ -159,16 +200,17 @@ class NearByBinFragment : Fragment(R.layout.fragment_near_by_bin), OnMapReadyCal
 
         locationClient.lastLocation
             .addOnSuccessListener { location ->
-                if (hasFetchedBins) return@addOnSuccessListener
+                if (hasFetchedBins) {
+                    return@addOnSuccessListener
+                }
 
                 val lat = location?.latitude ?: FALLBACK_LAT
                 val lng = location?.longitude ?: FALLBACK_LNG
                 hasFetchedBins = true
                 fetchNearbyBins(lat, lng)
-                //fetchNearbyBins(1.2921, 103.77)
             }
-            .addOnFailureListener { e ->
-                Log.e(TAG, "Failed to get location: ${e.message}", e)
+            .addOnFailureListener { error ->
+                Log.e(TAG, "Failed to get location: ${error.message}", error)
                 hasFetchedBins = true
                 fetchNearbyBins(FALLBACK_LAT, FALLBACK_LNG)
             }
@@ -177,26 +219,17 @@ class NearByBinFragment : Fragment(R.layout.fragment_near_by_bin), OnMapReadyCal
     private fun fetchNearbyBins(lat: Double, lng: Double) {
         viewLifecycleOwner.lifecycleScope.launch {
             try {
-                Log.d(TAG, "Fetching bins via Retrofit for lat=$lat, lng=$lng")
-
-                // Retrofit does the background work and parsing for you
-                val bins = RetrofitClient.apiService().getNearbyBins(lat, lng, 3000)
-
-                Log.d(TAG, "Successfully fetched ${bins.size} bins")
-
-                // Update UI on the main thread
+                val flowBinType = selectedBinType?.takeIf { it.isNotBlank() }
+                Log.d(TAG, "Fetching nearby bins with flowBinType=$flowBinType lat=$lat lng=$lng")
+                val bins = RetrofitClient.apiService().getNearbyBins(lat, lng, 10000, flowBinType)
                 nearbyBins.clear()
                 nearbyBins.addAll(bins)
-                adapter?.notifyDataSetChanged()
-                updateMapMarkers(bins)
-
-            } catch (e: Exception) {
-                Log.e(TAG, "Retrofit Error: ${e.message}", e)
-                // Handle error (e.g., show a Toast)
+                applyFlowFilter()
+            } catch (error: Exception) {
+                Log.e(TAG, "Retrofit error: ${error.message}", error)
             }
         }
     }
-
 
     private fun updateMapMarkers(bins: List<DropOffLocation>) {
         if (!isMapReady) {
@@ -204,31 +237,25 @@ class NearByBinFragment : Fragment(R.layout.fragment_near_by_bin), OnMapReadyCal
             return
         }
 
+        googleMap.clear()
         if (bins.isEmpty()) {
-            Log.w(TAG, "No bins to display on map")
             return
         }
 
-        googleMap.clear()
-
         bins.forEach { bin ->
-            try {
-                val position = LatLng(bin.latitude, bin.longitude)
-                val distanceText = if (bin.distanceMeters > 0) {
-                    "${bin.distanceMeters.toInt()} m"
-                } else {
-                    "Distance unknown"
-                }
-
-                googleMap.addMarker(
-                    MarkerOptions()
-                        .position(position)
-                        .title(bin.name)
-                        .snippet("${bin.binType} - $distanceText")
-                )
-            } catch (e: Exception) {
-                Log.e(TAG, "Error adding map marker: ${e.message}", e)
+            val position = LatLng(bin.latitude, bin.longitude)
+            val distanceText = if (bin.distanceMeters > 0) {
+                "${bin.distanceMeters.toInt()} m"
+            } else {
+                "Distance unknown"
             }
+
+            googleMap.addMarker(
+                MarkerOptions()
+                    .position(position)
+                    .title(bin.name)
+                    .snippet("${bin.binType} - $distanceText")
+            )
         }
 
         if (!hasZoomedToBins) {
@@ -255,7 +282,6 @@ class NearByBinFragment : Fragment(R.layout.fragment_near_by_bin), OnMapReadyCal
         ) {
             fetchUserLocation()
         } else {
-            // Still show bins using a fallback coordinate so feature does not dead-end.
             hasFetchedBins = true
             fetchNearbyBins(FALLBACK_LAT, FALLBACK_LNG)
         }

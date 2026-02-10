@@ -124,4 +124,30 @@ class QuestionnaireEngineTest {
         val result = engine.selectOption(current.id, backOption.id)
         assertEquals("BACK_ACTION_TRIGGERED", result)
     }
+    @Test
+    fun goBack_atStart_returnsFalse() {
+        val engine = buildEngine()
+
+        val didGoBack = engine.goBack()
+
+        assertFalse(didGoBack)
+        assertTrue(engine.isAtStart())
+    }
+
+    @Test
+    fun getProgress_increasesAfterSelection() {
+        val engine = buildEngine()
+        val (startCurrent, startTotal) = engine.getProgress()
+        assertTrue(startTotal >= startCurrent)
+
+        val question = engine.getCurrentQuestion() ?: error("Missing start question")
+        val nextQuestionOption = question.options.first { option ->
+            engine.getQuestionById(option.next) != null
+        }
+        engine.selectOption(question.id, nextQuestionOption.id)
+
+        val (afterCurrent, afterTotal) = engine.getProgress()
+        assertTrue(afterCurrent >= startCurrent)
+        assertTrue(afterTotal >= afterCurrent)
+    }
 }

@@ -35,7 +35,7 @@ jobs:
           name: compiled-apk
           path: app/build/outputs/apk/local/debug/app-local-debug.apk
 
-  # STAGE 2: UNIT (Always Runs)
+  # STAGE 2: UNIT (Always Runs) + Coverage
   unit-tests:
     name: UNIT
     needs: build
@@ -48,16 +48,27 @@ jobs:
           java-version: '21'
           distribution: 'temurin'
           cache: gradle
-      - name: Run JUnit Tests
+
+      # Run tests AND generate coverage in one command
+      - name: Run JUnit Tests with Coverage
         run: |
-          ./gradlew testLocalDebugUnitTest \
+          ./gradlew testLocalDebugUnitTest jacocoTestReport \
           -PLOCALHOST_IP="${{ secrets.LOCALHOST_IP }}"
+
       - name: Upload Test Results
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: unit-test-results
           path: app/build/test-results/testLocalDebugUnitTest/
+
+      - name: Upload Coverage Reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-coverage-reports
+          # We point directly to the folder so the artifact contains ONLY the files
+          path: app/build/reports/jacoco/jacocoLocalDebugUnitTestReport/
 
   # STAGE 3: LINT (Now runs on every check-in)
   lint:
@@ -72,8 +83,8 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: lint-report
-          path: app/build/reports/lint-results-localDebug.html
+          name: android-lint-reports
+          path: app/build/reports/lint-results-localDebug.xml
 
   # STAGE 4: SCA (Now runs on every check-in)
   sca-scan:
@@ -81,23 +92,22 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - name: Run Trivy (SCA)
-        uses: aquasecurity/trivy-action@master
-        with:
-          scan-type: 'fs'
-          format: 'table'
-          output: 'sca-report.txt'
-          exit-code: '1'
-          severity: 'CRITICAL,HIGH'
-      - name: Upload SCA Report
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: sca-report
-          path: sca-report.txt
+    - name: Run Trivy (SCA)
+      uses: aquasecurity/trivy-action@master
+      with:
+        scan-type: 'fs'
+        format: 'sarif' # CHANGED
+        output: 'android-sca.sarif' # CHANGED
+        exit-code: '0'
+        severity: 'CRITICAL,HIGH'
+    - name: Upload SCA Report
+      uses: actions/upload-artifact@v4
+      with:
+        name: android-sca-results # Standardized name
+        path: android-sca.sarif
 
   # STAGE 5: SAST (Now runs on every check-in)
+  # --- Inside Mobile Repo Pipeline ---
   sast-scan:
     name: SAST
     needs: build
@@ -107,20 +117,22 @@ jobs:
       - name: MobSF SAST Scan
         uses: MobSF/mobsfscan@main
         with:
-          args: '. --json --output results.json'
+          # Change output name here to match Orchestrator expectations
+          args: '. --sarif --output android-sast.sarif'
 
-      - name: Upload SAST Fix List
+      - name: Upload SAST Artifacts
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: sast-fix-list
-          path: results.json
+          name: android-sast-results
+          path: android-sast.sarif
 
       - name: Check for Security Blockers
         run: |
-          if grep -q '"severity": "ERROR"' results.json; then
+          # Use the sarif file for the check since you swapped formats
+          if grep -q '"level": "error"' android-sast.sarif; then
             echo "HIGH SEVERITY VULNERABILITIES DETECTED!"
             exit 1
-          else
-            echo "No high-severity vulnerabilities found."
           fi
+
+

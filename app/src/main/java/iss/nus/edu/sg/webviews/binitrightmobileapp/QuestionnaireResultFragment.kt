@@ -1,6 +1,5 @@
 package iss.nus.edu.sg.webviews.binitrightmobileapp
 
-import android.content.ContentValues.TAG
 import android.graphics.Color
 import android.os.Bundle
 import android.util.Log
@@ -18,6 +17,8 @@ class QuestionnaireResultFragment : Fragment() {
     private var _binding: FragmentQuestionnaireResultBinding? = null
     private val binding get() = _binding!!
 
+    private var currentOutcome: SerializableOutcome? = null
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -32,6 +33,7 @@ class QuestionnaireResultFragment : Fragment() {
 
         val outcome = arguments?.getSerializable("outcome") as? SerializableOutcome
         if (outcome != null) {
+            currentOutcome = outcome
             setupUI(outcome)
         } else {
             Toast.makeText(context, "Error loading result", Toast.LENGTH_SHORT).show()
@@ -41,67 +43,55 @@ class QuestionnaireResultFragment : Fragment() {
     }
 
     private fun setupUI(outcome: SerializableOutcome) {
-        binding.tvCategory.text = outcome.categoryTitle
-        binding.tvBadge.text = outcome.disposalLabel
+        val displayCategory = ScannedCategoryHelper.toDisplayCategory(outcome.categoryTitle)
+        val uncertain = ScannedCategoryHelper.isUncertain(outcome.categoryTitle)
+        val specialRecyclable = ScannedCategoryHelper.isSpecialRecyclable(outcome.categoryTitle)
+        val fromOutcome = outcome.disposalLabel.equals("Recyclable", ignoreCase = true)
+        val effectiveRecyclable = fromOutcome || specialRecyclable
+
+        binding.tvCategory.text = displayCategory
+
+        val tipsText = if (!outcome.instruction.isNullOrBlank()) {
+            outcome.instruction
+        } else {
+            outcome.tips.mapIndexed { index, tip -> "${index + 1}. $tip" }.joinToString("\n")
+        }
+        binding.tvTips.text = tipsText
+
         binding.tvExplanation.text = outcome.explanation
         binding.tvExplanationDetail.text = "Certainty: ${outcome.certainty}"
 
-        if (!outcome.instruction.isNullOrBlank()) {
-            binding.tvTips.text = outcome.instruction
-        } else {
-            val tipsText = outcome.tips
-                .mapIndexed { index, tip -> "${index + 1}. $tip" }
-                .joinToString("\n")
-            binding.tvTips.text = tipsText
-        }
-
-        val certainty = try {
-            Certainty.valueOf(outcome.certainty)
-        } catch (e: Exception) {
-            Certainty.LOW
-        }
-        val isRecyclable = outcome.disposalLabel.equals("Recyclable", ignoreCase = true)
-
-        if (isRecyclable) {
-            binding.tvBadge.setBackgroundResource(R.drawable.bg_badge_recyclable)
+        if (uncertain) {
+            binding.tvBadge.text = "Not sure"
+            binding.tvBadge.background.setTint(Color.parseColor("#FFF3E0"))
+            binding.tvBadge.setTextColor(Color.parseColor("#EF6C00"))
+            binding.ivSuccess.setImageResource(R.drawable.ic_help_24)
+            binding.ivSuccess.setColorFilter(Color.parseColor("#EF6C00"))
+            binding.cardInfo.setCardBackgroundColor(Color.parseColor("#FFF8E1"))
+            binding.tvExplanation.setTextColor(Color.parseColor("#E65100"))
+            binding.tvExplanationDetail.setTextColor(Color.parseColor("#EF6C00"))
+        } else if (effectiveRecyclable) {
+            binding.tvBadge.text = "Recyclable"
             binding.tvBadge.background.setTint(Color.parseColor("#E8F5E9"))
             binding.tvBadge.setTextColor(Color.parseColor("#00695C"))
             binding.ivSuccess.setImageResource(R.drawable.ic_check_circle_24)
             binding.ivSuccess.setColorFilter(Color.parseColor("#00C853"))
+            binding.cardInfo.setCardBackgroundColor(Color.parseColor("#E8F5E9"))
+            binding.tvExplanation.setTextColor(Color.parseColor("#1B5E20"))
+            binding.tvExplanationDetail.setTextColor(Color.parseColor("#2E7D32"))
         } else {
-            binding.tvBadge.setBackgroundResource(R.drawable.bg_badge_recyclable)
-            binding.tvBadge.background.setTint(Color.parseColor("#EEEEEE"))
-            binding.tvBadge.setTextColor(Color.parseColor("#616161"))
-            binding.ivSuccess.setImageResource(R.drawable.ic_help_24)
-            binding.ivSuccess.setColorFilter(Color.parseColor("#757575"))
-
-            if (!outcome.disposalLabel.equals("Not sure", ignoreCase = true)) {
-                binding.ivSuccess.setImageResource(R.drawable.ic_error_24)
-                binding.ivSuccess.setColorFilter(Color.parseColor("#D32F2F"))
-            }
-        }
-
-        when (certainty) {
-            Certainty.HIGH -> {
-                binding.cardInfo.setCardBackgroundColor(Color.parseColor("#E8F5E9"))
-                binding.tvExplanation.setTextColor(Color.parseColor("#1B5E20"))
-                binding.tvExplanationDetail.setTextColor(Color.parseColor("#2E7D32"))
-            }
-            Certainty.MEDIUM -> {
-                binding.cardInfo.setCardBackgroundColor(Color.parseColor("#E3F2FD"))
-                binding.tvExplanation.setTextColor(Color.parseColor("#0D47A1"))
-                binding.tvExplanationDetail.setTextColor(Color.parseColor("#1565C0"))
-            }
-            Certainty.LOW -> {
-                binding.cardInfo.setCardBackgroundColor(Color.parseColor("#FFFDE7"))
-                binding.tvExplanation.setTextColor(Color.parseColor("#F57F17"))
-                binding.tvExplanationDetail.setTextColor(Color.parseColor("#F9A825"))
-            }
+            binding.tvBadge.text = "Not Recyclable"
+            binding.tvBadge.background.setTint(Color.parseColor("#FFEBEE"))
+            binding.tvBadge.setTextColor(Color.parseColor("#C62828"))
+            binding.ivSuccess.setImageResource(R.drawable.ic_error_24)
+            binding.ivSuccess.setColorFilter(Color.parseColor("#D32F2F"))
+            binding.cardInfo.setCardBackgroundColor(Color.parseColor("#FFEBEE"))
+            binding.tvExplanation.setTextColor(Color.parseColor("#B71C1C"))
+            binding.tvExplanationDetail.setTextColor(Color.parseColor("#C62828"))
         }
     }
 
     private fun setupListeners() {
-        binding.btnScanAgain.text = "Do another questionnaire?"
         binding.btnScanAgain.setOnClickListener {
             val navController = findNavController()
             val popped = navController.popBackStack(R.id.questionnaireFragment, false)
@@ -109,29 +99,32 @@ class QuestionnaireResultFragment : Fragment() {
                 navController.navigate(R.id.questionnaireFragment)
             }
         }
-        binding.btnScanAgain.setIconResource(R.drawable.ic_refresh_24)
+
+        binding.btnTryAiScan.setOnClickListener {
+            findNavController().navigate(R.id.action_questionnaireResultFragment_to_scanItemFragment)
+        }
 
         binding.btnNotNow.setOnClickListener {
             findNavController().popBackStack(R.id.nav_home, false)
         }
 
         binding.btnRecycle.setOnClickListener {
-            val itemType = binding.tvCategory.text.toString()
-
-            val binType = when (itemType.uppercase()) {
-                "RECYCLABLE ITEM" -> "BlueBin"
-                "ELECTRONIC", "ELECTRONICS", "E-WASTE", "EWASTE" -> "EWaste"
-                "LIGHTING", "LAMP", "LIGHT", "BULB" -> "Lamp"
-                else -> ""
-            }
+            val outcome = currentOutcome
+            val category = outcome?.categoryTitle.orEmpty()
+            val effectiveRecyclable = outcome?.disposalLabel.equals("Recyclable", ignoreCase = true)
+                    || ScannedCategoryHelper.isSpecialRecyclable(category)
+            val mappedWasteCategory = ScannedCategoryHelper.toCheckInWasteType(category)
+            val selectedBinType = ScannedCategoryHelper.toBinType(category, effectiveRecyclable)
 
             val bundle = Bundle().apply {
-                putString("selectedBinType", binType)
-                putString("wasteCategory", itemType)
+                putString("selectedBinType", selectedBinType)
+                putString("wasteCategory", category)
+                putString("mappedWasteCategory", mappedWasteCategory)
             }
 
-            Log.d(TAG, "###binType: ${binType}")
-            Log.d(TAG, "###Waste Type: ${itemType}")
+            Log.d("QuestionnaireResult", "Passing selectedBinType: $selectedBinType")
+            Log.d("QuestionnaireResult", "Passing wasteCategory: $category")
+            Log.d("QuestionnaireResult", "Passing mappedWasteCategory: $mappedWasteCategory")
 
             findNavController().navigate(
                 R.id.action_questionnaireResultFragment_to_nearbyBinFragment,

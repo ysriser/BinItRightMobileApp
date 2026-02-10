@@ -9,6 +9,7 @@ import iss.nus.edu.sg.webviews.binitrightmobileapp.model.DropOffLocation
 import iss.nus.edu.sg.webviews.binitrightmobileapp.model.EventItem
 import iss.nus.edu.sg.webviews.binitrightmobileapp.model.IssueCreateRequest
 import iss.nus.edu.sg.webviews.binitrightmobileapp.model.IssueResponse
+import iss.nus.edu.sg.webviews.binitrightmobileapp.model.LeaderboardEntry
 import iss.nus.edu.sg.webviews.binitrightmobileapp.model.LoginRequest
 import iss.nus.edu.sg.webviews.binitrightmobileapp.model.LoginResponse
 import iss.nus.edu.sg.webviews.binitrightmobileapp.model.NewsItem
@@ -18,7 +19,6 @@ import iss.nus.edu.sg.webviews.binitrightmobileapp.model.RegisterRequest
 import iss.nus.edu.sg.webviews.binitrightmobileapp.model.RegisterResponse
 import iss.nus.edu.sg.webviews.binitrightmobileapp.model.UserAccessory
 import iss.nus.edu.sg.webviews.binitrightmobileapp.model.UserProfile
-import iss.nus.edu.sg.webviews.binitrightmobileapp.model.UserResponse
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
 import retrofit2.Response
@@ -150,7 +150,8 @@ interface ApiService {
     suspend fun getNearbyBins(
         @Query("lat") lat: Double,
         @Query("lng") lng: Double,
-        @Query("radius") radius: Int
+        @Query("radius") radius: Int,
+        @Query("binType") binType: String? = null
     ): List<DropOffLocation>
 
     @POST("api/chat")
@@ -161,7 +162,6 @@ interface ApiService {
         @Path("userId") userId: Long
     ): Response<Int>
 
-
     @GET("api/achievements/user/{userId}")
     suspend fun getAchievementsWithStatus(@Path("userId") userId: Long): Response<List<Achievement>>
 
@@ -170,4 +170,7 @@ interface ApiService {
         @Path("userId") userId: Long,
         @Path("achievementId") achievementId: Long
     ): Response<Unit>
+
+    @GET("api/leaderboard")
+    suspend fun getLeaderboard(): Response<List<LeaderboardEntry>>
 }
