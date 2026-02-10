@@ -23,7 +23,7 @@ object VideoUploader {
         try {
             safeLogDebug("Starting upload...")
             safeLogDebug("File: ${file.name}, Size: ${file.length()} bytes")
-            safeLogDebug("URL: ${presignedUrl.substring(0, 100)}...")
+            safeLogDebug("URL: ${presignedUrl.take(100)}...")
 
             val client = OkHttpClient.Builder()
                 .connectTimeout(30, TimeUnit.SECONDS)
