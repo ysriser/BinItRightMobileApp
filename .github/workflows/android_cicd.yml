@@ -62,16 +62,15 @@ jobs:
           name: unit-test-results
           path: app/build/test-results/testLocalDebugUnitTest/
 
-      # NEW: Upload coverage for aggregation
       - name: Upload Coverage Reports
-        if: success()
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: android-coverage-reports
           path: |
-            app/build/reports/jacoco/jacocoTestReport/jacocoTestReport.xml
+            # Updated path to match ':app:jacocoLocalDebugUnitTestReport'
+            app/build/reports/jacoco/jacocoLocalDebugUnitTestReport/jacocoLocalDebugUnitTestReport.xml
             app/build/reports/lint-results-localDebug.xml
-          retention-days: 7
 
   # STAGE 3: LINT (Now runs on every check-in)
   lint:
