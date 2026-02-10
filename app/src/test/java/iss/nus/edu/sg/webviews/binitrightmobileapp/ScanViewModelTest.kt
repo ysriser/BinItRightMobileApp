@@ -1,10 +1,10 @@
-﻿package iss.nus.edu.sg.webviews.binitrightmobileapp
+package iss.nus.edu.sg.webviews.binitrightmobileapp
 
 /*
  * File purpose:
- * - Simple unit tests for ScanViewModel.
- * - Uses a fake repository so tests are deterministic and fast.
- * - Focuses on practical behavior: scan result is set and reset works.
+ * - Unit tests for ScanViewModel core behavior.
+ * - Uses fake repositories so tests are deterministic and fast.
+ * - Covers success, failure, debug-mode forcing, and reset/feedback states.
  */
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
@@ -17,18 +17,18 @@ import java.util.concurrent.TimeoutException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
+import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
-import kotlinx.coroutines.test.resetMain
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
+import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import org.junit.Before
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class ScanViewModelTest {
@@ -40,7 +40,6 @@ class ScanViewModelTest {
 
     @Before
     fun setup() {
-        // Use a test dispatcher for viewModelScope coroutines.
         Dispatchers.setMain(testDispatcher)
     }
 
@@ -50,7 +49,11 @@ class ScanViewModelTest {
     }
 
     private class FakeRepo : ScanRepository {
-        override suspend fun scanImage(imageFile: File, forceTier2: Boolean, onStatusUpdate: (String) -> Unit): Result<ScanResult> {
+        override suspend fun scanImage(
+            imageFile: File,
+            forceTier2: Boolean,
+            onStatusUpdate: (String) -> Unit,
+        ): Result<ScanResult> {
             return Result.success(
                 ScanResult(
                     category = "Glass",
@@ -67,47 +70,103 @@ class ScanViewModelTest {
         }
     }
 
+    private class ForceTier2CaptureRepo : ScanRepository {
+        var lastForceTier2: Boolean? = null
+
+        override suspend fun scanImage(
+            imageFile: File,
+            forceTier2: Boolean,
+            onStatusUpdate: (String) -> Unit,
+        ): Result<ScanResult> {
+            lastForceTier2 = forceTier2
+            onStatusUpdate("Analyzing...")
+            return Result.success(
+                ScanResult(
+                    category = "Metal",
+                    recyclable = true,
+                    confidence = 0.88f,
+                    instruction = "Empty and rinse.",
+                    instructions = listOf("Empty", "Rinse", "Recycle"),
+                )
+            )
+        }
+
+        override suspend fun sendFeedback(feedback: FeedbackRequest): Result<Boolean> {
+            return Result.success(true)
+        }
+    }
+
+    private class FailingRepo : ScanRepository {
+        override suspend fun scanImage(
+            imageFile: File,
+            forceTier2: Boolean,
+            onStatusUpdate: (String) -> Unit,
+        ): Result<ScanResult> {
+            return Result.failure(IllegalStateException("boom"))
+        }
+
+        override suspend fun sendFeedback(feedback: FeedbackRequest): Result<Boolean> {
+            return Result.success(true)
+        }
+    }
+
     @Test
     fun scanImage_setsResult() = runTest {
-        // Step 1: create ViewModel with a fake repository.
         val vm = ScanViewModel(FakeRepo())
 
-        // Step 2: initial state should not be loading.
         assertFalse(vm.isLoading.getOrAwaitValue())
 
-        // Step 3: run scan.
         vm.scanImage(File("dummy.jpg"))
 
-        // Step 4: result should be available and successful.
         val result = vm.scanResult.getOrAwaitValueSkipNull()
         assertNotNull(result)
         assertTrue(result!!.isSuccess)
         assertEquals("Glass", result.getOrNull()?.category)
+        assertFalse(vm.isLoading.getOrAwaitValue())
+    }
 
-        // Step 5: loading should be false after completion.
+    @Test
+    fun scanImage_inDebugMode_passesForceTier2True() = runTest {
+        val repo = ForceTier2CaptureRepo()
+        val vm = ScanViewModel(repo)
+
+        vm.toggleDebugMode(true)
+        assertTrue(vm.isDebugMode.getOrAwaitValue())
+
+        vm.scanImage(File("dummy.jpg"))
+
+        val result = vm.scanResult.getOrAwaitValueSkipNull()
+        assertTrue(result!!.isSuccess)
+        assertEquals(true, repo.lastForceTier2)
+    }
+
+    @Test
+    fun scanImage_failure_setsFailureResult_andStopsLoading() = runTest {
+        val vm = ScanViewModel(FailingRepo())
+
+        vm.scanImage(File("dummy.jpg"))
+
+        val result = vm.scanResult.getOrAwaitValueSkipNull()
+        assertTrue(result!!.isFailure)
+        assertEquals("boom", result.exceptionOrNull()?.message)
         assertFalse(vm.isLoading.getOrAwaitValue())
     }
 
     @Test
     fun resetScanState_clearsResult() = runTest {
-        // Step 1: create ViewModel with a fake repository.
         val vm = ScanViewModel(FakeRepo())
 
-        // Step 2: run scan so a result exists.
         vm.scanImage(File("dummy.jpg"))
         assertNotNull(vm.scanResult.getOrAwaitValueSkipNull())
 
-        // Step 3: reset should clear any previous scan result.
         vm.resetScanState()
         assertNull(vm.scanResult.getOrAwaitValue())
     }
 
     @Test
     fun submitFeedback_setsFeedbackStatus() = runTest {
-        // Step 1: create ViewModel with a fake repository.
         val vm = ScanViewModel(FakeRepo())
 
-        // Step 2: send feedback.
         val feedback = FeedbackRequest(
             imageId = "img-123",
             userFeedback = true,
@@ -115,7 +174,6 @@ class ScanViewModelTest {
         )
         vm.submitFeedback(feedback)
 
-        // Step 3: feedback status should be success.
         val result = vm.feedbackStatus.getOrAwaitValueSkipNull()
         assertNotNull(result)
         assertTrue(result!!.isSuccess)
@@ -136,7 +194,6 @@ private fun <T> LiveData<T>.getOrAwaitValue(
             this@getOrAwaitValue.removeObserver(this)
         }
     }
-    // Observe until we get one value or timeout.
     this.observeForever(observer)
     if (!latch.await(time, timeUnit)) {
         this.removeObserver(observer)
@@ -162,7 +219,6 @@ private fun <T> LiveData<T>.getOrAwaitValueSkipNull(
             this@getOrAwaitValueSkipNull.removeObserver(this)
         }
     }
-    // Observe until we get a non-null value or timeout.
     this.observeForever(observer)
     if (!latch.await(time, timeUnit)) {
         this.removeObserver(observer)
@@ -170,4 +226,3 @@ private fun <T> LiveData<T>.getOrAwaitValueSkipNull(
     }
     return data
 }
-

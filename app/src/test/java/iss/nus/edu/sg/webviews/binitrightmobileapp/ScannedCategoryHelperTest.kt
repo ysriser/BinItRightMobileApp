@@ -8,6 +8,12 @@ import org.junit.Test
 class ScannedCategoryHelperTest {
 
     @Test
+    fun normalizeCategory_trimsAndCollapsesSpaces() {
+        assertEquals("plastic bottle", ScannedCategoryHelper.normalizeCategory("  plastic   bottle  "))
+        assertEquals("", ScannedCategoryHelper.normalizeCategory(null))
+    }
+
+    @Test
     fun toDisplayCategory_handlesSpecialPrefixes() {
         assertEquals("E-waste", ScannedCategoryHelper.toDisplayCategory("E-waste - Phone Charger"))
         assertEquals("Textile", ScannedCategoryHelper.toDisplayCategory("Textile - Old Shirt"))
@@ -25,6 +31,14 @@ class ScannedCategoryHelperTest {
         assertTrue(ScannedCategoryHelper.isUncertain("Not sure what item this is"))
         assertTrue(ScannedCategoryHelper.isUncertain("other_uncertain"))
         assertFalse(ScannedCategoryHelper.isUncertain("plastic bottle"))
+    }
+
+    @Test
+    fun isSpecialRecyclable_detectsSpecialStreams() {
+        assertTrue(ScannedCategoryHelper.isSpecialRecyclable("E-waste - Charger"))
+        assertTrue(ScannedCategoryHelper.isSpecialRecyclable("Textile - Old Shirt"))
+        assertTrue(ScannedCategoryHelper.isSpecialRecyclable("Lighting - LED Bulb"))
+        assertFalse(ScannedCategoryHelper.isSpecialRecyclable("Paper cup"))
     }
 
     @Test
