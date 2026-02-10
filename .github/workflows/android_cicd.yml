@@ -50,7 +50,7 @@ jobs:
           cache: gradle
       - name: Run JUnit Tests + Coverage
         run: |
-          ./gradlew testLocalDebugUnitTest jacocoLocalDebugUnitTestReport \
+          ./gradlew testLocalDebugUnitTest jacocoLocalDebugUnitTestReport jacocoLocalDebugUnitTestCoverageVerification \
           -PLOCALHOST_IP="${{ secrets.LOCALHOST_IP }}"
       
       - name: Upload Test Results
@@ -67,6 +67,7 @@ jobs:
           path: |
             app/build/reports/jacoco/jacocoLocalDebugUnitTestReport/
             app/build/reports/jacoco/jacocoLocalDebugUnitTestReport/jacocoLocalDebugUnitTestReport.xml
+            docs/UNIT_TEST_COVERAGE_SCOPE.md
   # STAGE 3: LINT (Now runs on every check-in)
   lint:
     name: LINT
