@@ -225,23 +225,6 @@ tasks.register<JacocoReport>("jacocoLocalDebugUnitTestReport") {
     }
 }
 
-tasks.register<JacocoReport>("jacocoLocalDebugCoreUnitTestReport") {
-    group = "verification"
-    description = "Generate JaCoCo core report for key business logic classes"
-
-    dependsOn("testLocalDebugUnitTest")
-
-    classDirectories.setFrom(localDebugCoreLogicClasses(buildDir.toString()))
-    sourceDirectories.setFrom(files("src/main/java"))
-    executionData.setFrom(localDebugExecData(buildDir.toString()))
-
-    reports {
-        xml.required.set(true)
-        html.required.set(true)
-        csv.required.set(false)
-    }
-}
-
 tasks.register<JacocoCoverageVerification>("jacocoLocalDebugUnitTestCoverageVerification") {
     group = "verification"
     description = "Optional gate for key business logic classes (disabled by default)"
@@ -278,3 +261,4 @@ tasks.register<JacocoCoverageVerification>("jacocoLocalDebugUnitTestCoverageVeri
         }
     }
 }
+
