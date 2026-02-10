@@ -1,0 +1,67 @@
+package iss.nus.edu.sg.webviews.binitrightmobileapp
+
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
+import org.junit.Test
+
+class ScannedCategoryHelperTest {
+
+    @Test
+    fun toDisplayCategory_handlesSpecialPrefixes() {
+        assertEquals("E-waste", ScannedCategoryHelper.toDisplayCategory("E-waste - Phone Charger"))
+        assertEquals("Textile", ScannedCategoryHelper.toDisplayCategory("Textile - Old Shirt"))
+        assertEquals("Lighting", ScannedCategoryHelper.toDisplayCategory("Lighting - LED Bulb"))
+    }
+
+    @Test
+    fun toDisplayCategory_returnsUnknownForBlankInput() {
+        assertEquals("Unknown", ScannedCategoryHelper.toDisplayCategory("   "))
+        assertEquals("Unknown", ScannedCategoryHelper.toDisplayCategory(null))
+    }
+
+    @Test
+    fun isUncertain_detectsKnownKeywords() {
+        assertTrue(ScannedCategoryHelper.isUncertain("Not sure what item this is"))
+        assertTrue(ScannedCategoryHelper.isUncertain("other_uncertain"))
+        assertFalse(ScannedCategoryHelper.isUncertain("plastic bottle"))
+    }
+
+    @Test
+    fun toCheckInWasteType_mapsTier2LikeCategories() {
+        assertEquals("Glass", ScannedCategoryHelper.toCheckInWasteType("ceramic mug"))
+        assertEquals("E-Waste", ScannedCategoryHelper.toCheckInWasteType("usb charger cable"))
+        assertEquals("Others", ScannedCategoryHelper.toCheckInWasteType("old textile shirt"))
+        assertEquals("Paper", ScannedCategoryHelper.toCheckInWasteType("cardboard box"))
+    }
+
+    @Test
+    fun toBinType_mapsCategoryAndRecyclableToExpectedBin() {
+        assertEquals("LIGHTING", ScannedCategoryHelper.toBinType("LED lamp", recyclable = false))
+        assertEquals("EWASTE", ScannedCategoryHelper.toBinType("E-waste - Charger", recyclable = false))
+        assertEquals("", ScannedCategoryHelper.toBinType("Textile - Shirt", recyclable = true))
+        assertEquals("BLUEBIN", ScannedCategoryHelper.toBinType("Unknown plastic item", recyclable = true))
+    }
+
+    @Test
+    fun normalizeBinType_acceptsOnlySupportedValues() {
+        assertEquals("BLUEBIN", ScannedCategoryHelper.normalizeBinType("bluebin"))
+        assertEquals("EWASTE", ScannedCategoryHelper.normalizeBinType("EWASTE"))
+        assertEquals("LIGHTING", ScannedCategoryHelper.normalizeBinType("lighting"))
+        assertEquals("", ScannedCategoryHelper.normalizeBinType("TEXTILE"))
+    }
+
+    @Test
+    fun isLikelyRecyclableCategory_handlesSpecialAndNormalCases() {
+        assertTrue(ScannedCategoryHelper.isLikelyRecyclableCategory("metal can"))
+        assertTrue(ScannedCategoryHelper.isLikelyRecyclableCategory("battery pack"))
+        assertFalse(ScannedCategoryHelper.isLikelyRecyclableCategory("random toy"))
+    }
+
+    @Test
+    fun toCheckInWasteTypeFromBinType_mapsOnlySupportedBins() {
+        assertEquals("E-Waste", ScannedCategoryHelper.toCheckInWasteTypeFromBinType("EWASTE"))
+        assertEquals("Lighting", ScannedCategoryHelper.toCheckInWasteTypeFromBinType("LIGHTING"))
+        assertEquals("Others", ScannedCategoryHelper.toCheckInWasteTypeFromBinType("BLUEBIN"))
+    }
+}

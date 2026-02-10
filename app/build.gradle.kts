@@ -1,4 +1,5 @@
 import org.gradle.kotlin.dsl.implementation
+import org.gradle.testing.jacoco.tasks.JacocoReport
 import java.util.Properties
 
 plugins {
@@ -156,33 +157,47 @@ dependencies {
     androidTestImplementation(libs.androidx.espresso.core)
 }
 
-tasks.register<JacocoReport>("jacocoTestReport") {
+jacoco {
+    toolVersion = "0.8.12"
+}
+
+tasks.register<JacocoReport>("jacocoLocalDebugUnitTestReport") {
+    group = "verification"
+    description = "Generate JaCoCo coverage report for localDebug unit tests"
+
     dependsOn("testLocalDebugUnitTest")
-    
-    reports {
-        xml.required.set(true)
-        html.required.set(true)
-    }
-    
-    val fileFilter = listOf(
+
+    val excludes = listOf(
         "**/R.class",
         "**/R$*.class",
         "**/BuildConfig.*",
         "**/Manifest*.*",
         "**/*Test*.*",
-        "android/**/*.*"
+        "android/**/*.*",
+        "**/*\$Lambda\$*.*",
+        "**/*\$inlined\$*.*"
     )
-    
-    val debugTree = fileTree("${project.buildDir}/intermediates/javac/localDebug/classes") {
-        exclude(fileFilter)
+
+    val kotlinClasses = fileTree("$buildDir/tmp/kotlin-classes/localDebug") {
+        exclude(excludes)
     }
-    val kotlinTree = fileTree("${project.buildDir}/tmp/kotlin-classes/localDebug") {
-        exclude(fileFilter)
+    val javaClasses = fileTree("$buildDir/intermediates/javac/localDebug/compileLocalDebugJavaWithJavac/classes") {
+        exclude(excludes)
     }
-    
-    sourceDirectories.setFrom(files("${project.projectDir}/src/main/java", "${project.projectDir}/src/main/kotlin"))
-    classDirectories.setFrom(files(debugTree, kotlinTree))
-    executionData.setFrom(fileTree(project.buildDir) {
-        include("jacoco/testLocalDebugUnitTest.exec")
-    })
+
+    classDirectories.setFrom(files(kotlinClasses, javaClasses))
+    sourceDirectories.setFrom(files("src/main/java"))
+    executionData.setFrom(
+        fileTree(buildDir) {
+            include("jacoco/testLocalDebugUnitTest.exec")
+            include("outputs/unit_test_code_coverage/localDebugUnitTest/*.exec")
+            include("outputs/unit_test_code_coverage/localDebugUnitTest/testLocalDebugUnitTest.exec")
+        }
+    )
+
+    reports {
+        xml.required.set(true)
+        html.required.set(true)
+        csv.required.set(false)
+    }
 }
