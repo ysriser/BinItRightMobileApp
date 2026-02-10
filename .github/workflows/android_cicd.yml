@@ -67,10 +67,8 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: android-coverage-reports
-          path: |
-            # Updated path to match ':app:jacocoLocalDebugUnitTestReport'
-            app/build/reports/jacoco/jacocoLocalDebugUnitTestReport/jacocoLocalDebugUnitTestReport.xml
-            app/build/reports/lint-results-localDebug.xml
+          # We point directly to the folder so the artifact contains ONLY the files
+          path: app/build/reports/jacoco/jacocoLocalDebugUnitTestReport/
 
   # STAGE 3: LINT (Now runs on every check-in)
   lint:
