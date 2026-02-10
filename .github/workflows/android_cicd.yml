@@ -107,6 +107,7 @@ jobs:
         path: android-sca.sarif
 
   # STAGE 5: SAST (Now runs on every check-in)
+  # --- Inside Mobile Repo Pipeline ---
   sast-scan:
     name: SAST
     needs: build
@@ -116,23 +117,22 @@ jobs:
       - name: MobSF SAST Scan
         uses: MobSF/mobsfscan@main
         with:
-          # Change --json to --sarif
-          args: '. --sarif --output results.sarif'
+          # Change output name here to match Orchestrator expectations
+          args: '. --sarif --output android-sast.sarif'
 
       - name: Upload SAST Artifacts
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: android-sast-results
-          path: results.sarif
+          path: android-sast.sarif
 
       - name: Check for Security Blockers
         run: |
-          if grep -q '"severity": "ERROR"' results.json; then
+          # Use the sarif file for the check since you swapped formats
+          if grep -q '"level": "error"' android-sast.sarif; then
             echo "HIGH SEVERITY VULNERABILITIES DETECTED!"
             exit 1
-          else
-            echo "No high-severity vulnerabilities found."
           fi
 
 
