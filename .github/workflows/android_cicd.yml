@@ -59,15 +59,14 @@ jobs:
         with:
           name: unit-test-results
           path: app/build/test-results/testLocalDebugUnitTest/
-      - name: Upload Unit Test Coverage
+
+      - name: Upload Coverage Reports
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: unit-test-coverage
-          path: |
-            app/build/reports/jacoco/jacocoLocalDebugUnitTestReport/
-            app/build/reports/jacoco/jacocoLocalDebugUnitTestReport/jacocoLocalDebugUnitTestReport.xml
-            docs/UNIT_TEST_COVERAGE_SCOPE.md
+          name: android-coverage-reports
+          path: app/build/reports/jacoco/jacocoLocalDebugUnitTestReport/
+
   # STAGE 3: LINT (Now runs on every check-in)
   lint:
     name: LINT
@@ -125,5 +124,3 @@ jobs:
           else
             echo "No high-severity vulnerabilities found."
           fi
-
-
