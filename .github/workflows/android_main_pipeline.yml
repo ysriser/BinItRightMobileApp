@@ -53,7 +53,7 @@ jobs:
       - name: Checkout Appium Tests
         uses: actions/checkout@v4
         with:
-          repository: CarlinJunHuang/BinItRightAppiumScripts
+          repository: ysriser/BinItRightAppiumScripts
           path: appium-tests
 
       - name: Download Staging APK
