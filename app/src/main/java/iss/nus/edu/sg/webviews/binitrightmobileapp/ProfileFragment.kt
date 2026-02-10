@@ -87,6 +87,20 @@ class ProfileFragment : Fragment() {
                                 binding.gridAwards.text = unlockedCount.toString()
                                 binding.summaryBadges.text = unlockedCount.toString()
                             }
+
+                            val leaderboardRes = api.getLeaderboard()
+                            if (leaderboardRes.isSuccessful) {
+                                val leaderboardData = leaderboardRes.body() ?: emptyList()
+                                val myIndex = leaderboardData.indexOfFirst { entry ->
+                                    entry.userId == userId
+                                }
+
+                                if (myIndex != -1) {
+                                    binding.gridRank.text = "#${myIndex + 1}"
+                                } else {
+                                    binding.gridRank.text = "N/A"
+                                }
+                            }
                         }
 
                         val drawableName = it.equippedAvatarName.lowercase().replace(" ", "_")
