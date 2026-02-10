@@ -10,7 +10,12 @@ import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
+import org.junit.runner.RunWith
+import org.robolectric.RobolectricTestRunner
+import org.robolectric.annotation.Config
 
+@RunWith(RobolectricTestRunner::class)
+@Config(manifest = Config.NONE)
 class VideoUploaderTest {
 
     private lateinit var server: MockWebServer
@@ -81,7 +86,6 @@ class VideoUploaderTest {
 
     private fun createTempVideoFile(): File {
         val file = File.createTempFile("upload-test-", ".mp4")
-        // Small but valid byte payload for upload path testing.
         file.writeBytes(ByteArray(8 * 1024) { (it % 127).toByte() })
         return file
     }

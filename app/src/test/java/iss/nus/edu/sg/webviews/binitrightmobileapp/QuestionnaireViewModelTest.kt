@@ -24,9 +24,49 @@ class QuestionnaireViewModelTest {
     @get:Rule
     val instantTaskExecutorRule = InstantTaskExecutorRule()
 
+    private fun buildViewModel(): QuestionnaireViewModel {
+        val config = QuestionnaireConfig(
+            startQuestionId = "q1",
+            questions = listOf(
+                QuestionNode(
+                    id = "q1",
+                    question = "What is the item made of?",
+                    subtitle = null,
+                    options = listOf(
+                        OptionNode(id = "o1", text = "Plastic", next = "q2"),
+                        OptionNode(id = "o2", text = "Other", next = "out1"),
+                    ),
+                ),
+                QuestionNode(
+                    id = "q2",
+                    question = "Is it clean?",
+                    subtitle = null,
+                    options = listOf(
+                        OptionNode(id = "o3", text = "Yes", next = "out1"),
+                    ),
+                ),
+            ),
+            outcomes = listOf(
+                OutcomeNode(
+                    id = "out1",
+                    categoryTitle = "Plastic",
+                    disposalLabel = "Recycle",
+                    certainty = "HIGH",
+                    explanation = "Test outcome",
+                    tips = listOf("Rinse"),
+                    instruction = "Rinse then recycle",
+                )
+            ),
+        )
+
+        val app = RuntimeEnvironment.getApplication<android.app.Application>()
+        val engine = QuestionnaireEngine(app, config)
+        return QuestionnaireViewModel(app, engine)
+    }
+
     @Test
     fun init_loadsCurrentQuestionAndProgress() {
-        val vm = QuestionnaireViewModel(RuntimeEnvironment.getApplication())
+        val vm = buildViewModel()
 
         val question = vm.currentQuestion.getOrAwaitValue()
         val progress = vm.currentProgress.getOrAwaitValue()
@@ -38,7 +78,7 @@ class QuestionnaireViewModelTest {
 
     @Test
     fun selectOption_emitsNavigation_thenConsumeClears() {
-        val vm = QuestionnaireViewModel(RuntimeEnvironment.getApplication())
+        val vm = buildViewModel()
         val question = vm.currentQuestion.getOrAwaitValue() ?: error("Question must exist")
         assertTrue(question.options.isNotEmpty())
 
@@ -55,7 +95,7 @@ class QuestionnaireViewModelTest {
 
     @Test
     fun navigateBack_atStart_returnsFalse() {
-        val vm = QuestionnaireViewModel(RuntimeEnvironment.getApplication())
+        val vm = buildViewModel()
 
         val result = vm.navigateBack()
 
@@ -64,7 +104,7 @@ class QuestionnaireViewModelTest {
 
     @Test
     fun selectOption_thenNavigateBack_returnsTrue() {
-        val vm = QuestionnaireViewModel(RuntimeEnvironment.getApplication())
+        val vm = buildViewModel()
         val question = vm.currentQuestion.getOrAwaitValue() ?: error("Question must exist")
         assertTrue(question.options.isNotEmpty())
 
