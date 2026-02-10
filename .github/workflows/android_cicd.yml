@@ -83,20 +83,19 @@ jobs:
           name: lint-report
           path: app/build/reports/lint-results-localDebug.html
 
-      - name: Run Trivy SCA
+      - name: Run Trivy (SCA)
         uses: aquasecurity/trivy-action@master
         with:
-          scan-type: "fs"
-          format: "sarif" # CHANGED
-          output: "python-sca.sarif" # CHANGED
-          exit-code: "0" # Set to 0 so the orchestrator can still run even if vulns exist
-          severity: "CRITICAL,HIGH"
-      - name: Upload SCA Artifact
-        if: always()
+          scan-type: 'fs'
+          format: 'sarif' # CHANGED
+          output: 'android-sca.sarif' # CHANGED
+          exit-code: '0'
+          severity: 'CRITICAL,HIGH'
+      - name: Upload SCA Report
         uses: actions/upload-artifact@v4
         with:
-          name: python-sca-results
-          path: python-sca.sarif
+          name: android-sca-results # Standardized name
+          path: android-sca.sarif
 
   # STAGE 5: SAST (Now runs on every check-in)
   sast-scan:
