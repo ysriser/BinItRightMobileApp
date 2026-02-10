@@ -35,40 +35,39 @@ jobs:
           name: compiled-apk
           path: app/build/outputs/apk/local/debug/app-local-debug.apk
 
-  # STAGE 2: UNIT (Always Runs) + Coverage
+  # ==========================================
+  # BOX 2: UNIT TESTS + COVERAGE
+  # ==========================================
   unit-tests:
-    name: UNIT
-    needs: build
+    name: Unit Tests (Pytest)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Set up JDK 21
-        uses: actions/setup-java@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
-          java-version: '21'
-          distribution: 'temurin'
-          cache: gradle
+          python-version: "3.11"
+          cache: "pip"
 
-      # Run tests AND generate coverage in one command
-      - name: Run JUnit Tests with Coverage
+      - name: Install Dependencies
         run: |
-          ./gradlew testLocalDebugUnitTest jacocoTestReport \
-          -PLOCALHOST_IP="${{ secrets.LOCALHOST_IP }}"
+          python -m pip install --upgrade pip
+          # ADD pytest-cov HERE
+          pip install -r requirements.txt pytest-cov 
 
-      - name: Upload Test Results
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: unit-test-results
-          path: app/build/test-results/testLocalDebugUnitTest/
+      - name: Run Pytest with Coverage
+        run: |
+          # ADD the --cov flags to generate coverage.xml
+          pytest test_main.py CNN/shared/tests CNN/clf_7cats_tier1/tests CNN/services/tests \
+          --junitxml=reports/unit-test.xml \
+          --cov=. --cov-report=xml:coverage.xml
 
       - name: Upload Coverage Reports
-        if: always()
+        if: always() # Changed to always so we can debug if it fails
         uses: actions/upload-artifact@v4
         with:
-          name: android-coverage-reports
-          # We point directly to the folder so the artifact contains ONLY the files
-          path: app/build/reports/jacoco/jacocoLocalDebugUnitTestReport/
+          name: python-coverage-reports
+          path: coverage.xml
 
   # STAGE 3: LINT (Now runs on every check-in)
   lint:
