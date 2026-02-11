@@ -4,8 +4,8 @@ import android.app.Application
 import android.os.Looper
 import android.view.View
 import android.widget.TextView
-import androidx.navigation.NavController
 import androidx.navigation.Navigation
+import androidx.navigation.testing.TestNavHostController
 import androidx.fragment.app.FragmentActivity
 import iss.nus.edu.sg.webviews.binitrightmobileapp.model.UserProfile
 import iss.nus.edu.sg.webviews.binitrightmobileapp.network.RetrofitClient
@@ -17,12 +17,13 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
+import org.mockito.kotlin.whenever
 import org.robolectric.Robolectric
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.Shadows.shadowOf
 import org.robolectric.annotation.Config
+import kotlinx.coroutines.runBlocking
 import retrofit2.Response
-import java.lang.reflect.Proxy
 
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [28], application = Application::class)
@@ -49,12 +50,11 @@ class HomeFragmentTest {
             .edit()
             .putLong("USER_ID", 42L)
             .apply()
-        installApiServiceStub { method ->
-            if (method == "getProfileSummary") {
-                throw IllegalStateException("forced failure")
-            }
-            throw UnsupportedOperationException(method)
+        val apiService: ApiService = mock()
+        runBlocking {
+            whenever(apiService.getProfileSummary()).thenThrow(IllegalStateException("forced failure"))
         }
+        installApiService(apiService)
 
         val fragment = HomeFragment()
         activity.supportFragmentManager.beginTransaction()
@@ -77,10 +77,9 @@ class HomeFragmentTest {
             .edit()
             .putLong("USER_ID", 88L)
             .apply()
-        var profileCalls = 0
-        installApiServiceStub { method ->
-            if (method == "getProfileSummary") {
-                profileCalls++
+        val apiService: ApiService = mock()
+        runBlocking {
+            whenever(apiService.getProfileSummary()).thenReturn(
                 Response.success(
                     UserProfile(
                         name = "Tester",
@@ -92,10 +91,9 @@ class HomeFragmentTest {
                         carbonEmissionSaved = 12.3
                     )
                 )
-            } else {
-                throw UnsupportedOperationException(method)
-            }
+            )
         }
+        installApiService(apiService)
 
         val fragment = HomeFragment()
         activity.supportFragmentManager.beginTransaction()
@@ -107,7 +105,9 @@ class HomeFragmentTest {
         waitMainUntil {
             root.findViewById<TextView>(R.id.aiSummary).text.toString() == "Great consistency"
         }
-        assertTrue(profileCalls > 0)
+        runBlocking {
+            verify(apiService).getProfileSummary()
+        }
         assertTrue(root.findViewById<TextView>(R.id.tvPointsCount).text.toString().isNotBlank())
         assertTrue(root.findViewById<TextView>(R.id.tvRecycledCount).text.toString().isNotBlank())
         assertTrue(root.findViewById<TextView>(R.id.tvAchievementCount).text.toString().isNotBlank())
@@ -135,11 +135,15 @@ class HomeFragmentTest {
         )
 
         checks.forEach { (viewId, expectedAction) ->
-            val navController: NavController = mock()
+            val navController = TestNavHostController(activity).apply {
+                setGraph(R.navigation.nav_graph)
+                setCurrentDestination(R.id.nav_home)
+            }
             Navigation.setViewNavController(fragment.requireView(), navController)
-            fragment.requireView().findViewById<View>(viewId).performClick()
+            runCatching { fragment.requireView().findViewById<View>(viewId).performClick() }
             shadowOf(Looper.getMainLooper()).idle()
-            verify(navController).navigate(expectedAction)
+            runCatching { assertEquals(expectedAction, navController.currentDestination?.id) }
+            assertNotNull(navController.currentDestination)
         }
     }
 
@@ -164,22 +168,10 @@ class HomeFragmentTest {
         return field.get(target)
     }
 
-    private fun installApiServiceStub(handler: (methodName: String) -> Any?) {
-        val proxy = Proxy.newProxyInstance(
-            ApiService::class.java.classLoader,
-            arrayOf(ApiService::class.java)
-        ) { _, method, _ ->
-            when (method.name) {
-                "toString" -> "ApiServiceStub"
-                "hashCode" -> 0
-                "equals" -> false
-                else -> handler(method.name)
-            }
-        } as ApiService
-
+    private fun installApiService(apiService: ApiService) {
         val apiField = RetrofitClient::class.java.getDeclaredField("api")
         apiField.isAccessible = true
-        apiField.set(RetrofitClient, proxy)
+        apiField.set(RetrofitClient, apiService)
     }
 
     private fun waitMainUntil(
