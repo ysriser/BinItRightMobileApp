@@ -2,7 +2,6 @@ package iss.nus.edu.sg.webviews.binitrightmobileapp
 
 import android.app.Application
 import android.content.Context
-import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -10,19 +9,24 @@ import androidx.lifecycle.viewModelScope
 import iss.nus.edu.sg.webviews.binitrightmobileapp.model.Achievement
 import iss.nus.edu.sg.webviews.binitrightmobileapp.network.RetrofitClient
 import kotlinx.coroutines.launch
+import retrofit2.Response
 
-class AchievementViewModel(application: Application) : AndroidViewModel(application) {
+class AchievementViewModel(
+    application: Application,
+    private val userIdProvider: () -> Long = {
+        val prefs = application.getSharedPreferences("APP_PREFS", Context.MODE_PRIVATE)
+        prefs.getLong("USER_ID", -1L)
+    },
+    private val remoteFetcher: suspend (Long) -> Response<List<Achievement>> = { userId ->
+        RetrofitClient.apiService().getAchievementsWithStatus(userId)
+    }
+) : AndroidViewModel(application) {
 
     private val _achievementList = MutableLiveData<List<Achievement>>()
     val achievementList: LiveData<List<Achievement>> = _achievementList
 
     private val _isLoading = MutableLiveData<Boolean>()
     val isLoading: LiveData<Boolean> = _isLoading
-
-    private val userId: Long by lazy {
-        val prefs = getApplication<Application>().getSharedPreferences("APP_PREFS", Context.MODE_PRIVATE)
-        prefs.getLong("USER_ID", -1L)
-    }
 
     private val fixedAchievements = listOf(
         Achievement(1L, "First Submission", "Submit your first recycling item.", "Recycle 1 item", "https://img.icons8.com/color/96/seed.png"),
@@ -42,6 +46,7 @@ class AchievementViewModel(application: Application) : AndroidViewModel(applicat
     }
 
     fun fetchAchievements() {
+        val userId = userIdProvider()
         if (userId == -1L) {
             _achievementList.value = fixedAchievements
             return
@@ -50,7 +55,7 @@ class AchievementViewModel(application: Application) : AndroidViewModel(applicat
         viewModelScope.launch {
             _isLoading.value = true
             try {
-                val response = RetrofitClient.apiService().getAchievementsWithStatus(userId)
+                val response = remoteFetcher(userId)
 
                 if (response.isSuccessful && response.body() != null) {
                     val remoteData = response.body()!!
@@ -72,7 +77,6 @@ class AchievementViewModel(application: Application) : AndroidViewModel(applicat
                     _achievementList.value = fixedAchievements
                 }
             } catch (e: Exception) {
-                e.printStackTrace()
                 _achievementList.value = fixedAchievements
             } finally {
                 _isLoading.value = false

@@ -12,25 +12,35 @@ class FindBinsAdapter(
     private val bins: List<DropOffLocation>
 ) : RecyclerView.Adapter<FindBinsAdapter.ViewHolder>() {
 
+    fun formatDistance(distanceMeters: Double): String {
+        return "%.1f km away".format(distanceMeters / 1000)
+    }
+
+    fun mapBinType(type: String): String {
+        return when (type.uppercase()) {
+            "BLUEBIN" -> "General"
+            "EWASTE" -> "E-Waste"
+            "LIGHTING", "LAMP" -> "Lighting"
+            else -> type
+        }
+    }
+
+    fun buildNavigationUri(lat: Double, lng: Double): Uri {
+        return Uri.parse("google.navigation:q=$lat,$lng")
+    }
+
     inner class ViewHolder(private val binding: ItemFindRecyclingBinBinding) :
         RecyclerView.ViewHolder(binding.root) {
 
         fun bind(bin: DropOffLocation) {
             binding.txtName.text = bin.name
             binding.txtAddress.text = bin.address
-            binding.txtDistance.text = "%.1f km away".format(bin.distanceMeters / 1000)
+            binding.txtDistance.text = formatDistance(bin.distanceMeters)
             binding.txtHours.text = "Open 24/7"
-
-            binding.txtType.text = when (bin.binType.uppercase()) {
-                "BLUEBIN" -> "General"
-                "EWASTE" -> "E-Waste"
-                "LIGHTING", "LAMP" -> "Lighting"
-                else -> bin.binType
-            }
+            binding.txtType.text = mapBinType(bin.binType)
 
             binding.btnDirections.setOnClickListener {
-                val uri = Uri.parse("google.navigation:q=${bin.latitude},${bin.longitude}")
-                val intent = Intent(Intent.ACTION_VIEW, uri).apply {
+                val intent = Intent(Intent.ACTION_VIEW, buildNavigationUri(bin.latitude, bin.longitude)).apply {
                     setPackage("com.google.android.apps.maps")
                 }
                 it.context.startActivity(intent)
