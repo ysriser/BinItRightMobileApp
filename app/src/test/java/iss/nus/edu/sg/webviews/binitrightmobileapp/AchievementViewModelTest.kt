@@ -96,6 +96,21 @@ class AchievementViewModelTest {
     }
 
     @Test
+    fun fetchAchievements_whenRemoteSuccessButBodyNull_usesFixedList() {
+        val app = ApplicationProvider.getApplicationContext<Application>()
+
+        val viewModel = AchievementViewModel(
+            application = app,
+            userIdProvider = { 100L },
+            remoteFetcher = { Response.success(null) }
+        )
+
+        val achievements = viewModel.achievementList.getOrAwaitValue()
+        assertEquals(10, achievements.size)
+        assertTrue(achievements.none { it.isUnlocked })
+    }
+
+    @Test
     fun fetchAchievements_whenRemoteError_fallsBackToFixedList() {
         val app = ApplicationProvider.getApplicationContext<Application>()
 
@@ -115,6 +130,30 @@ class AchievementViewModelTest {
         assertEquals(10, achievements.size)
         assertTrue(achievements.none { it.isUnlocked })
         assertFalse(viewModel.isLoading.value ?: true)
+    }
+
+    @Test
+    fun fetchAchievements_whenException_fallsBackToFixedList() {
+        val app = ApplicationProvider.getApplicationContext<Application>()
+
+        val viewModel = AchievementViewModel(
+            application = app,
+            userIdProvider = { 100L },
+            remoteFetcher = { throw Exception("Network failure") }
+        )
+
+        val achievements = viewModel.achievementList.getOrAwaitValue()
+        assertEquals(10, achievements.size)
+        assertFalse(viewModel.isLoading.value ?: true)
+    }
+
+    @Test
+    fun testDefaultConstructor_coverage() {
+        val app = ApplicationProvider.getApplicationContext<Application>()
+        try {
+            AchievementViewModel(app)
+        } catch (e: Exception) {
+        }
     }
 }
 

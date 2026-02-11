@@ -1,4 +1,3 @@
-
 package iss.nus.edu.sg.webviews.binitrightmobileapp
 
 import iss.nus.edu.sg.webviews.binitrightmobileapp.model.Accessory
@@ -11,27 +10,22 @@ import org.junit.Test
 class AvatarCustomizationLogicTest {
 
     @Test
-    fun testHandleEquip_ConditionLogic() {
-        val accessory = Accessory(101L, "Blue Cap", "url", 100)
-
+    fun testShouldCallEquipApi_Logic() {
+        val accessory = Accessory(1L, "Hat", "url", 100)
         val equippedItem = UserAccessory(1L, true, accessory)
         val notEquippedItem = UserAccessory(2L, false, accessory)
 
-        val shouldSkipApiForEquipped = equippedItem.equipped
-        val shouldCallApiForNotEquipped = !notEquippedItem.equipped
-
-        assertTrue(shouldSkipApiForEquipped)
-        assertTrue(shouldCallApiForNotEquipped)
+        assertFalse(AvatarLogicUtils.shouldCallEquipApi(equippedItem))
+        assertTrue(AvatarLogicUtils.shouldCallEquipApi(notEquippedItem))
     }
 
     @Test
-    fun testGridLayoutSpanCount() {
-        val spanCount = 2
-        assertEquals(2, spanCount)
+    fun testGridSpanCount_Logic() {
+        assertEquals(2, AvatarLogicUtils.getGridSpanCount())
     }
 
     @Test
-    fun testApiResponseHandling_Success() {
+    fun testApiResponseHandling_Logic() {
         val items = listOf(
             UserAccessory(1L, true, Accessory(101L, "Item 1", "u1", 10)),
             UserAccessory(2L, false, Accessory(102L, "Item 2", "u2", 20))
@@ -46,28 +40,5 @@ class AvatarCustomizationLogicTest {
 
         assertEquals(2, adapterData.size)
         assertEquals("Item 1", adapterData[0].accessories.name)
-    }
-
-    @Test
-    fun testApiResponseHandling_Failure() {
-        var adapterData = listOf(UserAccessory(1L, true, Accessory(101L, "Old", "u", 0)))
-        val isSuccessful = false
-
-        if (isSuccessful) {
-            adapterData = emptyList()
-        }
-
-        assertEquals(1, adapterData.size)
-        assertEquals("Old", adapterData[0].accessories.name)
-    }
-
-    @Test
-    fun testNavigationLogic_Trigger() {
-        var navigateUpCalled = false
-        val performClick = { navigateUpCalled = true }
-
-        performClick()
-
-        assertTrue(navigateUpCalled)
     }
 }
