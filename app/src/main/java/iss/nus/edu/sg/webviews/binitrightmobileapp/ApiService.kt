@@ -1,5 +1,6 @@
 package iss.nus.edu.sg.webviews.binitrightmobileapp
 
+import com.google.gson.annotations.SerializedName
 import iss.nus.edu.sg.webviews.binitrightmobileapp.model.Achievement
 import iss.nus.edu.sg.webviews.binitrightmobileapp.model.Accessory
 import iss.nus.edu.sg.webviews.binitrightmobileapp.model.ChatRequest
@@ -34,7 +35,8 @@ import retrofit2.http.Query
 
 data class ScanResponse(
     val status: String,
-    val request_id: String? = null,
+    @SerializedName("request_id")
+    val requestId: String? = null,
     val data: ScanResponseData? = null,
     val code: String? = null,
     val message: String? = null
@@ -48,8 +50,10 @@ data class ScanResponseData(
 )
 
 data class Decision(
-    val used_tier2: Boolean,
-    val reason_codes: List<String> = emptyList()
+    @SerializedName("used_tier2")
+    val usedTier2: Boolean,
+    @SerializedName("reason_codes")
+    val reasonCodes: List<String> = emptyList()
 )
 
 data class FinalResult(
@@ -61,18 +65,24 @@ data class FinalResult(
 )
 
 data class Tier2Error(
-    val http_status: String? = null,
+    @SerializedName("http_status")
+    val httpStatus: String? = null,
     val code: String? = null,
     val message: String? = null
 )
 
 data class Meta(
     val schema_version: String? = null,
-    val force_cloud: Boolean? = null,
-    val tier2_provider_attempted: String? = null,
-    val tier2_provider_used: String? = null,
-    val tier2_provider: String? = null,
-    val tier2_error: Tier2Error? = null
+    @SerializedName("force_cloud")
+    val forceCloud: Boolean? = null,
+    @SerializedName("tier2_provider_attempted")
+    val tier2ProviderAttempted: String? = null,
+    @SerializedName("tier2_provider_used")
+    val tier2ProviderUsed: String? = null,
+    @SerializedName("tier2_provider")
+    val tier2Provider: String? = null,
+    @SerializedName("tier2_error")
+    val tier2Error: Tier2Error? = null
 )
 
 interface ApiService {
@@ -105,7 +115,7 @@ interface ApiService {
 
     @POST("api/videos/presign-upload")
     suspend fun getPresignedUpload(
-        @Body req: PresignUploadRequest
+        @Body request: PresignUploadRequest
     ): Response<PresignUploadResponse>
 
     @GET("api/recycle-history")
@@ -143,19 +153,16 @@ interface ApiService {
         @Path("accessoriesId") accessoriesId: Long
     ): Response<RedeemResponse>
 
-    @GET("api/summary/profile")
-    suspend fun getUserProfile(@Path("id") userId: Long): Response<UserProfile>
-
     @GET("api/bins/search")
     suspend fun getNearbyBins(
         @Query("lat") lat: Double,
         @Query("lng") lng: Double,
-        @Query("radius") radius: Int,
+        @Query("radius") radius: Int? = null,
         @Query("binType") binType: String? = null
     ): List<DropOffLocation>
 
     @POST("api/chat")
-    suspend fun chat(@Body req: ChatRequest): ChatResponse
+    suspend fun chat(@Body request: ChatRequest): ChatResponse
 
     @GET("api/users/{userId}/total-recycled")
     suspend fun getTotalRecycled(

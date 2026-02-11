@@ -24,7 +24,6 @@ class RegisterFragment : Fragment(R.layout.fragment_register) {
         }
         binding.tvBackToLogin.setOnClickListener {
             android.util.Log.d("REGISTER", "BackToLogin clicked")
-            Toast.makeText(requireContext(), "Going to login", Toast.LENGTH_SHORT).show()
             findNavController().navigate(R.id.loginFragment)
 
         }

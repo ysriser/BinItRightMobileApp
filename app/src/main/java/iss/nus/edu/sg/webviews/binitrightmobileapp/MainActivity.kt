@@ -5,13 +5,12 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.navigation.NavOptions
 import androidx.navigation.findNavController
 import androidx.navigation.fragment.NavHostFragment
+import androidx.core.view.isEmpty
 import androidx.navigation.ui.setupWithNavController
 
 import iss.nus.edu.sg.webviews.binitrightmobileapp.databinding.ActivityMainBinding
@@ -62,28 +61,33 @@ class MainActivity : AppCompatActivity() {
 
         navController.addOnDestinationChangedListener { _, destination, _ ->
             val navBar = binding.bottomNavView
-            val params = navBar.layoutParams
 
             when (destination.id) {
-                R.id.loginFragment,R.id.registerFragment -> {
-                    navBar.menu.clear() // Deletes the buttons and their listeners
+                R.id.loginFragment, R.id.registerFragment -> {
+                    navBar.menu.clear() // Preserving existing logic
                     navBar.alpha = 0f
-                    params.height = 0
+                    navBar.isClickable = false
+                    navBar.isFocusable = false
+                    navBar.layoutParams = navBar.layoutParams.apply { height = 0 }
+                    navBar.requestLayout()
                 }
                 else -> {
-                    if (navBar.menu.size() == 0) {
+                    navBar.alpha = 1f
+                    navBar.isClickable = true
+                    navBar.isFocusable = true
+                    navBar.layoutParams = navBar.layoutParams.apply {
+                        height = androidx.constraintlayout.widget.ConstraintLayout.LayoutParams.WRAP_CONTENT
+                    }
+                    navBar.requestLayout()
+                    if (navBar.menu.isEmpty()) {
                         navBar.inflateMenu(R.menu.bottom_menu)
 
                         // --- CRITICAL FIX ---
                         // You must re-establish the link after inflating
                         navBar.setupWithNavController(navController)
                     }
-
-                    navBar.alpha = 1f
-                    params.height = ConstraintLayout.LayoutParams.WRAP_CONTENT
                 }
             }
-            navBar.layoutParams = params
         }
     }
 }

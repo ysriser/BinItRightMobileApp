@@ -27,16 +27,16 @@ class ScanRepositoryInternalTest {
     @Test
     fun buildTier2DebugMessage_handlesOpenAiAndFallbackCases() {
         val openAiMeta = Meta(
-            tier2_provider_attempted = "openai",
-            tier2_provider_used = "openai",
+            tier2ProviderAttempted = "openai",
+            tier2ProviderUsed = "openai",
         )
         val openAiMsg = invokePrivateStatic("buildTier2DebugMessage", openAiMeta) as String?
         assertEquals("Tier2 provider: openai", openAiMsg)
 
         val fallbackMeta = Meta(
-            tier2_provider_attempted = "openai",
-            tier2_provider_used = "mock",
-            tier2_error = Tier2Error(code = "timeout")
+            tier2ProviderAttempted = "openai",
+            tier2ProviderUsed = "mock",
+            tier2Error = Tier2Error(code = "timeout")
         )
         val fallbackMsg = invokePrivateStatic("buildTier2DebugMessage", fallbackMeta) as String?
         assertEquals("Tier2 fallback to mock (timeout)", fallbackMsg)
@@ -90,9 +90,9 @@ class ScanRepositoryInternalTest {
             instructions = emptyList(),
         )
         val meta = Meta(
-            tier2_provider_attempted = "openai",
-            tier2_provider_used = "mock",
-            tier2_error = Tier2Error(code = "schema")
+            tier2ProviderAttempted = "openai",
+            tier2ProviderUsed = "mock",
+            tier2Error = Tier2Error(code = "schema")
         )
 
         val mapped = invokePrivateInstance(

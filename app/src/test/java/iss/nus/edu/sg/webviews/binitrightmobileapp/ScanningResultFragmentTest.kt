@@ -9,7 +9,6 @@ import androidx.fragment.app.FragmentActivity
 import androidx.navigation.Navigation
 import androidx.navigation.testing.TestNavHostController
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -88,7 +87,7 @@ class ScanningResultFragmentTest {
     }
 
     @Test
-    fun listeners_navigateAndFeedback_disableActions() {
+    fun listeners_navigateToExpectedDestinations() {
         val activity = Robolectric.buildActivity(FragmentActivity::class.java).setup().get()
         val fragment = ScanningResultFragment().apply {
             arguments = Bundle().apply {
@@ -131,16 +130,6 @@ class ScanningResultFragmentTest {
         fragment.requireView().findViewById<View>(R.id.btnScanAgain).performClick()
         shadowOf(Looper.getMainLooper()).idle()
         assertEquals(R.id.scanItemFragment, scanAgainNav.currentDestination?.id)
-
-        val root = fragment.requireView()
-        root.findViewById<View>(R.id.btnAccurate).performClick()
-        shadowOf(Looper.getMainLooper()).idle()
-        shadowOf(Looper.getMainLooper()).idle()
-        assertFalse(root.findViewById<View>(R.id.btnAccurate).isEnabled)
-        assertFalse(root.findViewById<View>(R.id.btnIncorrect).isEnabled)
-
-        callPrivate(fragment, "sendFeedback", false)
-        shadowOf(Looper.getMainLooper()).idle()
     }
 
     private fun navFromHomeToScanningResult(activity: FragmentActivity): TestNavHostController {

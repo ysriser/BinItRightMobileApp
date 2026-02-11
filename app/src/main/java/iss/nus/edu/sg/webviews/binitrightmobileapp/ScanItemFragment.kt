@@ -79,10 +79,6 @@ class ScanItemFragment : Fragment() {
             findNavController().popBackStack(R.id.nav_home, false)
         }
 
-        binding.switchDebug.setOnCheckedChangeListener { _, isChecked ->
-            viewModel.toggleDebugMode(isChecked)
-        }
-
         setupObservers()
     }
 
@@ -136,10 +132,6 @@ class ScanItemFragment : Fragment() {
 
             result.onSuccess { scanResult ->
                 stopScanUI()
-
-                if (binding.switchDebug.isChecked && !scanResult.debugMessage.isNullOrBlank()) {
-                    Toast.makeText(requireContext(), scanResult.debugMessage, Toast.LENGTH_SHORT).show()
-                }
 
                 val bundle = Bundle().apply {
                     putString("imageUri", lastCapturedUri?.toString())

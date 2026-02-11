@@ -3,6 +3,7 @@ package iss.nus.edu.sg.webviews.binitrightmobileapp.model
 import android.content.Context
 import android.content.Intent
 import android.util.Log
+import androidx.core.content.edit
 import okhttp3.Interceptor
 import okhttp3.Response
 
@@ -33,7 +34,7 @@ class AuthInterceptor(private val context: Context) : Interceptor {
 
         if (response.code == 401) {
             Log.e(TAG, "401 detected: clearing session")
-            prefs.edit().remove(sessionSlot).apply()
+            prefs.edit { remove(sessionSlot) }
             context.sendBroadcast(Intent(AUTH_FAILED_ACTION))
         }
 

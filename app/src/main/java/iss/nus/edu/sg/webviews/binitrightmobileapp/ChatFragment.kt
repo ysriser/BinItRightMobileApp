@@ -1,7 +1,9 @@
 package iss.nus.edu.sg.webviews.binitrightmobileapp
 
 import android.os.Bundle
+import android.view.KeyEvent
 import android.view.View
+import android.view.inputmethod.EditorInfo
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -32,6 +34,17 @@ class ChatFragment : Fragment(R.layout.fragment_chat) {
 
         binding.sendBtn.setOnClickListener {
             sendMessage(binding.input.text.toString())
+        }
+
+        binding.input.setOnEditorActionListener { _, actionId, event ->
+            val isKeyboardSend = actionId == EditorInfo.IME_ACTION_SEND
+            val isEnterKey = event?.keyCode == KeyEvent.KEYCODE_ENTER && event.action == KeyEvent.ACTION_DOWN
+            if (isKeyboardSend || isEnterKey) {
+                sendMessage(binding.input.text.toString())
+                true
+            } else {
+                false
+            }
         }
     }
 

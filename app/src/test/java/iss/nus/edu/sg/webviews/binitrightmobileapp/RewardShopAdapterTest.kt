@@ -21,8 +21,7 @@ class RewardShopAdapterTest {
         val adapter = RewardShopAdapter(
             items = listOf(Accessory(1L, "Blue Cap", "img", 50, owned = true)),
             totalPoints = 999,
-            onRedeemClick = {},
-            onEquipClick = {}
+            onRedeemClick = {}
         )
 
         val holder = adapter.onCreateViewHolder(FrameLayout(context), 0)
@@ -39,8 +38,7 @@ class RewardShopAdapterTest {
         val adapter = RewardShopAdapter(
             items = listOf(Accessory(2L, "Green Hat", "img", 40, owned = false)),
             totalPoints = 100,
-            onRedeemClick = { clickedName = it.name },
-            onEquipClick = {}
+            onRedeemClick = { clickedName = it.name }
         )
 
         val holder = adapter.onCreateViewHolder(FrameLayout(context), 0)
@@ -58,8 +56,7 @@ class RewardShopAdapterTest {
         val adapter = RewardShopAdapter(
             items = listOf(Accessory(3L, "Red Scarf", "img", 500, owned = false)),
             totalPoints = 20,
-            onRedeemClick = {},
-            onEquipClick = {}
+            onRedeemClick = {}
         )
 
         val holder = adapter.onCreateViewHolder(FrameLayout(context), 0)

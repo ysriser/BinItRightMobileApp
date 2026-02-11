@@ -5,6 +5,7 @@ import android.content.Intent
 import android.widget.FrameLayout
 import android.widget.TextView
 import androidx.activity.ComponentActivity
+import androidx.test.core.app.ApplicationProvider
 import iss.nus.edu.sg.todo.samplebin.FindBinsAdapter
 import iss.nus.edu.sg.webviews.binitrightmobileapp.model.DropOffLocation
 import org.junit.Assert.assertEquals
@@ -29,7 +30,10 @@ class FindBinsAdapterTest {
 
     @Test
     fun formatDistance_shouldConvertMetersToKm() {
-        val result = adapter.formatDistance(1500.0)
+        val result = adapter.formatDistance(
+            1500.0,
+            ApplicationProvider.getApplicationContext()
+        )
         assertEquals("1.5 km away", result)
     }
 

@@ -3,6 +3,7 @@ package iss.nus.edu.sg.webviews.binitrightmobileapp
 import java.util.Locale
 
 object ScannedCategoryHelper {
+    private const val E_WASTE_KEYWORD = "e-waste"
 
     private val uncertainKeywords = listOf(
         "not sure",
@@ -36,10 +37,10 @@ object ScannedCategoryHelper {
 
     fun isSpecialRecyclable(raw: String?): Boolean {
         val normalized = normalizeCategory(raw).lowercase(Locale.ROOT)
-        return normalized.startsWith("e-waste")
+        return normalized.startsWith(E_WASTE_KEYWORD)
                 || normalized.startsWith("textile")
                 || normalized.startsWith("lighting")
-                || normalized.contains("e-waste")
+                || normalized.contains(E_WASTE_KEYWORD)
                 || normalized.contains("electronic")
                 || normalized.contains("battery")
                 || normalized.contains("lamp")
@@ -53,7 +54,7 @@ object ScannedCategoryHelper {
             normalized.contains("paper") || normalized.contains("cardboard") -> "Paper"
             normalized.contains("glass") || normalized.contains("ceramic") || normalized.contains("mug") -> "Glass"
             normalized.contains("metal") || normalized.contains("can") -> "Metal"
-            normalized.contains("e-waste")
+            normalized.contains(E_WASTE_KEYWORD)
                     || normalized.contains("ewaste")
                     || normalized.contains("electronic")
                     || normalized.contains("battery")
@@ -80,10 +81,23 @@ object ScannedCategoryHelper {
     }
 
     fun normalizeBinType(rawBinType: String?): String {
-        return when (normalizeCategory(rawBinType).uppercase(Locale.ROOT)) {
-            "BLUEBIN" -> "BLUEBIN"
-            "EWASTE" -> "EWASTE"
-            "LIGHTING" -> "LIGHTING"
+        val compact = normalizeCategory(rawBinType)
+            .uppercase(Locale.ROOT)
+            .replace("-", "")
+            .replace("_", "")
+            .replace(" ", "")
+
+        return when {
+            compact == "BLUEBIN" || compact == "BLUE" || compact.contains("BLUEBIN") -> "BLUEBIN"
+            compact == "EWASTE"
+                    || compact.contains("EWASTE")
+                    || compact.contains("EWASTEBIN")
+                    || compact.contains("ELECTRONIC")
+                    || compact.contains("BATTERY") -> "EWASTE"
+            compact == "LIGHTING"
+                    || compact.contains("LIGHTING")
+                    || compact.contains("LAMP")
+                    || compact.contains("BULB") -> "LIGHTING"
             else -> ""
         }
     }
@@ -96,7 +110,7 @@ object ScannedCategoryHelper {
                 || normalized.contains("glass")
                 || normalized.contains("metal")
                 || normalized.contains("can")
-                || normalized.contains("e-waste")
+                || normalized.contains(E_WASTE_KEYWORD)
                 || normalized.contains("ewaste")
                 || normalized.contains("electronic")
                 || normalized.contains("battery")
@@ -116,7 +130,7 @@ object ScannedCategoryHelper {
                     || normalized.contains("lamp")
                     || normalized.contains("bulb")
                     || normalized.contains("tube light") -> "LIGHTING"
-            normalized.contains("e-waste")
+            normalized.contains(E_WASTE_KEYWORD)
                     || normalized.contains("ewaste")
                     || normalized.contains("electronic")
                     || normalized.contains("battery")

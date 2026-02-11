@@ -28,34 +28,13 @@
                 android:orientation="vertical"
                 android:padding="24dp">
 
-                <LinearLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginEnd="8dp"
-                        android:text="🌿"
-                        android:textSize="20sp" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Good Morning!"
-                        android:textColor="#E8F5E9"
-                        android:textSize="14sp" />
-                </LinearLayout>
-
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="4dp"
+                    android:layout_marginTop="16dp"
                     android:text="Bin It Right"
                     android:textColor="#FFFFFF"
-                    android:textSize="28sp"
+                    android:textSize="32sp"
                     android:textStyle="bold" />
 
                 <TextView
@@ -71,32 +50,33 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_below="@id/headerContent"
-                android:layout_marginStart="16dp"
-                android:layout_marginEnd="16dp"
+                android:layout_marginHorizontal="12dp"
                 android:baselineAligned="false"
-                android:orientation="horizontal">
+                android:orientation="horizontal"
+                android:paddingBottom="8dp"
+                android:clipToPadding="false">
 
                 <androidx.cardview.widget.CardView
                     android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_marginEnd="6dp"
+                    android:layout_height="120dp"
+                    android:layout_margin="4dp"
                     android:layout_weight="1"
-                    app:cardBackgroundColor="#FFFFFF"
+                    app:cardBackgroundColor="@color/bg_card"
                     app:cardCornerRadius="16dp"
                     app:cardElevation="4dp">
 
                     <LinearLayout
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
+                        android:layout_height="match_parent"
                         android:gravity="center"
                         android:orientation="vertical"
-                        android:padding="16dp">
+                        android:padding="12dp">
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="🏆"
-                            android:textSize="24sp" />
+                            android:textSize="28sp" />
 
                         <TextView
                             android:id="@+id/tvPointsCount"
@@ -104,7 +84,7 @@
                             android:layout_height="wrap_content"
                             android:layout_marginTop="4dp"
                             android:text="0"
-                            android:textColor="#212121"
+                            android:textColor="@color/text_primary"
                             android:textSize="20sp"
                             android:textStyle="bold" />
 
@@ -112,32 +92,32 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="Points"
-                            android:textColor="#757575"
+                            android:textColor="@color/text_secondary"
                             android:textSize="12sp" />
                     </LinearLayout>
                 </androidx.cardview.widget.CardView>
 
                 <androidx.cardview.widget.CardView
                     android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_marginHorizontal="6dp"
+                    android:layout_height="120dp"
+                    android:layout_margin="4dp"
                     android:layout_weight="1"
-                    app:cardBackgroundColor="#FFFFFF"
+                    app:cardBackgroundColor="@color/bg_card"
                     app:cardCornerRadius="16dp"
                     app:cardElevation="4dp">
 
                     <LinearLayout
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
+                        android:layout_height="match_parent"
                         android:gravity="center"
                         android:orientation="vertical"
-                        android:padding="16dp">
+                        android:padding="12dp">
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="♻️"
-                            android:textSize="24sp" />
+                            android:textSize="28sp" />
 
                         <TextView
                             android:id="@+id/tvRecycledCount"
@@ -145,7 +125,7 @@
                             android:layout_height="wrap_content"
                             android:layout_marginTop="4dp"
                             android:text="2"
-                            android:textColor="#212121"
+                            android:textColor="@color/text_primary"
                             android:textSize="20sp"
                             android:textStyle="bold" />
 
@@ -153,7 +133,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="Recycled"
-                            android:textColor="#757575"
+                            android:textColor="@color/text_secondary"
                             android:textSize="12sp" />
                     </LinearLayout>
                 </androidx.cardview.widget.CardView>
@@ -161,25 +141,25 @@
                 <androidx.cardview.widget.CardView
                     android:id="@+id/cardAchievements"
                     android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="6dp"
+                    android:layout_height="120dp"
+                    android:layout_margin="4dp"
                     android:layout_weight="1"
-                    app:cardBackgroundColor="#FFFFFF"
+                    app:cardBackgroundColor="@color/bg_card"
                     app:cardCornerRadius="16dp"
                     app:cardElevation="4dp">
 
                     <LinearLayout
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
+                        android:layout_height="match_parent"
                         android:gravity="center"
                         android:orientation="vertical"
-                        android:padding="16dp">
+                        android:padding="12dp">
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="🏵️"
-                            android:textSize="24sp" />
+                            android:textSize="28sp" />
 
                         <TextView
                             android:id="@+id/tvAchievementCount"
@@ -187,7 +167,7 @@
                             android:layout_height="wrap_content"
                             android:layout_marginTop="4dp"
                             android:text="1"
-                            android:textColor="#212121"
+                            android:textColor="@color/text_primary"
                             android:textSize="20sp"
                             android:textStyle="bold" />
 
@@ -195,7 +175,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="Achievements"
-                            android:textColor="#757575"
+                            android:textColor="@color/text_secondary"
                             android:textSize="10sp" />
                     </LinearLayout>
                 </androidx.cardview.widget.CardView>
@@ -269,7 +249,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="24dp"
-                app:cardBackgroundColor="#E8F5E9"
+                app:cardBackgroundColor="#DFF2E0"
                 app:cardCornerRadius="16dp"
                 app:cardElevation="0dp">
 
@@ -343,11 +323,12 @@
                     android:gravity="center_vertical"
                     android:paddingHorizontal="20dp">
 
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="♻️"
-                        android:textSize="32sp" />
+                    <ImageView
+                        android:layout_width="32dp"
+                        android:layout_height="32dp"
+                        android:src="@drawable/icon_scan_recycle"
+                        app:tint="@color/white"
+                        android:contentDescription="Recycle Icon" />
 
                     <LinearLayout
                         android:layout_width="0dp"
@@ -371,13 +352,6 @@
                             android:textColor="#E8F5E9"
                             android:textSize="12sp" />
                     </LinearLayout>
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="→"
-                        android:textColor="#FFFFFF"
-                        android:textSize="20sp" />
                 </LinearLayout>
 
                 <View
@@ -410,16 +384,18 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="24dp"
-                android:orientation="horizontal">
+                android:orientation="horizontal"
+                android:clipToPadding="false"
+                android:paddingBottom="4dp">
 
                 <androidx.cardview.widget.CardView
                     android:layout_width="0dp"
                     android:layout_height="130dp"
                     android:layout_marginEnd="8dp"
                     android:layout_weight="1"
-                    app:cardBackgroundColor="#E8F5E9"
+                    app:cardBackgroundColor="@color/bg_card"
                     app:cardCornerRadius="20dp"
-                    app:cardElevation="3dp">
+                    app:cardElevation="0dp">
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -428,30 +404,21 @@
                         android:orientation="vertical"
                         android:padding="14dp">
 
-                        <View
+                        <TextView
                             android:layout_width="56dp"
                             android:layout_height="56dp"
-                            android:background="@drawable/circle_bg_scan" />
-
-                        <FrameLayout
-                            android:layout_width="56dp"
-                            android:layout_height="56dp"
-                            android:layout_marginTop="-56dp">
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_gravity="center"
-                                android:text="📷"
-                                android:textSize="25sp" />
-                        </FrameLayout>
+                            android:background="@drawable/circle_bg_scan"
+                            android:gravity="center"
+                            android:text="📷"
+                            android:paddingBottom="6dp"
+                            android:textSize="25sp" />
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="10dp"
                             android:text="Scan Item"
-                            android:textColor="#212121"
+                            android:textColor="@color/text_primary"
                             android:textSize="15sp"
                             android:textStyle="bold" />
 
@@ -460,7 +427,7 @@
                             android:layout_height="wrap_content"
                             android:layout_marginTop="2dp"
                             android:text="Use your camera"
-                            android:textColor="#666666"
+                            android:textColor="@color/text_secondary"
                             android:textSize="11sp" />
                     </LinearLayout>
 
@@ -477,9 +444,9 @@
                     android:layout_height="130dp"
                     android:layout_marginStart="8dp"
                     android:layout_weight="1"
-                    app:cardBackgroundColor="#F3E5F5"
+                    app:cardBackgroundColor="@color/bg_card"
                     app:cardCornerRadius="20dp"
-                    app:cardElevation="3dp">
+                    app:cardElevation="0dp">
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -488,30 +455,20 @@
                         android:orientation="vertical"
                         android:padding="14dp">
 
-                        <View
+                        <TextView
                             android:layout_width="56dp"
                             android:layout_height="56dp"
-                            android:background="@drawable/circle_bg_quiz" />
-
-                        <FrameLayout
-                            android:layout_width="56dp"
-                            android:layout_height="56dp"
-                            android:layout_marginTop="-56dp">
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_gravity="center"
-                                android:text="❓"
-                                android:textSize="25sp" />
-                        </FrameLayout>
+                            android:gravity="center"
+                            android:background="@drawable/circle_bg_scan"
+                            android:text="❓"
+                            android:textSize="25sp" />
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="10dp"
                             android:text="Answer Quiz"
-                            android:textColor="#212121"
+                            android:textColor="@color/text_primary"
                             android:textSize="15sp"
                             android:textStyle="bold" />
 
@@ -520,7 +477,7 @@
                             android:layout_height="wrap_content"
                             android:layout_marginTop="2dp"
                             android:text="Quick questions"
-                            android:textColor="#666666"
+                            android:textColor="@color/text_secondary"
                             android:textSize="11sp" />
                     </LinearLayout>
 
@@ -550,9 +507,9 @@
                 android:clickable="true"
                 android:focusable="true"
                 android:foreground="?android:attr/selectableItemBackground"
-                app:cardBackgroundColor="#E8F5E9"
+                app:cardBackgroundColor="@color/bg_card"
                 app:cardCornerRadius="20dp"
-                app:cardElevation="3dp">
+                app:cardElevation="0dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -560,23 +517,13 @@
                     android:gravity="center_vertical"
                     android:padding="18dp">
 
-                    <View
+                    <TextView
                         android:layout_width="48dp"
                         android:layout_height="48dp"
-                        android:background="@drawable/circle_bg_bins" />
-
-                    <FrameLayout
-                        android:layout_width="48dp"
-                        android:layout_height="48dp"
-                        android:layout_marginStart="-48dp">
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_gravity="center"
-                            android:text="📍"
-                            android:textSize="24sp" />
-                    </FrameLayout>
+                        android:gravity="center"
+                        android:background="@drawable/circle_bg_scan"
+                        android:text="📍"
+                        android:textSize="24sp" />
 
                     <LinearLayout
                         android:layout_width="0dp"
@@ -589,7 +536,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="Find Recycling Bins"
-                            android:textColor="#212121"
+                            android:textColor="@color/text_primary"
                             android:textSize="16sp"
                             android:textStyle="bold" />
 
@@ -598,29 +545,19 @@
                             android:layout_height="wrap_content"
                             android:layout_marginTop="2dp"
                             android:text="Nearby drop-off locations"
-                            android:textColor="#666666"
+                            android:textColor="@color/text_secondary"
                             android:textSize="13sp" />
                     </LinearLayout>
 
-                    <View
+                    <TextView
                         android:layout_width="28dp"
                         android:layout_height="28dp"
-                        android:background="@drawable/circle_arrow_bg" />
-
-                    <FrameLayout
-                        android:layout_width="28dp"
-                        android:layout_height="28dp"
-                        android:layout_marginStart="-28dp">
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_gravity="center"
-                            android:text="→"
-                            android:textColor="#FFFFFF"
-                            android:textSize="16sp"
-                            android:textStyle="bold" />
-                    </FrameLayout>
+                        android:gravity="center"
+                        android:background="@drawable/circle_arrow_bg"
+                        android:text="→"
+                        android:textColor="#FFFFFF"
+                        android:textSize="16sp"
+                        android:textStyle="bold" />
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
 
@@ -629,7 +566,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="12dp"
                 android:text="💚 Help &amp; Support"
-                android:textColor="#212121"
+                android:textColor="@color/text_primary"
                 android:textSize="18sp"
                 android:textStyle="bold" />
 
@@ -637,20 +574,22 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="32dp"
-                android:orientation="horizontal">
+                android:orientation="horizontal"
+                android:clipToPadding="false"
+                android:paddingBottom="4dp">
 
                 <androidx.cardview.widget.CardView
                     android:id="@+id/cardChatHelper"
                     android:layout_width="0dp"
-                    android:layout_height="110dp"
+                    android:layout_height="130dp"
                     android:layout_marginEnd="8dp"
                     android:layout_weight="1"
                     android:clickable="true"
                     android:focusable="true"
                     android:foreground="?android:attr/selectableItemBackground"
-                    app:cardBackgroundColor="#E8F5E9"
+                    app:cardBackgroundColor="@color/bg_card"
                     app:cardCornerRadius="20dp"
-                    app:cardElevation="3dp">
+                    app:cardElevation="0dp">
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -659,30 +598,20 @@
                         android:orientation="vertical"
                         android:padding="16dp">
 
-                        <View
-                            android:layout_width="44dp"
-                            android:layout_height="44dp"
-                            android:background="@drawable/circle_bg_chat" />
-
-                        <FrameLayout
-                            android:layout_width="44dp"
-                            android:layout_height="44dp"
-                            android:layout_marginTop="-44dp">
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_gravity="center"
-                                android:text="💬"
-                                android:textSize="24sp" />
-                        </FrameLayout>
+                        <TextView
+                            android:layout_width="56dp"
+                            android:layout_height="56dp"
+                            android:gravity="center"
+                            android:background="@drawable/circle_bg_scan"
+                            android:text="💬"
+                            android:textSize="24sp" />
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="10dp"
                             android:text="Chat Helper"
-                            android:textColor="#212121"
+                            android:textColor="@color/text_primary"
                             android:textSize="15sp"
                             android:textStyle="bold" />
                     </LinearLayout>
@@ -691,15 +620,15 @@
                 <androidx.cardview.widget.CardView
                     android:id="@+id/cardReportIssue"
                     android:layout_width="0dp"
-                    android:layout_height="110dp"
+                    android:layout_height="130dp"
                     android:layout_marginStart="8dp"
                     android:layout_weight="1"
                     android:clickable="true"
                     android:focusable="true"
                     android:foreground="?android:attr/selectableItemBackground"
-                    app:cardBackgroundColor="#FFCDD2"
+                    app:cardBackgroundColor="@color/bg_card"
                     app:cardCornerRadius="20dp"
-                    app:cardElevation="3dp">
+                    app:cardElevation="0dp">
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -708,30 +637,21 @@
                         android:orientation="vertical"
                         android:padding="16dp">
 
-                        <View
-                            android:layout_width="44dp"
-                            android:layout_height="44dp"
-                            android:background="@drawable/circle_bg_report" />
-
-                        <FrameLayout
-                            android:layout_width="44dp"
-                            android:layout_height="44dp"
-                            android:layout_marginTop="-44dp">
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_gravity="center"
-                                android:text="⚠️"
-                                android:textSize="24sp" />
-                        </FrameLayout>
+                        <TextView
+                            android:layout_width="56dp"
+                            android:layout_height="56dp"
+                            android:gravity="center"
+                            android:background="@drawable/circle_bg_report"
+                            android:text="⚠️"
+                            android:paddingBottom="4dp"
+                            android:textSize="24sp" />
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="10dp"
                             android:text="Report Issue"
-                            android:textColor="#212121"
+                            android:textColor="@color/text_primary"
                             android:textSize="15sp"
                             android:textStyle="bold" />
                     </LinearLayout>

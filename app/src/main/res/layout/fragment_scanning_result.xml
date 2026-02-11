@@ -11,15 +11,16 @@
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:paddingBottom="24dp">
+        android:paddingTop="0dp"
+        android:paddingBottom="32dp">
 
         <!-- Captured Image Thumbnail (Optional -->
         <ImageView
             android:id="@+id/ivCapturedImage"
             android:layout_width="match_parent"
-            android:layout_height="280dp"
+            android:layout_height="300dp"
             android:scaleType="centerCrop"
-            android:alpha="0.1"
+            android:alpha="0.2"
             app:layout_constraintTop_toTopOf="parent"
             tools:src="@drawable/ic_launcher_background" />
 
@@ -39,21 +40,21 @@
             android:id="@+id/ivSuccess"
             android:layout_width="80dp"
             android:layout_height="80dp"
-            android:layout_marginTop="32dp"
+            android:layout_marginTop="80dp"
             android:src="@drawable/ic_check_circle_24"
             app:tint="#00C853"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toTopOf="@id/ivCapturedImage" />
 
         <TextView
             android:id="@+id/tvCategory"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
+            android:layout_marginTop="12dp"
             android:text="Electronics"
             android:textColor="#212121"
-            android:textSize="24sp"
+            android:textSize="22sp"
             android:textStyle="bold"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -63,7 +64,7 @@
             android:id="@+id/tvBadge"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
+            android:layout_marginTop="10dp"
             android:background="@drawable/bg_badge_recyclable"
             android:paddingHorizontal="16dp"
             android:paddingVertical="6dp"
@@ -74,15 +75,15 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/tvCategory" />
 
-        <!-- Accuracy Card -->
+        <!-- Info Card -->
         <androidx.cardview.widget.CardView
-            android:id="@+id/cardAccuracy"
+            android:id="@+id/cardInfo"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginHorizontal="24dp"
+            android:layout_marginHorizontal="20dp"
             android:layout_marginTop="32dp"
-            app:cardBackgroundColor="@android:color/white"
-            app:cardCornerRadius="12dp"
+            app:cardBackgroundColor="#E8F5E9"
+            app:cardCornerRadius="16dp"
             app:cardElevation="2dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -95,68 +96,8 @@
                 android:padding="16dp">
 
                 <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center"
-                    android:text="Is this identification accurate?"
-                    android:textColor="#424242" />
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="16dp"
-                    android:orientation="horizontal">
-
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btnAccurate"
-                        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:layout_marginEnd="8dp"
-                        android:text="YES"
-                        android:textSize="13sp"
-                        android:textColor="#00C853"
-                        app:strokeColor="#00C853" />
-
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btnIncorrect"
-                        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:layout_marginStart="8dp"
-                        android:text="NO"
-                        android:textSize="13sp"
-                        android:textColor="#D32F2F"
-                        app:strokeColor="#D32F2F" />
-                </LinearLayout>
-            </LinearLayout>
-        </androidx.cardview.widget.CardView>
-
-        <!-- Info Card -->
-        <androidx.cardview.widget.CardView
-            android:id="@+id/cardInfo"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginHorizontal="24dp"
-            android:layout_marginTop="24dp"
-            app:cardBackgroundColor="#E8F5E9"
-            app:cardCornerRadius="12dp"
-            app:cardElevation="0dp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/cardAccuracy">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:padding="16dp">
-
-                <TextView
                     android:id="@+id/tvDescriptionWait"
-                    android:layout_width="wrap_content"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="Great news! This item can be recycled."
                     android:textColor="#1B5E20"
@@ -164,7 +105,7 @@
                     android:textSize="16sp"/>
 
                 <TextView
-                    android:layout_width="wrap_content"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
                     android:text="Recycling this item helps reduce waste and conserve natural resources. Would you like to proceed with recycling?"
@@ -210,8 +151,8 @@
             android:layout_height="wrap_content"
             android:minHeight="48dp"
             android:paddingVertical="12dp"
-            android:layout_marginHorizontal="24dp"
-            android:layout_marginTop="32dp"
+            android:layout_marginHorizontal="20dp"
+            android:layout_marginTop="24dp"
             android:backgroundTint="#00C853"
             android:text="Yes, I want to recycle this"
             android:textSize="14sp"
@@ -229,8 +170,8 @@
             android:layout_height="wrap_content"
             android:minHeight="48dp"
             android:paddingVertical="12dp"
-            android:layout_marginHorizontal="24dp"
-            android:layout_marginTop="0dp"
+            android:layout_marginHorizontal="20dp"
+            android:layout_marginTop="2dp"
             android:backgroundTint="#2962FF"
             android:text="Scan Another Item"
             android:textSize="14sp"
@@ -248,7 +189,7 @@
             android:id="@+id/btnNotNow"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="24dp"
+            android:layout_marginTop="16dp"
             android:text="Not now"
             android:textSize="16sp"
             android:textColor="#757575"

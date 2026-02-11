@@ -1,12 +1,13 @@
 package iss.nus.edu.sg.webviews.binitrightmobileapp
 
-import android.app.Dialog
-import android.content.ContentValues.TAG
 import android.content.Context
+import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.WindowManager
 import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.fragment.app.DialogFragment
@@ -14,13 +15,16 @@ import androidx.lifecycle.lifecycleScope
 import iss.nus.edu.sg.webviews.binitrightmobileapp.databinding.DialogReportIssueBinding
 import iss.nus.edu.sg.webviews.binitrightmobileapp.model.IssueCreateRequest
 import iss.nus.edu.sg.webviews.binitrightmobileapp.network.RetrofitClient
-
 import kotlinx.coroutines.launch
 
 class ReportIssueDialogFragment : DialogFragment() {
 
     private var _binding: DialogReportIssueBinding? = null
     private val binding get() = _binding!!
+
+    companion object {
+        private const val TAG = "ReportIssueDialog"
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -36,6 +40,18 @@ class ReportIssueDialogFragment : DialogFragment() {
 
         setupCategorySpinner()
         setupButtons()
+    }
+
+    override fun onStart() {
+        super.onStart()
+        dialog?.window?.apply {
+            val width = (resources.displayMetrics.widthPixels * 0.88f).toInt()
+            setLayout(
+                width,
+                WindowManager.LayoutParams.WRAP_CONTENT
+            )
+            setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+        }
     }
 
     private fun setupCategorySpinner() {

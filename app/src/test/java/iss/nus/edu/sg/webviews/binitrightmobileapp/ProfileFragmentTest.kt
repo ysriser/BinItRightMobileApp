@@ -75,7 +75,7 @@ class ProfileFragmentTest {
 
         val root = fragment.requireView()
         assertEquals("Alice", root.findViewById<TextView>(R.id.profileName).text.toString())
-        assertEquals("345 Points", root.findViewById<TextView>(R.id.pointsDisplay).text.toString())
+        assertEquals("345", root.findViewById<TextView>(R.id.pointsDisplay).text.toString())
         assertEquals("23", root.findViewById<TextView>(R.id.summaryRecycled).text.toString())
         assertEquals("345", root.findViewById<TextView>(R.id.gridPoints).text.toString())
         assertEquals("23", root.findViewById<TextView>(R.id.gridItems).text.toString())

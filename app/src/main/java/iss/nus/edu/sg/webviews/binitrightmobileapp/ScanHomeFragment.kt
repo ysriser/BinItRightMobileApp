@@ -33,7 +33,7 @@ class ScanHomeFragment : Fragment() {
         }
 
         binding.btnYesIKnow.setOnClickListener {
-            findNavController().navigate(R.id.action_scanHomeFragment_to_nearByBinFragment)
+            findNavController().navigate(R.id.findRecyclingBinFragment)
         }
 
         binding.btnBackToHome.setOnClickListener {

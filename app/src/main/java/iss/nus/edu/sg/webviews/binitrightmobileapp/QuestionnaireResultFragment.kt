@@ -1,16 +1,17 @@
 package iss.nus.edu.sg.webviews.binitrightmobileapp
 
-import android.graphics.Color
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.core.graphics.toColorInt
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import iss.nus.edu.sg.webviews.binitrightmobileapp.databinding.FragmentQuestionnaireResultBinding
+import java.util.Locale
 
 class QuestionnaireResultFragment : Fragment() {
 
@@ -18,6 +19,11 @@ class QuestionnaireResultFragment : Fragment() {
     private val binding get() = _binding!!
 
     private var currentOutcome: SerializableOutcome? = null
+
+    companion object {
+        private const val RECYCLABLE_LABEL = "recyclable"
+        private const val COLOR_UNCERTAIN_ACCENT = "#EF6C00"
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -46,7 +52,7 @@ class QuestionnaireResultFragment : Fragment() {
         val displayCategory = ScannedCategoryHelper.toDisplayCategory(outcome.categoryTitle)
         val uncertain = ScannedCategoryHelper.isUncertain(outcome.categoryTitle)
         val specialRecyclable = ScannedCategoryHelper.isSpecialRecyclable(outcome.categoryTitle)
-        val fromOutcome = outcome.disposalLabel.equals("Recyclable", ignoreCase = true)
+        val fromOutcome = isRecyclableLabel(outcome.disposalLabel)
         val effectiveRecyclable = fromOutcome || specialRecyclable
 
         binding.tvCategory.text = displayCategory
@@ -59,35 +65,38 @@ class QuestionnaireResultFragment : Fragment() {
         binding.tvTips.text = tipsText
 
         binding.tvExplanation.text = outcome.explanation
-        binding.tvExplanationDetail.text = "Certainty: ${outcome.certainty}"
+        binding.tvExplanationDetail.text = getString(
+            R.string.questionnaire_certainty_format,
+            outcome.certainty
+        )
 
         if (uncertain) {
-            binding.tvBadge.text = "Not sure"
-            binding.tvBadge.background.setTint(Color.parseColor("#FFF3E0"))
-            binding.tvBadge.setTextColor(Color.parseColor("#EF6C00"))
+            binding.tvBadge.text = getString(R.string.questionnaire_status_not_sure)
+            binding.tvBadge.background.setTint("#FFF3E0".toColorInt())
+            binding.tvBadge.setTextColor(COLOR_UNCERTAIN_ACCENT.toColorInt())
             binding.ivSuccess.setImageResource(R.drawable.ic_help_24)
-            binding.ivSuccess.setColorFilter(Color.parseColor("#EF6C00"))
-            binding.cardInfo.setCardBackgroundColor(Color.parseColor("#FFF8E1"))
-            binding.tvExplanation.setTextColor(Color.parseColor("#E65100"))
-            binding.tvExplanationDetail.setTextColor(Color.parseColor("#EF6C00"))
+            binding.ivSuccess.setColorFilter(COLOR_UNCERTAIN_ACCENT.toColorInt())
+            binding.cardInfo.setCardBackgroundColor("#FFF8E1".toColorInt())
+            binding.tvExplanation.setTextColor("#E65100".toColorInt())
+            binding.tvExplanationDetail.setTextColor(COLOR_UNCERTAIN_ACCENT.toColorInt())
         } else if (effectiveRecyclable) {
-            binding.tvBadge.text = "Recyclable"
-            binding.tvBadge.background.setTint(Color.parseColor("#E8F5E9"))
-            binding.tvBadge.setTextColor(Color.parseColor("#00695C"))
+            binding.tvBadge.text = getString(R.string.questionnaire_status_recyclable)
+            binding.tvBadge.background.setTint("#E8F5E9".toColorInt())
+            binding.tvBadge.setTextColor("#00695C".toColorInt())
             binding.ivSuccess.setImageResource(R.drawable.ic_check_circle_24)
-            binding.ivSuccess.setColorFilter(Color.parseColor("#00C853"))
-            binding.cardInfo.setCardBackgroundColor(Color.parseColor("#E8F5E9"))
-            binding.tvExplanation.setTextColor(Color.parseColor("#1B5E20"))
-            binding.tvExplanationDetail.setTextColor(Color.parseColor("#2E7D32"))
+            binding.ivSuccess.setColorFilter("#00C853".toColorInt())
+            binding.cardInfo.setCardBackgroundColor("#E8F5E9".toColorInt())
+            binding.tvExplanation.setTextColor("#1B5E20".toColorInt())
+            binding.tvExplanationDetail.setTextColor("#2E7D32".toColorInt())
         } else {
-            binding.tvBadge.text = "Not Recyclable"
-            binding.tvBadge.background.setTint(Color.parseColor("#FFEBEE"))
-            binding.tvBadge.setTextColor(Color.parseColor("#C62828"))
+            binding.tvBadge.text = getString(R.string.questionnaire_status_not_recyclable)
+            binding.tvBadge.background.setTint("#FFEBEE".toColorInt())
+            binding.tvBadge.setTextColor("#C62828".toColorInt())
             binding.ivSuccess.setImageResource(R.drawable.ic_error_24)
-            binding.ivSuccess.setColorFilter(Color.parseColor("#D32F2F"))
-            binding.cardInfo.setCardBackgroundColor(Color.parseColor("#FFEBEE"))
-            binding.tvExplanation.setTextColor(Color.parseColor("#B71C1C"))
-            binding.tvExplanationDetail.setTextColor(Color.parseColor("#C62828"))
+            binding.ivSuccess.setColorFilter("#D32F2F".toColorInt())
+            binding.cardInfo.setCardBackgroundColor("#FFEBEE".toColorInt())
+            binding.tvExplanation.setTextColor("#B71C1C".toColorInt())
+            binding.tvExplanationDetail.setTextColor("#C62828".toColorInt())
         }
     }
 
@@ -111,7 +120,7 @@ class QuestionnaireResultFragment : Fragment() {
         binding.btnRecycle.setOnClickListener {
             val outcome = currentOutcome
             val category = outcome?.categoryTitle.orEmpty()
-            val effectiveRecyclable = outcome?.disposalLabel.equals("Recyclable", ignoreCase = true)
+            val effectiveRecyclable = isRecyclableLabel(outcome?.disposalLabel)
                     || ScannedCategoryHelper.isSpecialRecyclable(category)
             val mappedWasteCategory = ScannedCategoryHelper.toCheckInWasteType(category)
             val selectedBinType = ScannedCategoryHelper.toBinType(category, effectiveRecyclable)
@@ -146,5 +155,11 @@ class QuestionnaireResultFragment : Fragment() {
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
+    }
+
+    private fun isRecyclableLabel(disposalLabel: String?): Boolean {
+        return disposalLabel
+            ?.trim()
+            ?.lowercase(Locale.ROOT) == RECYCLABLE_LABEL
     }
 }

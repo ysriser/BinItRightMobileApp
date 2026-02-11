@@ -61,7 +61,10 @@ class ScannedCategoryHelperTest {
     fun normalizeBinType_acceptsOnlySupportedValues() {
         assertEquals("BLUEBIN", ScannedCategoryHelper.normalizeBinType("bluebin"))
         assertEquals("EWASTE", ScannedCategoryHelper.normalizeBinType("EWASTE"))
+        assertEquals("EWASTE", ScannedCategoryHelper.normalizeBinType("E-Waste Bin"))
+        assertEquals("EWASTE", ScannedCategoryHelper.normalizeBinType("electronic"))
         assertEquals("LIGHTING", ScannedCategoryHelper.normalizeBinType("lighting"))
+        assertEquals("LIGHTING", ScannedCategoryHelper.normalizeBinType("LED bulb"))
         assertEquals("", ScannedCategoryHelper.normalizeBinType("TEXTILE"))
     }
 

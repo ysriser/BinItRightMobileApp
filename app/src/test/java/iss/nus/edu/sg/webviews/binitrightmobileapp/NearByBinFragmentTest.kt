@@ -73,6 +73,31 @@ class NearByBinFragmentTest {
     }
 
     @Test
+    fun applyFlowFilter_withSelectedBinType_keepsOnlyMatchingBins() {
+        val activity = Robolectric.buildActivity(AppCompatActivity::class.java).setup().get()
+        val fragment = NearByBinFragment()
+        attachWithoutInflatingLayout(activity, fragment)
+        val binding = FragmentNearByBinBinding.inflate(LayoutInflater.from(activity))
+        setPrivateField(fragment, "_binding", binding)
+
+        callPrivate(fragment, "setupRecyclerView")
+        setPrivateField(fragment, "selectedBinType", "EWASTE")
+
+        @Suppress("UNCHECKED_CAST")
+        val nearby = getPrivateField(fragment, "nearbyBins") as MutableList<DropOffLocation>
+        nearby.clear()
+        nearby.addAll(listOf(bin("1", "BLUEBIN"), bin("2", "EWASTE"), bin("3", "LIGHTING")))
+        setPrivateField(fragment, "isMapReady", false)
+
+        callPrivate(fragment, "applyFlowFilter")
+
+        @Suppress("UNCHECKED_CAST")
+        val displayed = getPrivateField(fragment, "displayedBins") as MutableList<DropOffLocation>
+        assertEquals(1, displayed.size)
+        assertEquals("EWASTE", displayed.first().binType)
+    }
+
+    @Test
     fun onDestroyView_clearsBinding() {
         val activity = Robolectric.buildActivity(AppCompatActivity::class.java).setup().get()
         val fragment = NearByBinFragment()

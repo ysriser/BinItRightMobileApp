@@ -6,6 +6,8 @@ import ai.onnxruntime.OrtSession
 import android.content.Context
 import android.graphics.Bitmap
 import android.util.Log
+import androidx.core.graphics.get
+import androidx.core.graphics.scale
 import java.nio.FloatBuffer
 import kotlin.math.roundToInt
 
@@ -44,22 +46,22 @@ class ImageClassifier(
     }
 
     fun classify(bitmap: Bitmap): Tier1Result {
-        if (ortSession == null) {
+        val session = ortSession ?: run {
             return Tier1Result("error", 0f, emptyList(), true)
         }
 
         return try {
             val floatBuffer = preprocess(bitmap)
-            val inputName = ortSession?.inputNames?.iterator()?.next() ?: "input"
+            val inputName = session.inputNames.iterator().next()
             val shape = longArrayOf(1, 3, inputSize.toLong(), inputSize.toLong())
             val inputTensor = OnnxTensor.createTensor(ortEnvironment, floatBuffer, shape)
 
-            val results = ortSession?.run(mapOf(inputName to inputTensor))
+            val results = session.run(mapOf(inputName to inputTensor))
             @Suppress("UNCHECKED_CAST")
-            val outputTensor = results?.get(0)?.value as Array<FloatArray>
+            val outputTensor = results[0].value as Array<FloatArray>
             val logits = outputTensor[0]
 
-            results?.close()
+            results.close()
             inputTensor.close()
 
             val probabilities = softmax(logits)
@@ -131,7 +133,7 @@ class ImageClassifier(
 
         for (y in 0 until inputSize) {
             for (x in 0 until inputSize) {
-                val pixel = cropped.getPixel(x, y)
+                val pixel = cropped[x, y]
 
                 val r = ((pixel shr 16) and 0xFF) / 255f
                 val g = ((pixel shr 8) and 0xFF) / 255f
@@ -164,6 +166,6 @@ class ImageClassifier(
         if (newWidth == width && newHeight == height) {
             return source
         }
-        return Bitmap.createScaledBitmap(source, newWidth, newHeight, true)
+        return source.scale(newWidth, newHeight, true)
     }
 }

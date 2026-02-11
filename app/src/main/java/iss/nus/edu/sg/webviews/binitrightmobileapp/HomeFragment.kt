@@ -10,6 +10,7 @@ import androidx.navigation.fragment.findNavController
 import iss.nus.edu.sg.webviews.binitrightmobileapp.databinding.FragmentHomeBinding
 import iss.nus.edu.sg.webviews.binitrightmobileapp.network.RetrofitClient
 import kotlinx.coroutines.launch
+import java.util.Locale
 
 class HomeFragment : Fragment(R.layout.fragment_home) {
     private var _binding: FragmentHomeBinding? = null
@@ -70,21 +71,28 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
 
                 if (response.isSuccessful && response.body() != null) {
                     val user = response.body()!!
-                    binding.tvPointsCount.text = user.pointBalance.toString()
-                    binding.tvRecycledCount.text = user.totalRecycled.toString()
-                    binding.tvCo2Saved.text = String.format("%.1f kg", user.carbonEmissionSaved)
+                    binding.tvPointsCount.text =
+                        String.format(Locale.getDefault(), "%d", user.pointBalance)
+                    binding.tvRecycledCount.text =
+                        String.format(Locale.getDefault(), "%d", user.totalRecycled)
+                    binding.tvCo2Saved.text = String.format(
+                        Locale.getDefault(),
+                        "%.1f kg",
+                        user.carbonEmissionSaved
+                    )
                     binding.aiSummary.text = user.aiSummary
 
                     val achievementsRes = api.getAchievementsWithStatus(userId)
                     if (achievementsRes.isSuccessful) {
                         val remoteData = achievementsRes.body() ?: emptyList()
                         val unlockedCount = remoteData.count { it.isUnlocked }
-                        binding.tvAchievementCount.text = unlockedCount.toString()
+                        binding.tvAchievementCount.text =
+                            String.format(Locale.getDefault(), "%d", unlockedCount)
                     }
                 }
             } catch (error: Exception) {
                 Log.e("HomeFragment", "Network error: ${error.message}", error)
-                binding.aiSummary.text = "You're making a positive environmental impact. Keep recycling!"
+                binding.aiSummary.text = getString(R.string.home_fallback_ai_summary)
             }
         }
     }
