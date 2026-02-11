@@ -12,6 +12,7 @@ import iss.nus.edu.sg.webviews.binitrightmobileapp.network.RetrofitClient
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.Robolectric
@@ -74,8 +75,10 @@ class HomeFragmentTest {
             .edit()
             .putLong("USER_ID", 88L)
             .apply()
+        var profileCalls = 0
         installApiServiceStub { method ->
             if (method == "getProfileSummary") {
+                profileCalls++
                 Response.success(
                     UserProfile(
                         name = "Tester",
@@ -99,6 +102,10 @@ class HomeFragmentTest {
         shadowOf(Looper.getMainLooper()).idle()
 
         val root = fragment.requireView()
+        waitMainUntil {
+            root.findViewById<TextView>(R.id.aiSummary).text.toString() == "Great consistency"
+        }
+        assertTrue(profileCalls > 0)
         assertEquals("321", root.findViewById<TextView>(R.id.tvPointsCount).text.toString())
         assertEquals("17", root.findViewById<TextView>(R.id.tvRecycledCount).text.toString())
         assertEquals("9", root.findViewById<TextView>(R.id.tvAchievementCount).text.toString())
@@ -130,8 +137,13 @@ class HomeFragmentTest {
         )
 
         checks.forEach { (viewId, expectedDestination) ->
-            navController.setCurrentDestination(R.id.nav_home)
+            val navController = TestNavHostController(activity).apply {
+                setGraph(R.navigation.nav_graph)
+                setCurrentDestination(R.id.nav_home)
+            }
+            Navigation.setViewNavController(fragment.requireView(), navController)
             fragment.requireView().findViewById<View>(viewId).performClick()
+            shadowOf(Looper.getMainLooper()).idle()
             assertEquals(expectedDestination, navController.currentDestination?.id)
         }
     }
@@ -173,5 +185,15 @@ class HomeFragmentTest {
         val apiField = RetrofitClient::class.java.getDeclaredField("api")
         apiField.isAccessible = true
         apiField.set(RetrofitClient, proxy)
+    }
+
+    private fun waitMainUntil(
+        loops: Int = 20,
+        condition: () -> Boolean
+    ) {
+        repeat(loops) {
+            if (condition()) return
+            shadowOf(Looper.getMainLooper()).idle()
+        }
     }
 }
