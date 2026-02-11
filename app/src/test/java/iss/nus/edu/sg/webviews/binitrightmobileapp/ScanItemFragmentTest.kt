@@ -113,7 +113,6 @@ class ScanItemFragmentTest {
 
         callPrivate(fragment, "startScanUI")
         setPrivateField(fragment, "lastCapturedUri", Uri.parse("file:///tmp/capture.jpg"))
-        fragment.requireView().findViewById<androidx.appcompat.widget.SwitchCompat>(R.id.switchDebug).isChecked = true
         scanResult.value = Result.success(
             ScanResult(
                 category = "Plastic",

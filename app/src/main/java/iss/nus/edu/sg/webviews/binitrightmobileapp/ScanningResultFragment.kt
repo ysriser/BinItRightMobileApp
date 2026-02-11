@@ -1,12 +1,12 @@
 package iss.nus.edu.sg.webviews.binitrightmobileapp
 
-import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.core.net.toUri
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
@@ -42,7 +42,7 @@ class ScanningResultFragment : Fragment() {
         val scanResult = arguments?.getSerializable("scanResult") as? ScanResult
 
         if (imageUriString != null) {
-            val uri = Uri.parse(imageUriString)
+            val uri = imageUriString.toUri()
             binding.ivCapturedImage.load(uri)
 
             if (scanResult != null) {
@@ -63,16 +63,12 @@ class ScanningResultFragment : Fragment() {
                 it.onSuccess { scanResult ->
                     displayResult(scanResult)
                 }.onFailure { error ->
-                    Toast.makeText(context, "Scan failed: ${error.message}", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(
+                        context,
+                        getString(R.string.scanning_error_prefix, error.message.orEmpty()),
+                        Toast.LENGTH_SHORT
+                    ).show()
                 }
-            }
-        }
-
-        viewModel.feedbackStatus.observe(viewLifecycleOwner) { result ->
-            result.onSuccess {
-                Toast.makeText(context, "Feedback sent!", Toast.LENGTH_SHORT).show()
-                binding.btnAccurate.isEnabled = false
-                binding.btnIncorrect.isEnabled = false
             }
         }
     }
@@ -87,7 +83,7 @@ class ScanningResultFragment : Fragment() {
         binding.tvCategory.text = displayCategory
 
         if (isNotSure) {
-            binding.tvBadge.text = "Not sure"
+            binding.tvBadge.text = getString(R.string.scanning_status_not_sure)
             binding.tvBadge.setTextColor(
                 androidx.core.content.ContextCompat.getColor(requireContext(), android.R.color.holo_orange_dark)
             )
@@ -98,12 +94,12 @@ class ScanningResultFragment : Fragment() {
                 androidx.core.content.ContextCompat.getColor(requireContext(), android.R.color.holo_orange_dark)
             )
 
-            binding.tvDescriptionWait.text = "We are not fully sure about this item."
+            binding.tvDescriptionWait.text = getString(R.string.scanning_desc_not_sure)
             binding.tvDescriptionWait.setTextColor(
                 androidx.core.content.ContextCompat.getColor(requireContext(), android.R.color.holo_orange_dark)
             )
         } else if (effectiveRecyclable) {
-            binding.tvBadge.text = "Recyclable"
+            binding.tvBadge.text = getString(R.string.scanning_status_recyclable)
             binding.tvBadge.setTextColor(
                 androidx.core.content.ContextCompat.getColor(requireContext(), android.R.color.holo_green_dark)
             )
@@ -114,12 +110,12 @@ class ScanningResultFragment : Fragment() {
                 androidx.core.content.ContextCompat.getColor(requireContext(), android.R.color.holo_green_dark)
             )
 
-            binding.tvDescriptionWait.text = "This item can be recycled in an appropriate stream."
+            binding.tvDescriptionWait.text = getString(R.string.scanning_desc_recyclable)
             binding.tvDescriptionWait.setTextColor(
                 androidx.core.content.ContextCompat.getColor(requireContext(), android.R.color.holo_green_dark)
             )
         } else {
-            binding.tvBadge.text = "Not Recyclable"
+            binding.tvBadge.text = getString(R.string.scanning_status_not_recyclable)
             binding.tvBadge.setTextColor(
                 androidx.core.content.ContextCompat.getColor(requireContext(), android.R.color.holo_red_dark)
             )
@@ -130,7 +126,7 @@ class ScanningResultFragment : Fragment() {
                 androidx.core.content.ContextCompat.getColor(requireContext(), android.R.color.holo_red_dark)
             )
 
-            binding.tvDescriptionWait.text = "This item cannot be recycled."
+            binding.tvDescriptionWait.text = getString(R.string.scanning_desc_not_recyclable)
             binding.tvDescriptionWait.setTextColor(
                 androidx.core.content.ContextCompat.getColor(requireContext(), android.R.color.holo_red_dark)
             )
@@ -151,11 +147,11 @@ class ScanningResultFragment : Fragment() {
             emptyList()
         }
 
-        binding.tvInstructionTitle.text = "How to dispose:"
+        binding.tvInstructionTitle.text = getString(R.string.scanning_instruction_title)
         binding.tvInstructionSteps.text = if (steps.isNotEmpty()) {
             steps.mapIndexed { index, tip -> "${index + 1}. $tip" }.joinToString("\n")
         } else {
-            "1. Follow local disposal guidance"
+            getString(R.string.scanning_instruction_default)
         }
     }
 
@@ -192,23 +188,6 @@ class ScanningResultFragment : Fragment() {
             )
         }
 
-        binding.btnAccurate.setOnClickListener {
-            sendFeedback(true)
-        }
-
-        binding.btnIncorrect.setOnClickListener {
-            sendFeedback(false)
-        }
-    }
-
-    private fun sendFeedback(isAccurate: Boolean) {
-        val imageId = "temp_image_id"
-        val feedback = FeedbackRequest(
-            imageId = imageId,
-            userFeedback = isAccurate,
-            timestamp = System.currentTimeMillis()
-        )
-        viewModel.submitFeedback(feedback)
     }
 
     override fun onDestroyView() {

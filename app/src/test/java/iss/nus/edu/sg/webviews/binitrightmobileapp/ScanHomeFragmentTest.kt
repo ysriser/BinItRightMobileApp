@@ -31,7 +31,7 @@ class ScanHomeFragmentTest {
         val checks = listOf(
             R.id.btnStartScan to R.id.scanItemFragment,
             R.id.btnQuestionnaire to R.id.questionnaireFragment,
-            R.id.btnYesIKnow to R.id.nearByBinFragment
+            R.id.btnYesIKnow to R.id.findRecyclingBinFragment
         )
 
         checks.forEach { (viewId, expectedDest) ->

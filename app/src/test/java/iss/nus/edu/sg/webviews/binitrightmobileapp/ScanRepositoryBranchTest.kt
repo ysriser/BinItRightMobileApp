@@ -33,7 +33,7 @@ class ScanRepositoryBranchTest {
 
         val unknownMetaMessage = invokePrivateStatic(
             "buildTier2DebugMessage",
-            Meta(tier2_provider_attempted = "mock", tier2_provider_used = "mock")
+            Meta(tier2ProviderAttempted = "mock", tier2ProviderUsed = "mock")
         ) as String?
         assertNull(unknownMetaMessage)
 
@@ -61,8 +61,8 @@ class ScanRepositoryBranchTest {
                                 instructions = listOf("Rinse", "Dry")
                             ),
                             meta = Meta(
-                                tier2_provider_attempted = "openai",
-                                tier2_provider_used = "openai"
+                                tier2ProviderAttempted = "openai",
+                                tier2ProviderUsed = "openai"
                             )
                         )
                     )
