@@ -1,13 +1,22 @@
 package iss.nus.edu.sg.webviews.binitrightmobileapp
 
+import android.app.Application
+import android.widget.FrameLayout
+import androidx.activity.ComponentActivity
 import iss.nus.edu.sg.webviews.binitrightmobileapp.model.NewsItem
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import org.junit.runner.RunWith
+import org.robolectric.Robolectric
+import org.robolectric.RobolectricTestRunner
+import org.robolectric.annotation.Config
 import java.util.Locale
 
+@RunWith(RobolectricTestRunner::class)
+@Config(sdk = [28], application = Application::class)
 class NewsAdapterTest {
 
     @Test
@@ -37,6 +46,47 @@ class NewsAdapterTest {
     @Test
     fun adapter_reflectsInitialDataSize() {
         val adapter = NewsAdapter(dummyNews) {}
+        assertEquals(2, adapter.itemCount)
+    }
+
+    @Test
+    fun onBindViewHolder_bindsFieldsAndHandlesClick() {
+        val activity = Robolectric.buildActivity(ComponentActivity::class.java).setup().get()
+        var clicked: NewsItem? = null
+        val adapter = NewsAdapter(dummyNews) { clicked = it }
+        val parent = FrameLayout(activity)
+
+        val holder = adapter.onCreateViewHolder(parent, 0)
+        adapter.onBindViewHolder(holder, 0)
+
+        with(holder.binding) {
+            assertEquals(dummyNews[0].name, tvNewsTitle.text.toString())
+            assertEquals(dummyNews[0].description, tvNewsDescription.text.toString())
+            assertTrue(tvNewsDate.text.toString().isNotBlank())
+            root.performClick()
+        }
+        assertEquals(dummyNews[0], clicked)
+    }
+
+    @Test
+    fun onBindViewHolder_invalidDate_showsRecent_andUpdateDataRefreshesCount() {
+        val activity = Robolectric.buildActivity(ComponentActivity::class.java).setup().get()
+        val badDateNews = NewsItem(
+            newsId = 10L,
+            name = "Broken date",
+            description = "desc",
+            imageUrl = "",
+            status = "ACTIVE",
+            publishedDate = "not-a-date"
+        )
+        val adapter = NewsAdapter(listOf(badDateNews)) {}
+        val parent = FrameLayout(activity)
+        val holder = adapter.onCreateViewHolder(parent, 0)
+
+        adapter.onBindViewHolder(holder, 0)
+        assertEquals("Recent", holder.binding.tvNewsDate.text.toString())
+
+        adapter.updateData(dummyNews)
         assertEquals(2, adapter.itemCount)
     }
 

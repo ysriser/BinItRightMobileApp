@@ -1,15 +1,26 @@
 package iss.nus.edu.sg.webviews.binitrightmobileapp
 
+import android.app.Application
+import android.content.Intent
+import android.widget.FrameLayout
+import androidx.activity.ComponentActivity
 import iss.nus.edu.sg.webviews.binitrightmobileapp.chat.ChatMessage
 import iss.nus.edu.sg.webviews.binitrightmobileapp.chat.MessageType
 import iss.nus.edu.sg.webviews.binitrightmobileapp.model.EventItem
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import org.junit.runner.RunWith
+import org.robolectric.Robolectric
+import org.robolectric.RobolectricTestRunner
+import org.robolectric.Shadows.shadowOf
+import org.robolectric.annotation.Config
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 
+@RunWith(RobolectricTestRunner::class)
+@Config(sdk = [28], application = Application::class)
 class EventsAdapterTest {
 
     @Test
@@ -35,6 +46,35 @@ class EventsAdapterTest {
     fun getItemCount_returnsCorrectSize() {
         val adapter = EventAdapter(events)
         assertEquals(2, adapter.itemCount)
+    }
+
+    @Test
+    fun onBindViewHolder_setsTexts_andLaunchesNavigationIntent() {
+        val activity = Robolectric.buildActivity(ComponentActivity::class.java).setup().get()
+        val adapter = EventAdapter(events)
+        val holder = adapter.onCreateViewHolder(FrameLayout(activity), 0)
+
+        adapter.onBindViewHolder(holder, 0)
+
+        with(holder.binding) {
+            assertEquals(events[0].title, tvEventTitle.text.toString())
+            assertEquals(events[0].description, tvEventDescription.text.toString())
+            assertEquals(events[0].locationName, tvEventLocation.text.toString())
+            assertTrue(tvEventDate.text.toString().contains(","))
+            assertTrue(tvEventTime.text.toString().contains("-"))
+            btnGoThere.performClick()
+        }
+
+        val started = shadowOf(activity).nextStartedActivity
+        assertEquals(Intent.ACTION_VIEW, started.action)
+        assertTrue(started.dataString?.startsWith("geo:0,0?q=") == true)
+    }
+
+    @Test
+    fun updateData_replacesListSize() {
+        val adapter = EventAdapter(events)
+        adapter.updateData(events.take(1))
+        assertEquals(1, adapter.itemCount)
     }
     @Test
     fun formatDate_validDate_returnsReadableDate() {
