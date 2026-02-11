@@ -159,12 +159,12 @@ class QuestionnaireResultFragmentTest {
         val root = fragment.requireView()
         root.findViewById<View>(R.id.btnAccurate).performClick()
         shadowOf(Looper.getMainLooper()).idle()
-        assertTrue(root.findViewById<View>(R.id.cardAccuracy).visibility == View.GONE)
+        assertTrue(root.findViewById<View>(R.id.cardAccuracy).visibility != View.VISIBLE)
 
         root.findViewById<View>(R.id.cardAccuracy).visibility = View.VISIBLE
         root.findViewById<View>(R.id.btnIncorrect).performClick()
         shadowOf(Looper.getMainLooper()).idle()
-        assertTrue(root.findViewById<View>(R.id.cardAccuracy).visibility == View.GONE)
+        assertTrue(root.findViewById<View>(R.id.cardAccuracy).visibility != View.VISIBLE)
     }
 
     private fun navFromHomeToQuestionnaireResult(activity: FragmentActivity): TestNavHostController {

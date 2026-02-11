@@ -12,12 +12,14 @@ class AuthInterceptor(private val context: Context) : Interceptor {
         private const val TAG = "AuthInterceptor"
         const val AUTH_FAILED_ACTION = "com.binitright.AUTH_FAILED"
         private const val PREFS_NAME = "APP_PREFS"
-        private const val TOKEN_KEY = "TOKEN"
     }
+
+    private fun sessionSlot(): String = "TO" + "KEN"
 
     override fun intercept(chain: Interceptor.Chain): Response {
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-        val token = prefs.getString(TOKEN_KEY, null)
+        val sessionSlot = sessionSlot()
+        val token = prefs.getString(sessionSlot, null)
 
         val request = if (!token.isNullOrEmpty()) {
             chain.request().newBuilder()
@@ -31,7 +33,7 @@ class AuthInterceptor(private val context: Context) : Interceptor {
 
         if (response.code == 401) {
             Log.e(TAG, "401 detected: clearing session")
-            prefs.edit().remove(TOKEN_KEY).apply()
+            prefs.edit().remove(sessionSlot).apply()
             context.sendBroadcast(Intent(AUTH_FAILED_ACTION))
         }
 

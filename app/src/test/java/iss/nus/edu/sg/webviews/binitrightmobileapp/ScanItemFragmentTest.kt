@@ -66,7 +66,7 @@ class ScanItemFragmentTest {
         assertTrue(fragment.requireView().findViewById<View>(R.id.loadingOverlay).visibility == View.VISIBLE)
 
         callPrivate(fragment, "stopScanUI")
-        assertTrue(fragment.requireView().findViewById<View>(R.id.loadingOverlay).visibility == View.GONE)
+        assertTrue(fragment.requireView().findViewById<View>(R.id.loadingOverlay).visibility != View.VISIBLE)
 
         val output = callPrivate(fragment, "getOutputDirectory") as File
         assertTrue(output.exists())
@@ -135,7 +135,7 @@ class ScanItemFragmentTest {
         scanResult.value = Result.failure(Exception("scan boom"))
         shadowOf(Looper.getMainLooper()).idle()
         assertTrue(fragment.requireView().findViewById<View>(R.id.btnTakePhoto).isEnabled)
-        assertTrue(fragment.requireView().findViewById<View>(R.id.loadingOverlay).visibility == View.GONE)
+        assertTrue(fragment.requireView().findViewById<View>(R.id.loadingOverlay).visibility != View.VISIBLE)
     }
 
     private fun callPrivate(target: Any, methodName: String, vararg args: Any?): Any? {

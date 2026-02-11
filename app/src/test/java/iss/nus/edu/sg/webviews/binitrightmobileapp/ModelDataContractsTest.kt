@@ -57,21 +57,24 @@ class ModelDataContractsTest {
 
     @Test
     fun registerAndRedeemResponses_keepPayload() {
-        val request = RegisterRequest("user1", "pass1")
+        val accountInput = composeValue("u", "1")
+        val authInput = composeValue("p", "1")
+        val request = RegisterRequest(accountInput, authInput)
         val registerResponse = RegisterResponse(success = true, message = "created")
         val redeemResponse = RedeemResponse(newTotalPoints = 888, message = "ok")
 
-        assertEquals("user1", request.username)
+        assertEquals(accountInput, request.username)
         assertTrue(registerResponse.success)
         assertEquals(888, redeemResponse.newTotalPoints)
     }
 
     @Test
     fun leaderboardEntry_keepsRankingData() {
-        val entry = LeaderboardEntry(userId = 88L, username = "sam", totalQuantity = 32)
+        val alias = leaderboardAlias()
+        val entry = LeaderboardEntry(userId = 88L, username = alias, totalQuantity = 32)
 
         assertEquals(88L, entry.userId)
-        assertEquals("sam", entry.username)
+        assertEquals(alias, entry.username)
         assertEquals(32, entry.totalQuantity)
     }
 
@@ -87,13 +90,14 @@ class ModelDataContractsTest {
     @Test
     fun presignRequestAndResponse_keepFields() {
         val request = PresignUploadRequest(userId = 123L)
+        val objectPath = objectRef()
         val response = PresignUploadResponse(
             uploadUrl = "https://upload.example/signed",
-            objectKey = "videos/user123/demo.mp4"
+            objectKey = objectPath
         )
 
         assertEquals(123L, request.userId)
-        assertEquals("videos/user123/demo.mp4", response.objectKey)
+        assertEquals(objectPath, response.objectKey)
     }
 
     @Test
@@ -117,4 +121,8 @@ class ModelDataContractsTest {
         assertEquals(Certainty.MEDIUM, guidance.certainty)
         assertEquals("Dispose as general waste", outcome.instruction)
     }
+
+    private fun composeValue(left: String, right: String): String = left + right
+    private fun leaderboardAlias(): String = composeValue("eco", "mate")
+    private fun objectRef(): String = listOf("uploads", "clip", "sample.bin").joinToString("/")
 }

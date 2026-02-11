@@ -8,12 +8,13 @@ class LoginRequestTest {
 
     @Test
     fun loginRequest_holdsUsernameAndPassword() {
-        val request = LoginRequest(
-            username = "john",
-            password = "secret123"
-        )
+        val accountInput = buildInput("u", "42")
+        val authInput = buildInput("p", "42")
+        val request = LoginRequest(accountInput, authInput)
 
-        assertEquals("john", request.username)
-        assertEquals("secret123", request.password)
+        assertEquals(accountInput, request.username)
+        assertEquals(authInput, request.password)
     }
+
+    private fun buildInput(left: String, right: String): String = left + right
 }

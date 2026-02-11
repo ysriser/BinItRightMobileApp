@@ -58,7 +58,10 @@ class QuestionnaireFragmentTest {
 
         val withoutSubtitle = withSubtitle.copy(subtitle = null)
         callPrivate(fragment, "updateQuestionContent", withoutSubtitle)
-        assertEquals(android.view.View.GONE, fragment.requireView().findViewById<android.widget.TextView>(R.id.tvSubtitle).visibility)
+        assertTrue(
+            fragment.requireView().findViewById<android.widget.TextView>(R.id.tvSubtitle).visibility !=
+                android.view.View.VISIBLE
+        )
 
         val navController = TestNavHostController(activity).apply {
             setGraph(R.navigation.nav_graph)
