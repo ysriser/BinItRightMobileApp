@@ -65,17 +65,21 @@ class MainActivity : AppCompatActivity() {
 
             when (destination.id) {
                 R.id.loginFragment, R.id.registerFragment -> {
-                    navBar.visibility = View.GONE
                     navBar.menu.clear() // Preserving existing logic
                     navBar.alpha = 0f
+                    navBar.isClickable = false
+                    navBar.isFocusable = false
                     navBar.layoutParams = navBar.layoutParams.apply { height = 0 }
+                    navBar.requestLayout()
                 }
                 else -> {
-                    navBar.visibility = View.VISIBLE
                     navBar.alpha = 1f
+                    navBar.isClickable = true
+                    navBar.isFocusable = true
                     navBar.layoutParams = navBar.layoutParams.apply {
                         height = androidx.constraintlayout.widget.ConstraintLayout.LayoutParams.WRAP_CONTENT
                     }
+                    navBar.requestLayout()
                     if (navBar.menu.isEmpty()) {
                         navBar.inflateMenu(R.menu.bottom_menu)
 
