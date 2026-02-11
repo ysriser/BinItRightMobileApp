@@ -115,7 +115,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: MobSF SAST Scan
-        uses: MobSF/mobsfscan@v0.0.14
+        uses: MobSF/mobsfscan@0.4.5
         with:
           # Change output name here to match Orchestrator expectations
           args: '. --sarif --output android-sast.sarif'
