@@ -249,7 +249,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="24dp"
-                app:cardBackgroundColor="#E8F5E9"
+                app:cardBackgroundColor="#DFF2E0"
                 app:cardCornerRadius="16dp"
                 app:cardElevation="0dp">
 
@@ -323,11 +323,12 @@
                     android:gravity="center_vertical"
                     android:paddingHorizontal="20dp">
 
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="♻️"
-                        android:textSize="32sp" />
+                    <ImageView
+                        android:layout_width="32dp"
+                        android:layout_height="32dp"
+                        android:src="@drawable/icon_scan_recycle"
+                        app:tint="@color/white"
+                        android:contentDescription="Recycle Icon" />
 
                     <LinearLayout
                         android:layout_width="0dp"
@@ -351,13 +352,6 @@
                             android:textColor="#E8F5E9"
                             android:textSize="12sp" />
                     </LinearLayout>
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="→"
-                        android:textColor="#FFFFFF"
-                        android:textSize="20sp" />
                 </LinearLayout>
 
                 <View
