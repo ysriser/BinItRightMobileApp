@@ -62,15 +62,14 @@ class MainActivity : AppCompatActivity() {
 
         navController.addOnDestinationChangedListener { _, destination, _ ->
             val navBar = binding.bottomNavView
-            val params = navBar.layoutParams
 
             when (destination.id) {
-                R.id.loginFragment,R.id.registerFragment -> {
-                    navBar.menu.clear() // Deletes the buttons and their listeners
-                    navBar.alpha = 0f
-                    params.height = 0
+                R.id.loginFragment, R.id.registerFragment -> {
+                    navBar.visibility = View.GONE
+                    navBar.menu.clear() // Preserving existing logic
                 }
                 else -> {
+                    navBar.visibility = View.VISIBLE
                     if (navBar.menu.size() == 0) {
                         navBar.inflateMenu(R.menu.bottom_menu)
 
@@ -78,12 +77,8 @@ class MainActivity : AppCompatActivity() {
                         // You must re-establish the link after inflating
                         navBar.setupWithNavController(navController)
                     }
-
-                    navBar.alpha = 1f
-                    params.height = ConstraintLayout.LayoutParams.WRAP_CONTENT
                 }
             }
-            navBar.layoutParams = params
         }
     }
 }

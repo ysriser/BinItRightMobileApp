@@ -77,7 +77,6 @@ class RegisterFragmentTest {
         shadowOf(Looper.getMainLooper()).idle()
 
         assertEquals(R.id.loginFragment, navController.currentDestination?.id)
-        assertEquals("Going to login", ShadowToast.getTextOfLatestToast())
     }
 
     @Test

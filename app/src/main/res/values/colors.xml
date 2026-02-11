@@ -1,23 +1,42 @@
-<?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Brand Colors -->
+    <color name="brand_green">#00C853</color> <!-- Vibrant Green -->
+    <color name="brand_green_dark">#009624</color>
+    <color name="brand_green_light">#B9F6CA</color>
+
+    <!-- UI Backgrounds -->
+    <color name="bg_screen">#F8F9FA</color> <!-- Off-white/Clean Gray -->
+    <color name="bg_card">#FFFFFF</color>
+    <color name="bg_input">#F1F3F4</color>
+    <color name="bg_input_stroke">#E0E0E0</color>
+
+    <!-- Text Colors -->
+    <color name="text_primary">#1F2937</color> <!-- Dark Gray/Almost Black -->
+    <color name="text_secondary">#6B7280</color> <!-- Medium Gray -->
+    <color name="text_hint">#9CA3AF</color>     <!-- Light Gray -->
+    <color name="text_on_brand">#FFFFFF</color>
+
+    <!-- Signal Colors -->
+    <color name="color_success">#10B981</color>
+    <color name="color_warning">#F59E0B</color>
+    <color name="color_error">#EF4444</color>
+    <color name="color_info">#3B82F6</color>
+
+    <!-- Legacy / Material Compat -->
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
-    <color name="primary_green">#00C853</color>
-    <color name="light_green_bg">#E8F5E9</color>
-    <color name="bg_gray">#F5F5F5</color>
-    <color name="text_dark">#212121</color>
-    <color name="text_gray">#757575</color>
-    <color name="brand_green">#00C853</color>
-    <color name="text_grey">#666666</color>
+    <color name="primary_green">@color/brand_green</color>
+    <color name="light_green_bg">@color/brand_green_light</color>
+    <color name="bg_gray">@color/bg_screen</color>
+    <color name="text_dark">@color/text_primary</color>
+    <color name="text_gray">@color/text_secondary</color>
+    <color name="text_grey">@color/text_secondary</color>
+    <color name="buttonColor">@color/brand_green</color>
 
-    <color name="purple_200">#FFBB86FC</color>
-    <color name="purple_500">#FF6200EE</color>
-    <color name="purple_700">#FF3700B3</color>
+    <color name="purple_200">@color/brand_green_light</color>
+    <color name="purple_500">@color/brand_green</color>
+    <color name="purple_700">@color/brand_green_dark</color>
     <color name="teal_200">#FF03DAC5</color>
     <color name="teal_700">#FF018786</color>
-    <color name="buttonColor">#2ECC71</color>
-
     <color name="light_red_disabled">#F4A6A6</color>
-
-
 </resources>
