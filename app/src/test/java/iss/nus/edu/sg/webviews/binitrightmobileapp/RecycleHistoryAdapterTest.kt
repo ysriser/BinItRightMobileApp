@@ -1,18 +1,12 @@
 package iss.nus.edu.sg.webviews.binitrightmobileapp
 
-import android.content.Context
-import android.view.LayoutInflater
-import android.widget.FrameLayout
-import androidx.recyclerview.widget.RecyclerView
-import androidx.test.core.app.ApplicationProvider
+
 import iss.nus.edu.sg.webviews.binitrightmobileapp.model.RecycleHistoryModel
-import org.bouncycastle.crypto.params.Blake3Parameters.context
 import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
-import org.robolectric.Shadows.shadowOf
 import org.robolectric.annotation.Config
 
 @RunWith(RobolectricTestRunner::class)
