@@ -39,10 +39,6 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
             findNavController().navigate(R.id.action_home_to_chatFragment)
         }
 
-        binding.cardAchievements.setOnClickListener {
-            findNavController().navigate(R.id.action_home_to_achievements)
-        }
-
         setupReportIssueButton()
         fetchUserStats()
     }
@@ -69,17 +65,25 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
 
         viewLifecycleOwner.lifecycleScope.launch {
             try {
-                val response = RetrofitClient.apiService().getProfileSummary()
+                val api = RetrofitClient.apiService()
+                val response = api.getProfileSummary()
+
                 if (response.isSuccessful && response.body() != null) {
                     val user = response.body()!!
                     binding.tvPointsCount.text = user.pointBalance.toString()
                     binding.tvRecycledCount.text = user.totalRecycled.toString()
-                    binding.tvAchievementCount.text = user.totalAchievement.toString()
                     binding.tvCo2Saved.text = String.format("%.1f kg", user.carbonEmissionSaved)
                     binding.aiSummary.text = user.aiSummary
+
+                    val achievementsRes = api.getAchievementsWithStatus(userId)
+                    if (achievementsRes.isSuccessful) {
+                        val remoteData = achievementsRes.body() ?: emptyList()
+                        val unlockedCount = remoteData.count { it.isUnlocked }
+                        binding.tvAchievementCount.text = unlockedCount.toString()
+                    }
                 }
             } catch (error: Exception) {
-                Log.e("HomeFragment", "Network error while loading profile summary: ${error.message}", error)
+                Log.e("HomeFragment", "Network error: ${error.message}", error)
                 binding.aiSummary.text = "You're making a positive environmental impact. Keep recycling!"
             }
         }
@@ -90,4 +94,3 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         _binding = null
     }
 }
-
