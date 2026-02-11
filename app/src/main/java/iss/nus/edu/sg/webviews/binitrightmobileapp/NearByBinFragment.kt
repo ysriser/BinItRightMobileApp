@@ -43,10 +43,14 @@ class NearByBinFragment : Fragment(R.layout.fragment_near_by_bin), OnMapReadyCal
     private var isMapReady = false
     private var hasZoomedToBins = false
     private var hasFetchedBins = false
+    private var lastQueryLat: Double = FALLBACK_LAT
+    private var lastQueryLng: Double = FALLBACK_LNG
 
     companion object {
         private const val TAG = "NearByBinFragment"
         private const val LOCATION_PERMISSION_REQUEST_CODE = 1001
+        private const val SEARCH_RADIUS_METERS = 10000
+        private const val STRICT_TYPE_FALLBACK_RADIUS_METERS = 50000
         private const val FALLBACK_LAT = 1.2921
         private const val FALLBACK_LNG = 103.77
     }
@@ -92,10 +96,10 @@ class NearByBinFragment : Fragment(R.layout.fragment_near_by_bin), OnMapReadyCal
 
     private fun updateFlowHint() {
         val hint = when (selectedBinType) {
-            "BLUEBIN" -> "Showing nearest blue recycling bins"
-            "EWASTE" -> "Showing nearest e-waste bins"
-            "LIGHTING" -> "Showing nearest lighting bins"
-            else -> "Showing nearest recycling bins"
+            "BLUEBIN" -> getString(R.string.nearby_hint_blue_bins)
+            "EWASTE" -> getString(R.string.nearby_hint_ewaste_bins)
+            "LIGHTING" -> getString(R.string.nearby_hint_lighting_bins)
+            else -> getString(R.string.nearby_hint_default_bins)
         }
         binding.tvFlowHint.text = hint
     }
@@ -134,15 +138,16 @@ class NearByBinFragment : Fragment(R.layout.fragment_near_by_bin), OnMapReadyCal
     }
 
     private fun applyFlowFilter() {
+        val oldSize = displayedBins.size
         displayedBins.clear()
-        displayedBins.addAll(nearbyBins)
+        displayedBins.addAll(filterByFlowBinType(nearbyBins, selectedBinType))
 
-        adapter?.notifyDataSetChanged()
+        adapter?.notifyForDataChange(oldSize, displayedBins.size)
         updateMapMarkers(displayedBins)
 
         Log.d(
             TAG,
-            "Flow list updated without filtering. selectedBinType=$selectedBinType total=${nearbyBins.size}"
+            "Flow list updated with selectedBinType=$selectedBinType displayed=${displayedBins.size} total=${nearbyBins.size}"
         )
     }
 
@@ -217,17 +222,61 @@ class NearByBinFragment : Fragment(R.layout.fragment_near_by_bin), OnMapReadyCal
     }
 
     private fun fetchNearbyBins(lat: Double, lng: Double) {
+        lastQueryLat = lat
+        lastQueryLng = lng
+
         viewLifecycleOwner.lifecycleScope.launch {
             try {
                 val flowBinType = selectedBinType?.takeIf { it.isNotBlank() }
                 Log.d(TAG, "Fetching nearby bins with flowBinType=$flowBinType lat=$lat lng=$lng")
-                val bins = RetrofitClient.apiService().getNearbyBins(lat, lng, 10000, flowBinType)
+                val api = RetrofitClient.apiService()
+                val requestedBins = api.getNearbyBins(lat, lng, SEARCH_RADIUS_METERS, flowBinType)
+                val filteredRequestedBins = filterByFlowBinType(requestedBins, flowBinType)
+                val effectiveBins = if (filteredRequestedBins.isEmpty() && !flowBinType.isNullOrBlank()) {
+                    Log.w(TAG, "No bins for strict flowBinType=$flowBinType; retrying without server binType filter")
+                    val fallbackBins = api.getNearbyBins(lat, lng, SEARCH_RADIUS_METERS, null)
+                    val filteredFallbackBins = filterByFlowBinType(fallbackBins, flowBinType)
+
+                    if (filteredFallbackBins.isNotEmpty()) {
+                        filteredFallbackBins
+                    } else if (flowBinType == "BLUEBIN") {
+                        if (fallbackBins.isNotEmpty()) {
+                            binding.tvFlowHint.text = getString(R.string.nearby_hint_default_bins)
+                        }
+                        fallbackBins
+                    } else {
+                        Log.w(TAG, "No bins found in $SEARCH_RADIUS_METERS m for $flowBinType; expanding search")
+                        val wideSearchBins = api.getNearbyBins(lat, lng, STRICT_TYPE_FALLBACK_RADIUS_METERS, null)
+                        val filteredWideSearchBins = filterByFlowBinType(wideSearchBins, flowBinType)
+                        if (filteredWideSearchBins.isNotEmpty()) {
+                            filteredWideSearchBins
+                        } else {
+                            Log.w(TAG, "No strict bins in radius search. Retrying with global binType query for $flowBinType")
+                            val globalTypeBins = api.getNearbyBins(lat, lng, null, flowBinType)
+                            filterByFlowBinType(globalTypeBins, flowBinType)
+                        }
+                    }
+                } else {
+                    filteredRequestedBins
+                }
                 nearbyBins.clear()
-                nearbyBins.addAll(bins)
+                nearbyBins.addAll(effectiveBins)
                 applyFlowFilter()
             } catch (error: Exception) {
                 Log.e(TAG, "Retrofit error: ${error.message}", error)
             }
+        }
+    }
+
+    private fun filterByFlowBinType(
+        bins: List<DropOffLocation>,
+        flowBinType: String?
+    ): List<DropOffLocation> {
+        if (flowBinType.isNullOrBlank()) {
+            return bins
+        }
+        return bins.filter { bin ->
+            ScannedCategoryHelper.normalizeBinType(bin.binType) == flowBinType
         }
     }
 
@@ -239,15 +288,18 @@ class NearByBinFragment : Fragment(R.layout.fragment_near_by_bin), OnMapReadyCal
 
         googleMap.clear()
         if (bins.isEmpty()) {
+            googleMap.moveCamera(
+                CameraUpdateFactory.newLatLngZoom(LatLng(lastQueryLat, lastQueryLng), 13f)
+            )
             return
         }
 
         bins.forEach { bin ->
             val position = LatLng(bin.latitude, bin.longitude)
             val distanceText = if (bin.distanceMeters > 0) {
-                "${bin.distanceMeters.toInt()} m"
+                getString(R.string.distance_meter_away, bin.distanceMeters)
             } else {
-                "Distance unknown"
+                getString(R.string.nearby_distance_unknown)
             }
 
             googleMap.addMarker(

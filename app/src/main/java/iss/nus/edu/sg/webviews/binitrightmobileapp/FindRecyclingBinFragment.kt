@@ -225,21 +225,17 @@ class FindRecyclingBinFragment : Fragment(R.layout.fragment_find_recycling_bin),
     }
 
     private fun updateUI() {
-
+        val oldSize = filteredBins.size
         filteredBins.clear()
         filteredBins.addAll(allBins)
 
-        adapter.notifyDataSetChanged()
-
+        adapter.notifyForDataChange(oldSize, filteredBins.size)
         lastCameraMoveToken++
         updateMapMarkers(filteredBins, lastCameraMoveToken)
     }
 
-
-    // -----------------------------
-    // Apply Filter (kept for potential future use)
-    // -----------------------------
     private fun applyFilter(type: String) {
+        val oldSize = filteredBins.size
         filteredBins.clear()
 
         if (type == "ALL") {
@@ -250,8 +246,7 @@ class FindRecyclingBinFragment : Fragment(R.layout.fragment_find_recycling_bin),
             )
         }
 
-        adapter.notifyDataSetChanged()
-
+        adapter.notifyForDataChange(oldSize, filteredBins.size)
         lastCameraMoveToken++
         updateMapMarkers(filteredBins, lastCameraMoveToken)
     }
@@ -287,6 +282,8 @@ class FindRecyclingBinFragment : Fragment(R.layout.fragment_find_recycling_bin),
                 )
             )
         }
+
+        moveCamera(limited, cameraToken)
     }
 
     private fun moveCamera(
@@ -297,8 +294,9 @@ class FindRecyclingBinFragment : Fragment(R.layout.fragment_find_recycling_bin),
 
         // Wait until map finishes rendering
         googleMap.setOnMapLoadedCallback {
-            if (tokenAtRequest != lastCameraMoveToken) return@setOnMapLoadedCallback
-
+            if (tokenAtRequest != lastCameraMoveToken) {
+                return@setOnMapLoadedCallback
+            }
             val boundsBuilder = com.google.android.gms.maps.model.LatLngBounds.Builder()
 
             bins.forEach {
@@ -370,4 +368,3 @@ class FindRecyclingBinFragment : Fragment(R.layout.fragment_find_recycling_bin),
         _binding = null
     }
 }
-

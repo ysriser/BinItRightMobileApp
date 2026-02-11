@@ -46,7 +46,7 @@ class ScanApiContractModelTest {
         val response = gson.fromJson(json, ScanResponse::class.java)
 
         assertEquals("success", response.status)
-        assertEquals("req-1", response.request_id)
+        assertEquals("req-1", response.requestId)
 
         val final = response.data?.final
         assertNotNull(final)
@@ -55,12 +55,12 @@ class ScanApiContractModelTest {
         assertTrue((final?.instructions?.size ?: 0) >= 3)
 
         val decision = response.data?.decision
-        assertEquals(true, decision?.used_tier2)
-        assertEquals("FORCE_CLOUD", decision?.reason_codes?.first())
+        assertEquals(true, decision?.usedTier2)
+        assertEquals("FORCE_CLOUD", decision?.reasonCodes?.first())
 
         val meta = response.data?.meta
         assertEquals("0.1", meta?.schema_version)
-        assertEquals("openai", meta?.tier2_provider_used)
+        assertEquals("openai", meta?.tier2ProviderUsed)
     }
 
     @Test
@@ -90,19 +90,19 @@ class ScanApiContractModelTest {
         """.trimIndent()
 
         val response = gson.fromJson(json, ScanResponse::class.java)
-        val error = response.data?.meta?.tier2_error
+        val error = response.data?.meta?.tier2Error
 
         assertNotNull(error)
-        assertEquals("429", error?.http_status)
+        assertEquals("429", error?.httpStatus)
         assertEquals("rate_limit", error?.code)
         assertEquals("Too many requests", error?.message)
     }
 
     @Test
     fun decision_defaultsReasonCodesToEmptyList() {
-        val decision = Decision(used_tier2 = false)
+        val decision = Decision(usedTier2 = false)
 
-        assertFalse(decision.used_tier2)
-        assertTrue(decision.reason_codes.isEmpty())
+        assertFalse(decision.usedTier2)
+        assertTrue(decision.reasonCodes.isEmpty())
     }
 }

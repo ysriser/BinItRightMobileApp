@@ -2,4 +2,108 @@
     <string name="app_name">BinItRightMobileApp</string>
     <string name="title_activity_main">MainActivity</string>
     <string name="hello_blank_fragment">Hello blank fragment</string>
+
+    <string name="achievement_keep_recycling_to_unlock">Keep Recycling to Unlock</string>
+    <string name="achievement_share_subject">My Recycling Achievement</string>
+    <string name="achievement_share_chooser">Share Achievement via</string>
+    <string name="achievement_status_unlocked">UNLOCKED</string>
+    <string name="achievement_status_locked">LOCKED</string>
+    <string name="achievement_progress_fraction">%1$d/%2$d</string>
+    <string name="achievement_progress_remaining">%1$d more to unlock!</string>
+    <string name="achievement_progress_complete">All achievements completed!</string>
+
+    <string name="event_time_range">%1$s - %2$s</string>
+    <string name="event_go_there_now">Go there now</string>
+
+    <string name="find_bins_distance_km">%1$.1f km away</string>
+    <string name="find_bins_open_24_7">Open 24/7</string>
+
+    <string name="home_co2_saved_kg">%1$.1f kg</string>
+    <string name="home_fallback_ai_summary">You\'re making a positive environmental impact. Keep recycling!</string>
+
+    <string name="leaderboard_rank_number">%1$d</string>
+
+    <string name="reward_balance_points">Your Balance: %1$d points</string>
+    <string name="reward_points_short">%1$d pts</string>
+    <string name="reward_owned">Owned</string>
+    <string name="reward_redeem">Redeem</string>
+    <string name="reward_not_enough">Not enough</string>
+    <string name="reward_connection_error">Connection error</string>
+    <string name="reward_load_failed">Failed to load shop</string>
+    <string name="reward_redeem_failed">Redeem failed</string>
+    <string name="reward_equipped">Equipped</string>
+    <string name="reward_equip_failed">Equip failed</string>
+
+    <string name="question_progress_label">Question %1$d</string>
+    <string name="questionnaire_header_title">Item Questionnaire</string>
+    <string name="questionnaire_status_not_sure">Not sure</string>
+    <string name="questionnaire_status_recyclable">Recyclable</string>
+    <string name="questionnaire_status_not_recyclable">Not Recyclable</string>
+    <string name="questionnaire_certainty_format">Certainty: %1$s</string>
+
+    <string name="scanning_status_not_sure">Not sure</string>
+    <string name="scanning_status_recyclable">Recyclable</string>
+    <string name="scanning_status_not_recyclable">Not Recyclable</string>
+    <string name="scanning_desc_not_sure">We are not fully sure about this item.</string>
+    <string name="scanning_desc_recyclable">This item can be recycled in an appropriate stream.</string>
+    <string name="scanning_desc_not_recyclable">This item cannot be recycled.</string>
+    <string name="scanning_instruction_title">How to dispose:</string>
+    <string name="scanning_instruction_default">1. Follow local disposal guidance</string>
+    <string name="scanning_error_prefix">Scan failed: %1$s</string>
+    <string name="scanning_feedback_sent">Feedback sent!</string>
+
+    <string name="recycle_history_quantity_format">x%1$d</string>
+    <string name="number_plain_int">%1$d</string>
+
+    <string name="checkin_video_submitted">VIDEO SUBMITTED</string>
+    <string name="checkin_record_video">RECORD VIDEO</string>
+    <string name="checkin_default_bin_name">Recycling Bin</string>
+    <string name="checkin_default_bin_address">Location not available</string>
+
+    <string name="news_recent">Recent</string>
+
+    <string name="distance_meter_away">%1$.1f m away</string>
+    <string name="nearby_hint_blue_bins">Showing nearest blue recycling bins</string>
+    <string name="nearby_hint_ewaste_bins">Showing nearest e-waste bins</string>
+    <string name="nearby_hint_lighting_bins">Showing nearest lighting bins</string>
+    <string name="nearby_hint_default_bins">Showing nearest recycling bins</string>
+    <string name="nearby_default_bin_name">Recycling Bin</string>
+    <string name="nearby_distance_unknown">Distance unknown</string>
+
+    <string name="profile_points_display">%1$d Points</string>
+
+    <string name="video_permissions_required">Camera &amp; audio permissions are required</string>
+    <string name="video_action_start">Start</string>
+    <string name="video_action_stop">Stop</string>
+    <string name="video_recording_stopped">Recording stopped</string>
+
+    <string name="scan_home_title">Do you know what you\'re recycling?</string>
+    <string name="scan_home_subtitle">This helps us guide you through the right process</string>
+    <string name="scan_home_btn_yes">Yes, I Know</string>
+    <string name="scan_home_btn_yes_desc">Go directly to location selection</string>
+    <string name="scan_home_section_no">No, Help Me Identify</string>
+    <string name="scan_home_section_no_desc">Choose how you\'d like to identify your item:</string>
+    <string name="scan_home_btn_scan">Scan Item</string>
+    <string name="scan_home_btn_scan_desc">Take a photo to identify</string>
+    <string name="scan_home_btn_quiz">Answer Questions</string>
+    <string name="scan_home_btn_quiz_desc">Describe your item</string>
+    <string name="scan_home_tip">Tip: If you\'re not sure what category your item falls into, use our scan or questionnaire feature to help identify it and confirm it\'s recyclable.</string>
+    <string name="back_to_home">Back to Home</string>
+
+    <string name="report_issue_title">Report an Issue</string>
+    <string name="report_issue_subtitle">Help us improve the app experience.</string>
+    <string name="report_issue_category_label">Issue category</string>
+    <string name="report_issue_description_hint">Describe the issue</string>
+
+    <string name="chat_helper_title">Chat Helper</string>
+    <string name="chat_helper_subtitle">Ask about recycling rules and disposal tips</string>
+    <string name="chat_input_hint">Ask about recycling...</string>
+    <string name="action_send">Send</string>
+    <string name="action_submit">Submit</string>
+    <string name="action_cancel">Cancel</string>
+
+    <string name="emoji_recycle">Recycle</string>
+    <string name="emoji_camera">Camera</string>
+    <string name="emoji_question">Question</string>
+    <string name="emoji_bulb">Tip</string>
 </resources>

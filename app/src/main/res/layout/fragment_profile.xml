@@ -118,7 +118,9 @@
                             android:id="@+id/pointsDisplay"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
+                            android:gravity="center"
                             android:text="0"
+                            android:textAlignment="center"
                             android:textColor="#536DFE"
                             android:textSize="18sp"
                             android:textStyle="bold" />
@@ -190,6 +192,7 @@
                     android:textAllCaps="false"
                     app:cornerRadius="20dp"
                     app:icon="@android:drawable/ic_menu_edit"
+                    app:iconSize="20dp"
                     app:iconGravity="textStart" />
 
             </LinearLayout>

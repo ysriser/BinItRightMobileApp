@@ -51,6 +51,24 @@ class NearByBinsAdapter(
         notifyItemChanged(selectedPosition)
     }
 
+    fun notifyForDataChange(oldSize: Int, newSize: Int) {
+        when {
+            oldSize == 0 && newSize > 0 -> notifyItemRangeInserted(0, newSize)
+            newSize == 0 && oldSize > 0 -> notifyItemRangeRemoved(0, oldSize)
+            else -> {
+                val common = minOf(oldSize, newSize)
+                if (common > 0) {
+                    notifyItemRangeChanged(0, common)
+                }
+                if (newSize > oldSize) {
+                    notifyItemRangeInserted(oldSize, newSize - oldSize)
+                } else if (oldSize > newSize) {
+                    notifyItemRangeRemoved(newSize, oldSize - newSize)
+                }
+            }
+        }
+    }
+
     inner class SelectedViewHolder(
         private val binding: ItemRecyclingBinBinding
     ) : RecyclerView.ViewHolder(binding.root) {
@@ -58,13 +76,13 @@ class NearByBinsAdapter(
         fun bind(bin: DropOffLocation) {
 
             binding.apply {
-                binName.text = bin.name.ifBlank { "Recycling Bin" }
-                binAddress.text = " ${bin.address}"
+                val context = binding.root.context
+                binName.text = bin.name.ifBlank { context.getString(R.string.nearby_default_bin_name) }
+                binAddress.text = bin.address
                 binPostalCode.text = bin.postalCode
                 binDescription.text = bin.description
                 binType.text = bin.binType
-                //binStatus.text = bin.status
-                binDistance.text = " ${"%.1f".format(bin.distanceMeters)} m away"
+                binDistance.text = context.getString(R.string.distance_meter_away, bin.distanceMeters)
 
                 // Card click selects item
                 binding.root.setOnClickListener {
@@ -85,13 +103,13 @@ class NearByBinsAdapter(
 
         fun bind(bin: DropOffLocation) {
             binding.apply {
-                binName.text = bin.name.ifBlank { "Recycling Bin" }
-                binAddress.text = " ${bin.address}"
+                val context = binding.root.context
+                binName.text = bin.name.ifBlank { context.getString(R.string.nearby_default_bin_name) }
+                binAddress.text = bin.address
                 binPostalCode.text = bin.postalCode
                 binDescription.text = bin.description
                 binType.text = bin.binType
-                //binStatus.text = bin.status
-                binDistance.text = " ${"%.1f".format(bin.distanceMeters)} m away"
+                binDistance.text = context.getString(R.string.distance_meter_away, bin.distanceMeters)
 
                 // Card click selects item
                 binding.root.setOnClickListener {
