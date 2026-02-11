@@ -18,6 +18,15 @@ class RecycleHistoryAdapter : RecyclerView.Adapter<RecycleHistoryAdapter.ViewHol
         notifyDataSetChanged()
     }
 
+    fun resolveIcon(categoryName: String): Int {
+        return when (categoryName) {
+            "Plastic" -> R.drawable.ic_plastic
+            "E-Waste" -> R.drawable.ic_ewaste
+            "Glass" -> R.drawable.ic_glass
+            else -> R.drawable.ic_recycle
+        }
+    }
+
     inner class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val icon: ImageView = view.findViewById(R.id.imgCategory)
         val category: TextView = view.findViewById(R.id.txtCategory)
@@ -37,16 +46,7 @@ class RecycleHistoryAdapter : RecyclerView.Adapter<RecycleHistoryAdapter.ViewHol
         holder.date.text = item.date
         holder.qty.text = "x${item.quantity}"
 
-        // IMPORTANT: always set image explicitly
-        val iconResId = when (item.categoryName) {
-            "Plastic" -> R.drawable.ic_plastic
-            "E-Waste" -> R.drawable.ic_ewaste
-            "Glass" -> R.drawable.ic_glass
-            else -> R.drawable.ic_recycle
-        }
-
-        holder.icon.setImageDrawable(null) // reset recycled view
-        holder.icon.setImageResource(iconResId)
+        holder.icon.setImageResource(resolveIcon(item.categoryName))
     }
 
     override fun getItemCount() = items.size
