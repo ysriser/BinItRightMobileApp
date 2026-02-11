@@ -76,8 +76,21 @@ android {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
+    
     kotlinOptions {
         jvmTarget = "11"
+    }
+
+    testOptions {
+        unitTests {
+            isIncludeAndroidResources = true
+            all {
+                it.extensions.configure(org.gradle.testing.jacoco.plugins.JacocoTaskExtension::class) {
+                    isIncludeNoLocationClasses = true
+                    excludes = listOf("jdk.internal.*")
+                }
+            }
+        }
     }
 }
 
@@ -261,4 +274,6 @@ tasks.register<JacocoCoverageVerification>("jacocoLocalDebugUnitTestCoverageVeri
         }
     }
 }
+
+
 

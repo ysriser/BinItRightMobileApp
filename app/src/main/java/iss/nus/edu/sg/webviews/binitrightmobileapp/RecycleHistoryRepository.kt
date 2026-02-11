@@ -7,8 +7,12 @@ interface RecycleHistoryRepository {
     suspend fun getHistory(): List<RecycleHistoryModel>
 }
 
-class RecycleHistoryRepositoryImpl : RecycleHistoryRepository {
+class RecycleHistoryRepositoryImpl(
+    private val historyFetcher: suspend () -> List<RecycleHistoryModel> = {
+        RetrofitClient.apiService().getRecycleHistory()
+    }
+) : RecycleHistoryRepository {
     override suspend fun getHistory(): List<RecycleHistoryModel> {
-        return RetrofitClient.apiService().getRecycleHistory()
+        return historyFetcher()
     }
 }
