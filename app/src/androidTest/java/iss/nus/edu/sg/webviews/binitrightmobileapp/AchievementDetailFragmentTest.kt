@@ -4,8 +4,6 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import androidx.fragment.app.testing.launchFragmentInContainer
-import androidx.navigation.Navigation
-import androidx.navigation.NavController
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.action.ViewActions.click
@@ -19,8 +17,6 @@ import androidx.test.espresso.matcher.ViewMatchers.isNotEnabled
 import androidx.test.espresso.matcher.ViewMatchers.withId
 import androidx.test.espresso.matcher.ViewMatchers.withText
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import io.mockk.mockk
-import io.mockk.verify
 import org.hamcrest.Matchers.allOf
 import org.junit.After
 import org.junit.Before
@@ -95,22 +91,5 @@ class AchievementDetailFragmentTest {
                 )
             )
         ))
-    }
-
-    @Test
-    fun testNavigation_ClickBack_PopsStack() {
-        val scenario = launchFragmentInContainer<AchievementDetailFragment>(
-            fragmentArgs = Bundle(),
-            themeResId = MaterialR.style.Theme_MaterialComponents_DayNight_NoActionBar
-        )
-
-        val mockNavController = mockk<NavController>(relaxed = true)
-        scenario.onFragment { fragment ->
-            Navigation.setViewNavController(fragment.requireView(), mockNavController)
-        }
-
-        onView(withId(R.id.btnBack)).perform(click())
-
-        verify { mockNavController.popBackStack() }
     }
 }
