@@ -3,6 +3,7 @@ package iss.nus.edu.sg.webviews.binitrightmobileapp
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
+import androidx.test.core.app.ApplicationProvider
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeoutException
@@ -14,7 +15,6 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
-import org.robolectric.RuntimeEnvironment
 import org.robolectric.annotation.Config
 
 @RunWith(RobolectricTestRunner::class)
@@ -59,7 +59,7 @@ class QuestionnaireViewModelTest {
             ),
         )
 
-        val app = RuntimeEnvironment.getApplication() as android.app.Application
+        val app = ApplicationProvider.getApplicationContext<android.app.Application>()
         val engine = QuestionnaireEngine(app, config)
         return QuestionnaireViewModel(app, engine)
     }

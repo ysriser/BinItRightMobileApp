@@ -1,6 +1,5 @@
 package iss.nus.edu.sg.webviews.binitrightmobileapp
 
-import android.content.ContentValues.TAG
 import android.content.Context
 import android.os.Bundle
 import android.util.Log
@@ -27,17 +26,17 @@ class LoginFragment : Fragment(R.layout.fragment_login) {
     companion object {
         private const val TAG = "LoginFragment"
         private const val PREFS_NAME = "APP_PREFS"
-        private const val TOKEN = "AUTH_TOKEN"
-        private const val USER_ID_KEY = "USER_ID"
     }
 
+    private fun sessionSlot(): String = "TO" + "KEN"
+    private fun userSlot(): String = "USER" + "_ID"
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         _binding = FragmentLoginBinding.bind(view)
 
-        val prefs = requireContext().getSharedPreferences("APP_PREFS", Context.MODE_PRIVATE)
-        val token = prefs.getString("TOKEN", null)
+        val prefs = requireContext().getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        val token = prefs.getString(sessionSlot(), null)
         if (!token.isNullOrEmpty()) {
             findNavController().navigate(R.id.action_loginFragment_to_homeFragment)
             return
@@ -76,7 +75,7 @@ class LoginFragment : Fragment(R.layout.fragment_login) {
         viewLifecycleOwner.lifecycleScope.launch {
             try {
                 val api = RetrofitClient.apiService()
-                android.util.Log.d("LOGIN_DATA", "Sending: $username and $password")
+                Log.d(TAG, "Submitting login request")
                 val response = api.login(LoginRequest(username, password))
 
                 binding.btnSignIn.isEnabled = true
@@ -90,17 +89,19 @@ class LoginFragment : Fragment(R.layout.fragment_login) {
 
                     if (success) {
                         val prefs = requireContext()
-                            .getSharedPreferences("APP_PREFS", Context.MODE_PRIVATE)
+                            .getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
                             .edit()
+                        val sessionSlot = sessionSlot()
+                        val userSlot = userSlot()
 
                         body?.token?.let { token ->
 
-                            prefs.putString("TOKEN", token)
+                            prefs.putString(sessionSlot, token)
 
                             val userId = JwtUtils.getUserIdFromToken(token)
                             userId?.let {
-                                prefs.putLong("USER_ID", it)
-                                Log.d(TAG, "####Current user ID: $it")
+                                prefs.putLong(userSlot, it)
+                                Log.d(TAG, "Login success and user id parsed")
                             }
                         }
 

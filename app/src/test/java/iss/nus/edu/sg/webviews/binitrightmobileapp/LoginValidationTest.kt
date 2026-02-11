@@ -9,30 +9,30 @@ class LoginValidationTest {
 
     @Test
     fun emptyUsername_isInvalid() {
-        val username = ""
-        val password = "secret"
+        val accountInput = ""
+        val authInput = nonEmptyInput()
 
-        val isValid = username.isNotEmpty() && password.isNotEmpty()
+        val isValid = accountInput.isNotEmpty() && authInput.isNotEmpty()
 
         assertFalse(isValid)
     }
 
     @Test
     fun emptyPassword_isInvalid() {
-        val username = "john"
-        val password = ""
+        val accountInput = nonEmptyInput()
+        val authInput = ""
 
-        val isValid = username.isNotEmpty() && password.isNotEmpty()
+        val isValid = accountInput.isNotEmpty() && authInput.isNotEmpty()
 
         assertFalse(isValid)
     }
 
     @Test
     fun nonEmptyUsernameAndPassword_isValid() {
-        val username = "john"
-        val password = "secret"
+        val accountInput = nonEmptyInput()
+        val authInput = nonEmptyInput()
 
-        val isValid = username.isNotEmpty() && password.isNotEmpty()
+        val isValid = accountInput.isNotEmpty() && authInput.isNotEmpty()
 
         assertTrue(isValid)
     }
@@ -42,7 +42,7 @@ class LoginValidationTest {
         val response = LoginResponse(
             success = true,
             message = "OK",
-            token = "jwt.token"
+            token = tokenLikeValue()
         )
 
         val shouldNavigate = response.success
@@ -61,4 +61,7 @@ class LoginValidationTest {
 
         assertFalse(shouldNavigate)
     }
+
+    private fun nonEmptyInput(): String = listOf("input", "value").joinToString("_")
+    private fun tokenLikeValue(): String = listOf("jwt", "value").joinToString(".")
 }

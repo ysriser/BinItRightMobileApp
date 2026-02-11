@@ -14,7 +14,6 @@ import iss.nus.edu.sg.webviews.binitrightmobileapp.model.UserAccessory
 import kotlinx.coroutines.launch
 import iss.nus.edu.sg.webviews.binitrightmobileapp.network.RetrofitClient
 
-
 class AvatarCustomizationFragment : Fragment() {
 
     private var _binding: FragmentAvatarCustomizationBinding? = null
@@ -31,15 +30,13 @@ class AvatarCustomizationFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // Close FAB navigation
         binding.btnClose.setOnClickListener {
             findNavController().navigateUp()
         }
 
-        // Setup 3-column Grid
-        binding.accessoriesGrid.layoutManager = GridLayoutManager(requireContext(), 2)
+        val spanCount = AvatarLogicUtils.getGridSpanCount()
+        binding.accessoriesGrid.layoutManager = GridLayoutManager(requireContext(), spanCount)
 
-        // Initialize adapter with empty list
         avatarAdapter = AvatarAdapter(emptyList()) { selectedItem ->
             handleEquip(selectedItem)
         }
@@ -63,17 +60,14 @@ class AvatarCustomizationFragment : Fragment() {
         }
     }
 
-
     private fun handleEquip(item: UserAccessory) {
-        if (item.equipped) return
+        if (!AvatarLogicUtils.shouldCallEquipApi(item)) return
 
         viewLifecycleOwner.lifecycleScope.launch {
             try {
-                val response =
-                    RetrofitClient.apiService().equipAccessory(item.accessories.accessoriesId)
-
+                val response = RetrofitClient.apiService().equipAccessory(item.accessories.accessoriesId)
                 if (response.isSuccessful) {
-                    loadAccessories() // refresh to show new equipped highlight
+                    loadAccessories()
                 }
             } catch (e: Exception) {
                 Toast.makeText(context, "Connection error", Toast.LENGTH_SHORT).show()
@@ -81,9 +75,18 @@ class AvatarCustomizationFragment : Fragment() {
         }
     }
 
-
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
+    }
+}
+
+object AvatarLogicUtils {
+    fun shouldCallEquipApi(item: UserAccessory): Boolean {
+        return !item.equipped
+    }
+
+    fun getGridSpanCount(): Int {
+        return 2
     }
 }
