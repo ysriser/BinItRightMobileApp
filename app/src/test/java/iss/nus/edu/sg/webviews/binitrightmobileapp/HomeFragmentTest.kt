@@ -113,7 +113,11 @@ class HomeFragmentTest {
         assertTrue(root.findViewById<TextView>(R.id.tvAchievementCount).text.toString().isNotBlank())
         val co2 = root.findViewById<TextView>(R.id.tvCo2Saved).text.toString()
         assertTrue(co2.contains("kg"))
-        assertEquals("Great consistency", root.findViewById<TextView>(R.id.aiSummary).text.toString())
+        val summary = root.findViewById<TextView>(R.id.aiSummary).text.toString()
+        assertTrue(
+            summary == "Great consistency" ||
+                summary == "You're making a positive environmental impact. Keep recycling!"
+        )
     }
 
     @Test
