@@ -4,6 +4,7 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.util.Log
+import androidx.core.graphics.scale
 import iss.nus.edu.sg.webviews.binitrightmobileapp.network.RetrofitClient
 import kotlinx.coroutines.delay
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
@@ -17,6 +18,22 @@ private const val INITIAL_JPEG_QUALITY = 80
 private const val MIN_JPEG_QUALITY = 40
 private const val UPLOAD_MAX_LONG_SIDE = 960
 private const val MIN_BITMAP_SIDE = 256
+private const val CLEAN_DRY_INSTRUCTION = "Clean and dry the item."
+private const val PROPER_STREAM_INSTRUCTION = "Place it in the proper recycling stream."
+private const val RECYCLE_SUMMARY_INSTRUCTION = "Clean and dry the item, then recycle it."
+private val RECYCLABLE_FALLBACK_INSTRUCTIONS = listOf(
+    CLEAN_DRY_INSTRUCTION,
+    PROPER_STREAM_INSTRUCTION,
+)
+private val RECYCLABLE_CATEGORY_KEYWORDS = setOf(
+    "plastic",
+    "metal",
+    "glass",
+    "paper",
+    "e-waste",
+    "textile",
+    "lighting",
+)
 
 interface ScanRepository {
     suspend fun scanImage(
@@ -113,16 +130,8 @@ class RealScanRepository : ScanRepository {
 
     private fun mapFinalToScanResult(final: FinalResult, meta: Meta?): ScanResult {
         val effectiveRecyclable = final.recyclable || ScannedCategoryHelper.isSpecialRecyclable(final.category)
-        val fallbackInstructions = if (effectiveRecyclable) {
-            listOf("Clean and dry the item.", "Place it in the proper recycling stream.")
-        } else {
-            listOf("Dispose in general waste unless official guidance says otherwise.")
-        }
-
-        val finalInstructions = if (final.instructions.isEmpty()) {
-            fallbackInstructions
-        } else {
-            final.instructions
+        val finalInstructions = final.instructions.ifEmpty {
+            fallbackInstructionsFor(effectiveRecyclable)
         }
 
         return ScanResult(
@@ -155,10 +164,7 @@ class LocalModelScanRepository(private val context: Context) : ScanRepository {
             val bitmap = BitmapFactory.decodeFile(imageFile.absolutePath)
             val result = classifier.classify(bitmap)
 
-            val recyclable = when (result.category.lowercase()) {
-                "plastic", "metal", "glass", "paper", "e-waste", "textile", "lighting" -> true
-                else -> false
-            }
+            val recyclable = isRecyclableCategory(result.category)
 
             val categoryName = result.category.replaceFirstChar { it.uppercase() }
             delay(1000)
@@ -169,12 +175,12 @@ class LocalModelScanRepository(private val context: Context) : ScanRepository {
                     recyclable = recyclable,
                     confidence = result.confidence,
                     instructions = if (recyclable) {
-                        listOf("Clean and dry the item.", "Place it in the proper recycling stream.")
+                        RECYCLABLE_FALLBACK_INSTRUCTIONS
                     } else {
                         listOf("Do not put this into the blue recycling bin.")
                     },
                     instruction = if (recyclable) {
-                        "Clean and dry the item, then recycle it."
+                        RECYCLE_SUMMARY_INSTRUCTION
                     } else {
                         "Dispose through general or special waste handling."
                     },
@@ -274,16 +280,8 @@ class HybridScanRepository(
 
     private fun mapFinalToScanResult(final: FinalResult, meta: Meta?): ScanResult {
         val effectiveRecyclable = final.recyclable || ScannedCategoryHelper.isSpecialRecyclable(final.category)
-        val fallbackInstructions = if (effectiveRecyclable) {
-            listOf("Clean and dry the item.", "Place it in the proper recycling stream.")
-        } else {
-            listOf("Dispose in general waste unless official guidance says otherwise.")
-        }
-
-        val finalInstructions = if (final.instructions.isEmpty()) {
-            fallbackInstructions
-        } else {
-            final.instructions
+        val finalInstructions = final.instructions.ifEmpty {
+            fallbackInstructionsFor(effectiveRecyclable)
         }
 
         return ScanResult(
@@ -298,10 +296,7 @@ class HybridScanRepository(
     }
 
     private fun mapTier1ToScanResult(tier1: Tier1Result): ScanResult {
-        val recyclable = when (tier1.category.lowercase()) {
-            "plastic", "metal", "glass", "paper", "e-waste", "textile", "lighting" -> true
-            else -> false
-        }
+        val recyclable = isRecyclableCategory(tier1.category)
 
         val categoryName = tier1.category.replaceFirstChar { it.uppercase() }
 
@@ -310,12 +305,12 @@ class HybridScanRepository(
             recyclable = recyclable,
             confidence = tier1.confidence,
             instruction = if (recyclable) {
-                "Clean and dry the item, then recycle it."
+                RECYCLE_SUMMARY_INSTRUCTION
             } else {
                 "Dispose through general or special waste handling."
             },
             instructions = if (recyclable) {
-                listOf("Clean and dry the item.", "Place it in the proper recycling stream.")
+                RECYCLABLE_FALLBACK_INSTRUCTIONS
             } else {
                 listOf("Do not put this into the blue recycling bin.")
             },
@@ -334,15 +329,15 @@ private fun buildTier2DebugMessage(meta: Meta?): String? {
         return null
     }
 
-    val attempted = meta.tier2_provider_attempted?.trim()?.lowercase()
-    val used = meta.tier2_provider_used?.trim()?.lowercase()
+    val attempted = meta.tier2ProviderAttempted?.trim()?.lowercase()
+    val used = meta.tier2ProviderUsed?.trim()?.lowercase()
 
     if (attempted == "openai" && used == "openai") {
         return "Tier2 provider: openai"
     }
 
     if (attempted == "openai" && used == "mock") {
-        val errorCode = meta.tier2_error?.code?.takeIf { it.isNotBlank() } ?: "unknown"
+        val errorCode = meta.tier2Error?.code?.takeIf { it.isNotBlank() } ?: "unknown"
         return "Tier2 fallback to mock ($errorCode)"
     }
 
@@ -385,7 +380,7 @@ private fun downscaleLongSide(source: Bitmap, maxLongSide: Int): Bitmap {
     val scale = maxLongSide.toFloat() / longSide.toFloat()
     val newWidth = (source.width * scale).toInt().coerceAtLeast(MIN_BITMAP_SIDE)
     val newHeight = (source.height * scale).toInt().coerceAtLeast(MIN_BITMAP_SIDE)
-    return Bitmap.createScaledBitmap(source, newWidth, newHeight, true)
+    return source.scale(newWidth, newHeight, true)
 }
 
 private fun compressBitmap(source: Bitmap): ByteArray {
@@ -393,15 +388,10 @@ private fun compressBitmap(source: Bitmap): ByteArray {
     var quality = INITIAL_JPEG_QUALITY
 
     while (true) {
-        val bytes = ByteArrayOutputStream().use { stream ->
-            workingBitmap.compress(Bitmap.CompressFormat.JPEG, quality, stream)
-            stream.toByteArray()
-        }
+        val bytes = compressBitmapToJpegBytes(workingBitmap, quality)
 
         if (bytes.size <= MAX_UPLOAD_BYTES) {
-            if (workingBitmap !== source) {
-                workingBitmap.recycle()
-            }
+            recycleIfTemporaryBitmap(source, workingBitmap)
             return bytes
         }
 
@@ -410,21 +400,49 @@ private fun compressBitmap(source: Bitmap): ByteArray {
             continue
         }
 
-        val newWidth = (workingBitmap.width * 0.75f).toInt().coerceAtLeast(MIN_BITMAP_SIDE)
-        val newHeight = (workingBitmap.height * 0.75f).toInt().coerceAtLeast(MIN_BITMAP_SIDE)
-
-        if (newWidth == workingBitmap.width && newHeight == workingBitmap.height) {
-            if (workingBitmap !== source) {
-                workingBitmap.recycle()
-            }
+        val resized = downscaleForRetry(source, workingBitmap)
+        if (resized == null) {
+            recycleIfTemporaryBitmap(source, workingBitmap)
             return bytes
-        }
-
-        val resized = Bitmap.createScaledBitmap(workingBitmap, newWidth, newHeight, true)
-        if (workingBitmap !== source) {
-            workingBitmap.recycle()
         }
         workingBitmap = resized
         quality = INITIAL_JPEG_QUALITY
+    }
+}
+
+private fun isRecyclableCategory(category: String): Boolean {
+    return category.lowercase() in RECYCLABLE_CATEGORY_KEYWORDS
+}
+
+private fun fallbackInstructionsFor(recyclable: Boolean): List<String> {
+    return if (recyclable) {
+        RECYCLABLE_FALLBACK_INSTRUCTIONS
+    } else {
+        listOf("Dispose in general waste unless official guidance says otherwise.")
+    }
+}
+
+private fun compressBitmapToJpegBytes(bitmap: Bitmap, quality: Int): ByteArray {
+    return ByteArrayOutputStream().use { stream ->
+        bitmap.compress(Bitmap.CompressFormat.JPEG, quality, stream)
+        stream.toByteArray()
+    }
+}
+
+private fun downscaleForRetry(source: Bitmap, bitmap: Bitmap): Bitmap? {
+    val newWidth = (bitmap.width * 0.75f).toInt().coerceAtLeast(MIN_BITMAP_SIDE)
+    val newHeight = (bitmap.height * 0.75f).toInt().coerceAtLeast(MIN_BITMAP_SIDE)
+    if (newWidth == bitmap.width && newHeight == bitmap.height) {
+        return null
+    }
+
+    val resized = bitmap.scale(newWidth, newHeight, true)
+    recycleIfTemporaryBitmap(source, bitmap)
+    return resized
+}
+
+private fun recycleIfTemporaryBitmap(source: Bitmap, bitmap: Bitmap) {
+    if (bitmap !== source) {
+        bitmap.recycle()
     }
 }

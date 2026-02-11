@@ -48,7 +48,7 @@ class VideoRecordFragment : Fragment() {
             } else {
                 Toast.makeText(
                     requireContext(),
-                    "Camera & audio permissions are required",
+                    getString(R.string.video_permissions_required),
                     Toast.LENGTH_LONG
                 ).show()
                 findNavController().popBackStack()
@@ -103,9 +103,9 @@ class VideoRecordFragment : Fragment() {
             recording?.stop()
             recording = null
 
-            binding.btnStartRecording.text = "Start"
+            binding.btnStartRecording.text = getString(R.string.video_action_start)
 
-            Toast.makeText(requireContext(), "Recording stopped", Toast.LENGTH_SHORT).show()
+            Toast.makeText(requireContext(), getString(R.string.video_recording_stopped), Toast.LENGTH_SHORT).show()
             return
         }
 
@@ -116,7 +116,7 @@ class VideoRecordFragment : Fragment() {
 
         val outputOptions = FileOutputOptions.Builder(videoFile).build()
 
-        binding.btnStartRecording.text = "Stop"
+        binding.btnStartRecording.text = getString(R.string.video_action_stop)
 
         recording = videoCapture.output
             .prepareRecording(requireContext(), outputOptions)
@@ -174,4 +174,3 @@ class VideoRecordFragment : Fragment() {
         _binding = null
     }
 }
-

@@ -1,12 +1,13 @@
 package iss.nus.edu.sg.webviews.binitrightmobileapp
 
-import android.graphics.Color
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import androidx.core.graphics.toColorInt
 import androidx.recyclerview.widget.RecyclerView
 import iss.nus.edu.sg.webviews.binitrightmobileapp.model.LeaderboardEntry
+import java.util.Locale
 
 class LeaderboardAdapter(private val items: List<LeaderboardEntry>) :
     RecyclerView.Adapter<LeaderboardAdapter.ViewHolder>() {
@@ -18,21 +19,25 @@ class LeaderboardAdapter(private val items: List<LeaderboardEntry>) :
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        val view = LayoutInflater.from(parent.context).inflate(R.layout.item_leaderboard, parent, false)
+        val view = LayoutInflater.from(parent.context)
+            .inflate(R.layout.item_leaderboard, parent, false)
         return ViewHolder(view)
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val item = items[position]
-        holder.tvRank.text = (position + 1).toString()
+        holder.tvRank.text = holder.itemView.context.getString(
+            R.string.leaderboard_rank_number,
+            position + 1
+        )
         holder.tvUsername.text = item.username
-        holder.tvQuantity.text = item.totalQuantity.toString()
+        holder.tvQuantity.text = String.format(Locale.getDefault(), "%d", item.totalQuantity)
 
         when (position) {
-            0 -> holder.tvRank.setTextColor(Color.parseColor("#FFD700")) // 金
-            1 -> holder.tvRank.setTextColor(Color.parseColor("#9E9E9E")) // 银
-            2 -> holder.tvRank.setTextColor(Color.parseColor("#CD7F32")) // 铜
-            else -> holder.tvRank.setTextColor(Color.parseColor("#212121"))
+            0 -> holder.tvRank.setTextColor("#FFD700".toColorInt())
+            1 -> holder.tvRank.setTextColor("#9E9E9E".toColorInt())
+            2 -> holder.tvRank.setTextColor("#CD7F32".toColorInt())
+            else -> holder.tvRank.setTextColor("#212121".toColorInt())
         }
     }
 

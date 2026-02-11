@@ -9,6 +9,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.graphics.toColorInt
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import coil.load
@@ -50,11 +51,11 @@ class AchievementDetailFragment : Fragment() {
         val uiState = AchievementLogicUtils.getUIState(isUnlocked)
 
         binding.tvUnlockStatus.text = uiState.statusText
-        binding.tvUnlockStatus.setBackgroundColor(Color.parseColor(uiState.statusColor))
+        binding.tvUnlockStatus.setBackgroundColor(uiState.statusColor.toColorInt())
         binding.btnShare.isEnabled = uiState.isShareEnabled
 
         if (!uiState.isShareEnabled) {
-            binding.btnShare.text = "Keep Recycling to Unlock"
+            binding.btnShare.text = getString(R.string.achievement_keep_recycling_to_unlock)
             binding.btnShare.setBackgroundColor(Color.LTGRAY)
             val matrix = ColorMatrix()
             matrix.setSaturation(0f)
@@ -81,10 +82,10 @@ class AchievementDetailFragment : Fragment() {
         val shareText = AchievementLogicUtils.generateShareText(user, title, desc)
         val intent = Intent(Intent.ACTION_SEND).apply {
             type = "text/plain"
-            putExtra(Intent.EXTRA_SUBJECT, "My Recycling Achievement")
+            putExtra(Intent.EXTRA_SUBJECT, getString(R.string.achievement_share_subject))
             putExtra(Intent.EXTRA_TEXT, shareText)
         }
-        startActivity(Intent.createChooser(intent, "Share Achievement via"))
+        startActivity(Intent.createChooser(intent, getString(R.string.achievement_share_chooser)))
     }
 
     override fun onDestroyView() {

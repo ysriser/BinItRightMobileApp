@@ -131,8 +131,8 @@ class QuestionnaireFragment : Fragment() {
             }
         }
         
-        viewModel.currentProgress.observe(viewLifecycleOwner) { (current, total) ->
-            binding.tvProgressLabel.text = "Question $current"
+        viewModel.currentProgress.observe(viewLifecycleOwner) { (current, _) ->
+            binding.tvProgressLabel.text = getString(R.string.question_progress_label, current)
             val progress = (current.toFloat() / 5f * 100).toInt().coerceAtMost(100)
             
             // Smooth Animation for Progress Bar
@@ -146,9 +146,9 @@ class QuestionnaireFragment : Fragment() {
             binding.layoutAnswersSummary.isVisible = summary.isNotEmpty()
             binding.layoutAnswersSummary.removeAllViews()
             
-            summary.forEach { (questionText, answerText) ->
+            summary.forEach { (_, answerText) ->
                 val rowBinding = RowAnswerBinding.inflate(LayoutInflater.from(context), binding.layoutAnswersSummary, true)
-                rowBinding.tvAnswerText.text = "$answerText" 
+                rowBinding.tvAnswerText.text = answerText
             }
         }
 
@@ -164,7 +164,7 @@ class QuestionnaireFragment : Fragment() {
     }
     
     private fun updateQuestionContent(question: QuestionNode) {
-        binding.tvHeaderTitle.text = question.title ?: "Item Questionnaire"
+        binding.tvHeaderTitle.text = question.title ?: getString(R.string.questionnaire_header_title)
         binding.tvQuestion.text = question.question
         binding.tvSubtitle.text = question.subtitle
         binding.tvSubtitle.isVisible = !question.subtitle.isNullOrEmpty()

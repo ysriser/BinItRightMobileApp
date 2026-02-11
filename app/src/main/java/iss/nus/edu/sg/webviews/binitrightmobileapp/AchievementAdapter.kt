@@ -6,6 +6,7 @@ import android.graphics.ColorMatrixColorFilter
 import android.graphics.drawable.GradientDrawable
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.core.graphics.toColorInt
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
@@ -52,7 +53,7 @@ class AchievementAdapter(private val onItemClick: (Achievement) -> Unit) :
 
                 val bg = GradientDrawable()
                 bg.shape = GradientDrawable.OVAL
-                bg.setColor(Color.parseColor("#00C853"))
+                bg.setColor("#00C853".toColorInt())
                 binding.ivStatusIcon.background = bg
                 binding.ivStatusIcon.setImageResource(android.R.drawable.btn_star_big_on)
                 binding.ivStatusIcon.setColorFilter(Color.WHITE)
@@ -68,7 +69,7 @@ class AchievementAdapter(private val onItemClick: (Achievement) -> Unit) :
 
                 val bg = GradientDrawable()
                 bg.shape = GradientDrawable.OVAL
-                bg.setColor(Color.parseColor("#CFD8DC"))
+                bg.setColor("#CFD8DC".toColorInt())
                 binding.ivStatusIcon.background = bg
                 binding.ivStatusIcon.setImageResource(android.R.drawable.ic_lock_lock)
                 binding.ivStatusIcon.setColorFilter(Color.WHITE)

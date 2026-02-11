@@ -13,9 +13,26 @@ class RecycleHistoryAdapter : RecyclerView.Adapter<RecycleHistoryAdapter.ViewHol
     private val items = mutableListOf<RecycleHistoryModel>()
 
     fun submitList(data: List<RecycleHistoryModel>) {
+        val oldSize = items.size
         items.clear()
         items.addAll(data)
-        notifyDataSetChanged()
+        val newSize = items.size
+
+        when {
+            oldSize == 0 && newSize > 0 -> notifyItemRangeInserted(0, newSize)
+            newSize == 0 && oldSize > 0 -> notifyItemRangeRemoved(0, oldSize)
+            else -> {
+                val common = minOf(oldSize, newSize)
+                if (common > 0) {
+                    notifyItemRangeChanged(0, common)
+                }
+                if (newSize > oldSize) {
+                    notifyItemRangeInserted(oldSize, newSize - oldSize)
+                } else if (oldSize > newSize) {
+                    notifyItemRangeRemoved(newSize, oldSize - newSize)
+                }
+            }
+        }
     }
 
     fun resolveIcon(categoryName: String): Int {
@@ -44,7 +61,10 @@ class RecycleHistoryAdapter : RecyclerView.Adapter<RecycleHistoryAdapter.ViewHol
         val item = items[position]
         holder.category.text = item.categoryName
         holder.date.text = item.date
-        holder.qty.text = "x${item.quantity}"
+        holder.qty.text = holder.itemView.context.getString(
+            R.string.recycle_history_quantity_format,
+            item.quantity
+        )
 
         holder.icon.setImageResource(resolveIcon(item.categoryName))
     }

@@ -7,7 +7,6 @@ import android.content.ContentValues
 import android.content.Context
 import android.content.pm.PackageManager
 import android.graphics.Color
-import android.graphics.drawable.ColorDrawable
 import android.media.MediaMetadataRetriever
 import android.os.Bundle
 import android.os.Environment
@@ -171,8 +170,8 @@ class CheckInFragment : Fragment() {
     }
     private fun displayBinInformation() {
         binding.apply {
-            tvLocationName.text = binName.ifEmpty { "Recycling Bin" }
-            tvLocationAddress.text = binAddress.ifEmpty { "Location not available" }
+            tvLocationName.text = binName.ifEmpty { getString(R.string.checkin_default_bin_name) }
+            tvLocationAddress.text = binAddress.ifEmpty { getString(R.string.checkin_default_bin_address) }
         }
     }
 
@@ -280,7 +279,7 @@ class CheckInFragment : Fragment() {
     private fun disableRecordVideo() {
         binding.btnRecordVideo.apply {
             isEnabled = false
-            text = "VIDEO SUBMITTED"
+            text = getString(R.string.checkin_video_submitted)
             setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.light_red_disabled))
         }
     }
@@ -289,7 +288,7 @@ class CheckInFragment : Fragment() {
         binding.btnRecordVideo.isEnabled = true
         binding.btnRecordVideo.isClickable = true
         binding.btnRecordVideo.alpha = 1f
-        binding.btnRecordVideo.text = "RECORD VIDEO"
+        binding.btnRecordVideo.text = getString(R.string.checkin_record_video)
         binding.btnRecordVideo.setBackgroundColor(
             ContextCompat.getColor(requireContext(), android.R.color.holo_blue_dark)
         )
@@ -458,7 +457,9 @@ class CheckInFragment : Fragment() {
                 .setCancelable(false)
                 .create()
 
-            dialog.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+            dialog.window?.setBackgroundDrawable(
+                ContextCompat.getDrawable(requireContext(), android.R.color.transparent)
+            )
 
             Log.d(TAG, "### Showing dialog")
             dialog.show()
@@ -513,7 +514,7 @@ class CheckInFragment : Fragment() {
     }
 
     fun updateCounterDisplay() {
-        binding.tvItemCount.text = currentCount.toString()
+        binding.tvItemCount.text = getString(R.string.number_plain_int, currentCount)
     }
 
     override fun onDestroyView() {

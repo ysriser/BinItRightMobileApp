@@ -8,10 +8,10 @@ import android.os.Bundle
 import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.navigation.NavOptions
 import androidx.navigation.findNavController
 import androidx.navigation.fragment.NavHostFragment
+import androidx.core.view.isEmpty
 import androidx.navigation.ui.setupWithNavController
 
 import iss.nus.edu.sg.webviews.binitrightmobileapp.databinding.ActivityMainBinding
@@ -67,10 +67,16 @@ class MainActivity : AppCompatActivity() {
                 R.id.loginFragment, R.id.registerFragment -> {
                     navBar.visibility = View.GONE
                     navBar.menu.clear() // Preserving existing logic
+                    navBar.alpha = 0f
+                    navBar.layoutParams = navBar.layoutParams.apply { height = 0 }
                 }
                 else -> {
                     navBar.visibility = View.VISIBLE
-                    if (navBar.menu.size() == 0) {
+                    navBar.alpha = 1f
+                    navBar.layoutParams = navBar.layoutParams.apply {
+                        height = androidx.constraintlayout.widget.ConstraintLayout.LayoutParams.WRAP_CONTENT
+                    }
+                    if (navBar.menu.isEmpty()) {
                         navBar.inflateMenu(R.menu.bottom_menu)
 
                         // --- CRITICAL FIX ---
