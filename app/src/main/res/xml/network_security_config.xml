@@ -5,11 +5,4 @@
             <certificates src="system" />
         </trust-anchors>
     </base-config>
-    <!-- Allow HTTP only for local dev -->
-    <!-- But for SAST we need to disable it -->
-    <domain-config cleartextTrafficPermitted="true">
-        <domain includeSubdomains="true">10.0.2.2</domain>
-        <domain includeSubdomains="true">localhost</domain>
-        <domain includeSubdomains="true">192.168.88.4</domain>
-    </domain-config>
 </network-security-config>

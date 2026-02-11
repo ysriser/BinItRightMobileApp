@@ -1,6 +1,5 @@
 package iss.nus.edu.sg.webviews.binitrightmobileapp
 
-import android.content.ContentValues.TAG
 import android.content.Context
 import android.os.Bundle
 import android.util.Log
@@ -76,7 +75,7 @@ class LoginFragment : Fragment(R.layout.fragment_login) {
         viewLifecycleOwner.lifecycleScope.launch {
             try {
                 val api = RetrofitClient.apiService()
-                android.util.Log.d("LOGIN_DATA", "Sending: $username and $password")
+                Log.d(TAG, "Submitting login request")
                 val response = api.login(LoginRequest(username, password))
 
                 binding.btnSignIn.isEnabled = true
@@ -100,7 +99,7 @@ class LoginFragment : Fragment(R.layout.fragment_login) {
                             val userId = JwtUtils.getUserIdFromToken(token)
                             userId?.let {
                                 prefs.putLong("USER_ID", it)
-                                Log.d(TAG, "####Current user ID: $it")
+                                Log.d(TAG, "Login success and user id parsed")
                             }
                         }
 
