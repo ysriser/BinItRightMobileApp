@@ -1,9 +1,14 @@
 package iss.nus.edu.sg.webviews.binitrightmobileapp
 
 import android.app.Application
+import android.widget.Button
+import android.widget.FrameLayout
+import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
+import androidx.test.core.app.ApplicationProvider
 import iss.nus.edu.sg.webviews.binitrightmobileapp.model.DropOffLocation
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -60,6 +65,32 @@ class NearByBinAdapterTest {
         state.select(0)
 
         assertEquals(1, state.getItemViewType(0))
+    }
+
+    @Test
+    fun bindAndClick_selectsRow_thenSelectedButtonInvokesCallback() {
+        val bins = listOf(mockBin("1").copy(name = ""), mockBin("2"))
+        var selected: DropOffLocation? = null
+        val adapter = NearByBinsAdapter(bins) { selected = it }
+        val parent = FrameLayout(ApplicationProvider.getApplicationContext())
+
+        val initialHolder = adapter.createViewHolder(parent, adapter.getItemViewType(0))
+        adapter.bindViewHolder(initialHolder, 0)
+
+        val nameView = initialHolder.itemView.findViewById<TextView>(R.id.binName)
+        val distanceView = initialHolder.itemView.findViewById<TextView>(R.id.binDistance)
+        assertEquals("Recycling Bin", nameView.text.toString())
+        assertTrue(distanceView.text.toString().contains("m away"))
+
+        initialHolder.itemView.performClick()
+
+        val selectedHolder = adapter.createViewHolder(parent, 1)
+        adapter.bindViewHolder(selectedHolder, 0)
+        val button = selectedHolder.itemView.findViewById<Button>(R.id.selectButton)
+        assertNotNull(button)
+        button.performClick()
+
+        assertEquals("1", selected?.id)
     }
 
     private fun mockBin(id: String) = DropOffLocation(
