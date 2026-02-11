@@ -11,7 +11,6 @@
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
-        <!-- Header Section -->
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
@@ -68,7 +67,6 @@
                     android:textSize="14sp" />
             </LinearLayout>
 
-            <!-- Stats Cards -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -166,9 +164,6 @@
                     android:layout_height="wrap_content"
                     android:layout_marginStart="6dp"
                     android:layout_weight="1"
-                    android:clickable="true"
-                    android:focusable="true"
-                    android:foreground="?android:attr/selectableItemBackground"
                     app:cardBackgroundColor="#FFFFFF"
                     app:cardCornerRadius="16dp"
                     app:cardElevation="4dp">
@@ -207,14 +202,12 @@
             </LinearLayout>
         </RelativeLayout>
 
-        <!-- Main Content -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:padding="16dp">
 
-            <!-- AI Summary Card -->
             <androidx.cardview.widget.CardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -272,7 +265,6 @@
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
 
-            <!-- Environmental Impact Card -->
             <androidx.cardview.widget.CardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -328,7 +320,6 @@
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
 
-            <!-- Quick Actions Header -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -338,7 +329,6 @@
                 android:textSize="18sp"
                 android:textStyle="bold" />
 
-            <!-- Recycle Now Button -->
             <androidx.cardview.widget.CardView
                 android:layout_width="match_parent"
                 android:layout_height="80dp"
@@ -399,7 +389,6 @@
                     android:focusable="true" />
             </androidx.cardview.widget.CardView>
 
-            <!-- Identify Items Section -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -423,7 +412,6 @@
                 android:layout_marginBottom="24dp"
                 android:orientation="horizontal">
 
-                <!-- Scan Item Card -->
                 <androidx.cardview.widget.CardView
                     android:layout_width="0dp"
                     android:layout_height="130dp"
@@ -484,7 +472,6 @@
                         android:clickable="true" />
                 </androidx.cardview.widget.CardView>
 
-                <!-- Answer Quiz Card -->
                 <androidx.cardview.widget.CardView
                     android:layout_width="0dp"
                     android:layout_height="130dp"
@@ -546,7 +533,6 @@
                 </androidx.cardview.widget.CardView>
             </LinearLayout>
 
-            <!-- Other Tools Section -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -556,7 +542,6 @@
                 android:textSize="18sp"
                 android:textStyle="bold" />
 
-            <!-- Find Recycling Bins Card -->
             <androidx.cardview.widget.CardView
                 android:id="@+id/cardFindBins"
                 android:layout_width="match_parent"
@@ -639,7 +624,6 @@
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
 
-            <!-- Help & Support Section -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -655,7 +639,6 @@
                 android:layout_marginBottom="32dp"
                 android:orientation="horizontal">
 
-                <!-- Chat Helper Card -->
                 <androidx.cardview.widget.CardView
                     android:id="@+id/cardChatHelper"
                     android:layout_width="0dp"
@@ -705,7 +688,6 @@
                     </LinearLayout>
                 </androidx.cardview.widget.CardView>
 
-                <!-- Report Issue Card -->
                 <androidx.cardview.widget.CardView
                     android:id="@+id/cardReportIssue"
                     android:layout_width="0dp"

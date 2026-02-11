@@ -6,25 +6,19 @@ import android.graphics.Color
 import android.graphics.ColorMatrix
 import android.graphics.ColorMatrixColorFilter
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import coil.load
 import iss.nus.edu.sg.webviews.binitrightmobileapp.databinding.FragmentAchievementDetailBinding
 import iss.nus.edu.sg.webviews.binitrightmobileapp.utils.JwtUtils
-import kotlinx.coroutines.launch
 
 class AchievementDetailFragment : Fragment() {
 
     private var _binding: FragmentAchievementDetailBinding? = null
     private val binding get() = _binding!!
-
-    private val TAG = "DEBUG_USER"
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -53,38 +47,29 @@ class AchievementDetailFragment : Fragment() {
             error(android.R.drawable.ic_lock_idle_lock)
         }
 
-        if (isUnlocked) {
-            binding.tvUnlockStatus.text = "UNLOCKED"
-            binding.tvUnlockStatus.setBackgroundColor(Color.parseColor("#00C853"))
-            binding.ivDetailBadge.colorFilter = null
-            binding.btnShare.isEnabled = true
+        val uiState = AchievementLogicUtils.getUIState(isUnlocked)
 
+        binding.tvUnlockStatus.text = uiState.statusText
+        binding.tvUnlockStatus.setBackgroundColor(Color.parseColor(uiState.statusColor))
+        binding.btnShare.isEnabled = uiState.isShareEnabled
+
+        if (!uiState.isShareEnabled) {
+            binding.btnShare.text = "Keep Recycling to Unlock"
+            binding.btnShare.setBackgroundColor(Color.LTGRAY)
+            val matrix = ColorMatrix()
+            matrix.setSaturation(0f)
+            binding.ivDetailBadge.colorFilter = ColorMatrixColorFilter(matrix)
+            binding.tvDetailUserName.text = "-"
+        } else {
+            binding.ivDetailBadge.colorFilter = null
             val prefs = requireContext().getSharedPreferences("APP_PREFS", Context.MODE_PRIVATE)
             val token = prefs.getString("JWT_TOKEN", "") ?: ""
-            val userName = if (token.isNotEmpty()) {
-                JwtUtils.getUsernameFromToken(token) ?: "Achiever"
-            } else {
-                "Achiever"
-            }
+            val userName = AchievementLogicUtils.getUsername(token)
             binding.tvDetailUserName.text = userName
 
             binding.btnShare.setOnClickListener {
                 shareAchievement(name, description, userName)
             }
-
-        } else {
-            binding.tvUnlockStatus.text = "LOCKED"
-            binding.tvUnlockStatus.setBackgroundColor(Color.parseColor("#78909C"))
-
-            val matrix = ColorMatrix()
-            matrix.setSaturation(0f)
-            binding.ivDetailBadge.colorFilter = ColorMatrixColorFilter(matrix)
-
-            binding.btnShare.text = "Keep Recycling to Unlock"
-            binding.btnShare.isEnabled = false
-            binding.btnShare.setBackgroundColor(Color.LTGRAY)
-
-            binding.tvDetailUserName.text = "-"
         }
 
         binding.btnBack.setOnClickListener {
@@ -93,8 +78,7 @@ class AchievementDetailFragment : Fragment() {
     }
 
     private fun shareAchievement(title: String, desc: String, user: String) {
-        val shareText = "🏆 $user just unlocked the '$title' achievement in BinItRight! \n\n$desc \n\nJoin us in recycling to save the planet! 🌍"
-
+        val shareText = AchievementLogicUtils.generateShareText(user, title, desc)
         val intent = Intent(Intent.ACTION_SEND).apply {
             type = "text/plain"
             putExtra(Intent.EXTRA_SUBJECT, "My Recycling Achievement")
@@ -106,5 +90,29 @@ class AchievementDetailFragment : Fragment() {
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
+    }
+}
+
+object AchievementLogicUtils {
+    data class UIState(val statusText: String, val statusColor: String, val isShareEnabled: Boolean)
+
+    fun getUIState(isUnlocked: Boolean): UIState {
+        return if (isUnlocked) {
+            UIState("UNLOCKED", "#00C853", true)
+        } else {
+            UIState("LOCKED", "#78909C", false)
+        }
+    }
+
+    fun getUsername(token: String?): String {
+        return if (!token.isNullOrEmpty()) {
+            JwtUtils.getUsernameFromToken(token) ?: "Achiever"
+        } else {
+            "Achiever"
+        }
+    }
+
+    fun generateShareText(user: String, title: String, desc: String): String {
+        return "🏆 $user just unlocked the '$title' achievement in BinItRight! \n\n$desc \n\nJoin us in recycling to save the planet! 🌍"
     }
 }
