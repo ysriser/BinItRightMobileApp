@@ -1,85 +1,46 @@
 package iss.nus.edu.sg.webviews.binitrightmobileapp
 
+import android.graphics.Color
+import android.widget.FrameLayout
+import androidx.test.core.app.ApplicationProvider
 import iss.nus.edu.sg.webviews.binitrightmobileapp.model.LeaderboardEntry
 import org.junit.Assert.assertEquals
 import org.junit.Test
+import org.junit.runner.RunWith
+import org.robolectric.RobolectricTestRunner
+import org.robolectric.annotation.Config
 
+@RunWith(RobolectricTestRunner::class)
+@Config(manifest = Config.NONE)
 class LeaderboardAdapterTest {
 
     @Test
-    fun testItemCount_Logic() {
-        val items = listOf(
-            LeaderboardEntry(userId = 1L, username = "User1", totalQuantity = 100),
-            LeaderboardEntry(userId = 2L, username = "User2", totalQuantity = 80)
+    fun onBind_setsRankTextAndTopThreeColor() {
+        val context = ApplicationProvider.getApplicationContext<android.app.Application>()
+        val adapter = LeaderboardAdapter(
+            listOf(
+                LeaderboardEntry(1L, "alice", 50),
+                LeaderboardEntry(2L, "bob", 40),
+                LeaderboardEntry(3L, "carl", 30),
+                LeaderboardEntry(4L, "dina", 20)
+            )
         )
-        val adapter = LeaderboardAdapter(items)
-        assertEquals(2, adapter.itemCount)
+
+        val parent = FrameLayout(context)
+        val firstHolder = adapter.onCreateViewHolder(parent, 0)
+        adapter.onBindViewHolder(firstHolder, 0)
+        assertEquals("1", firstHolder.tvRank.text.toString())
+        assertEquals(Color.parseColor("#FFD700"), firstHolder.tvRank.currentTextColor)
+
+        val fourthHolder = adapter.onCreateViewHolder(parent, 0)
+        adapter.onBindViewHolder(fourthHolder, 3)
+        assertEquals("4", fourthHolder.tvRank.text.toString())
+        assertEquals(Color.parseColor("#212121"), fourthHolder.tvRank.currentTextColor)
     }
 
     @Test
-    fun testRankDisplay_Logic() {
-        val position = 0
-        val displayRank = (position + 1).toString()
-        assertEquals("1", displayRank)
-    }
-
-    @Test
-    fun testRankColor_Gold_Logic() {
-        val position = 0
-        val color = when (position) {
-            0 -> "#FFD700"
-            1 -> "#9E9E9E"
-            2 -> "#CD7F32"
-            else -> "#212121"
-        }
-        assertEquals("#FFD700", color)
-    }
-
-    @Test
-    fun testRankColor_Silver_Logic() {
-        val position = 1
-        val color = when (position) {
-            0 -> "#FFD700"
-            1 -> "#9E9E9E"
-            2 -> "#CD7F32"
-            else -> "#212121"
-        }
-        assertEquals("#9E9E9E", color)
-    }
-
-    @Test
-    fun testRankColor_Bronze_Logic() {
-        val position = 2
-        val color = when (position) {
-            0 -> "#FFD700"
-            1 -> "#9E9E9E"
-            2 -> "#CD7F32"
-            else -> "#212121"
-        }
-        assertEquals("#CD7F32", color)
-    }
-
-    @Test
-    fun testRankColor_Default_Logic() {
-        val position = 5
-        val color = when (position) {
-            0 -> "#FFD700"
-            1 -> "#9E9E9E"
-            2 -> "#CD7F32"
-            else -> "#212121"
-        }
-        assertEquals("#212121", color)
-    }
-
-    @Test
-    fun testDataBinding_Logic() {
-        val entry = LeaderboardEntry(userId = 123L, username = "Achiever", totalQuantity = 500)
-
-        val userIdLong: Long = entry.userId
-        val expectedId: Long = 123L
-
-        assertEquals(expectedId, userIdLong)
-        assertEquals("Achiever", entry.username)
-        assertEquals(500, entry.totalQuantity)
+    fun itemCount_matchesInputSize() {
+        val adapter = LeaderboardAdapter(listOf(LeaderboardEntry(10L, "eve", 5)))
+        assertEquals(1, adapter.itemCount)
     }
 }
