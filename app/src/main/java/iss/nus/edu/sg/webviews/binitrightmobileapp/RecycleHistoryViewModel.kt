@@ -7,9 +7,7 @@ import androidx.lifecycle.viewModelScope
 import iss.nus.edu.sg.webviews.binitrightmobileapp.model.RecycleHistoryModel
 import kotlinx.coroutines.launch
 
-class RecycleHistoryViewModel : ViewModel() {
-
-    private val repo = RecycleHistoryRepository()
+class RecycleHistoryViewModel(private val repo: RecycleHistoryRepository = RecycleHistoryRepositoryImpl()) : ViewModel() {
 
     private val _history = MutableLiveData<List<RecycleHistoryModel>>()
     val history: LiveData<List<RecycleHistoryModel>> = _history
@@ -19,7 +17,7 @@ class RecycleHistoryViewModel : ViewModel() {
             try {
                 _history.value = repo.getHistory()
             } catch (e: Exception) {
-                e.printStackTrace()
+                _history.value = emptyList()
             }
         }
     }
