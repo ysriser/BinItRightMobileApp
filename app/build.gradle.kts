@@ -11,7 +11,7 @@ plugins {
 }
 
 // Define the helper function at the top level of the script
-fun getSecret(key: String): String {
+fun getSecret(key: String, defaultValue: String = "0.0.0.0"): String {
     // 1. Check for command line property (-PSTAGING_URL=...)
     val projectProp = project.findProperty(key)?.toString()
     if (!projectProp.isNullOrBlank()) return projectProp
@@ -26,7 +26,7 @@ fun getSecret(key: String): String {
     }
 
     // 3. Fallback
-    return "0.0.0.0"
+    return defaultValue
 }
 
 android {
@@ -45,6 +45,7 @@ android {
         targetSdk = 35
         versionCode = 1
         versionName = "1.0"
+        manifestPlaceholders["MAPS_API_KEY"] = getSecret("MAPS_API_KEY", "")
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
