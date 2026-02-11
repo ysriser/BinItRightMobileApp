@@ -3,8 +3,12 @@ package iss.nus.edu.sg.webviews.binitrightmobileapp
 import iss.nus.edu.sg.webviews.binitrightmobileapp.model.RecycleHistoryModel
 import iss.nus.edu.sg.webviews.binitrightmobileapp.network.RetrofitClient
 
-class RecycleHistoryRepository {
-    suspend fun getHistory(): List<RecycleHistoryModel> {
+interface RecycleHistoryRepository {
+    suspend fun getHistory(): List<RecycleHistoryModel>
+}
+
+class RecycleHistoryRepositoryImpl : RecycleHistoryRepository {
+    override suspend fun getHistory(): List<RecycleHistoryModel> {
         return RetrofitClient.apiService().getRecycleHistory()
     }
 }
