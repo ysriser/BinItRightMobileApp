@@ -30,31 +30,28 @@ class ProfileFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // Fetch data from API as soon as view is created
         loadProfileData()
 
-        // Navigation to Leaderboard
         binding.leaderboardCard.setOnClickListener {
             findNavController().navigate(R.id.action_profile_to_leaderboard)
         }
 
-        // Navigation to Reward Shop using SafeArgs
         binding.rewardShopCard.setOnClickListener {
-            // Retrieve current points from the UI state
             val totalPoints = binding.gridPoints.text.toString().toIntOrNull() ?: 0
-
             val action = ProfileFragmentDirections.actionProfileToRewardShopFragment(totalPoints)
             findNavController().navigate(action)
         }
 
-        // Navigation to Recycle History
         binding.recycleHistory.setOnClickListener {
             findNavController().navigate(R.id.action_profile_to_recycleHistory)
         }
 
-        // Navigation to Avatar Customization
         binding.customizeAvatarBtn.setOnClickListener {
             findNavController().navigate(R.id.action_profile_to_avatarCustomizationFragment)
+        }
+
+        binding.achievementsCard.setOnClickListener {
+            findNavController().navigate(R.id.action_profile_to_achievements)
         }
 
         binding.logoutBtn.setOnClickListener {
@@ -63,24 +60,49 @@ class ProfileFragment : Fragment() {
     }
 
     private fun loadProfileData() {
+        val userId = requireActivity()
+            .getSharedPreferences("APP_PREFS", Context.MODE_PRIVATE)
+            .getLong("USER_ID", -1L)
+
         viewLifecycleOwner.lifecycleScope.launch {
             try {
-                // Notice: using the apiService() function as defined in your RetrofitClient
-                val response = RetrofitClient.apiService().getProfileSummary()
+                val api = RetrofitClient.apiService()
+                val response = api.getProfileSummary()
 
                 if (response.isSuccessful) {
                     val profile = response.body()
                     profile?.let {
-                        // 1. Update Header Info
                         binding.profileName.text = it.name
                         binding.pointsDisplay.text = "${it.pointBalance} Points"
                         binding.summaryRecycled.text = "${it.totalRecycled}"
 
-                        // 2. Update Stats Grid
                         binding.gridPoints.text = it.pointBalance.toString()
                         binding.gridItems.text = it.totalRecycled.toString()
 
-                        // 3. Update Avatar Image
+                        if (userId != -1L) {
+                            val achievementsRes = api.getAchievementsWithStatus(userId)
+                            if (achievementsRes.isSuccessful) {
+                                val remoteData = achievementsRes.body() ?: emptyList()
+                                val unlockedCount = remoteData.count { it.isUnlocked }
+                                binding.gridAwards.text = unlockedCount.toString()
+                                binding.summaryBadges.text = unlockedCount.toString()
+                            }
+
+                            val leaderboardRes = api.getLeaderboard()
+                            if (leaderboardRes.isSuccessful) {
+                                val leaderboardData = leaderboardRes.body() ?: emptyList()
+                                val myIndex = leaderboardData.indexOfFirst { entry ->
+                                    entry.userId == userId
+                                }
+
+                                if (myIndex != -1) {
+                                    binding.gridRank.text = "#${myIndex + 1}"
+                                } else {
+                                    binding.gridRank.text = "N/A"
+                                }
+                            }
+                        }
+
                         val drawableName = it.equippedAvatarName.lowercase().replace(" ", "_")
                         val resId = requireContext().resources.getIdentifier(
                             drawableName, "drawable", requireContext().packageName
