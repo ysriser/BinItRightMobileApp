@@ -2,6 +2,7 @@ package iss.nus.edu.sg.webviews.binitrightmobileapp
 
 import iss.nus.edu.sg.webviews.binitrightmobileapp.model.RegisterRequest
 import iss.nus.edu.sg.webviews.binitrightmobileapp.model.RegisterResponse
+import java.util.UUID
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -13,16 +14,16 @@ class UserRegisterModelTest {
     fun registerRequest_holdsUsernameEmailAndPassword() {
         val sampleUser = "recycler_test_user"
         val sampleEmail = "recycler.test@example.com"
-        val samplePass = "unit_test_pass"
+        val sampleCredential = UUID.randomUUID().toString()
         val request = RegisterRequest(
             sampleUser,
             sampleEmail,
-            samplePass
+            sampleCredential
         )
 
         assertEquals(sampleUser, request.username)
         assertEquals(sampleEmail, request.emailAddress)
-        assertEquals(samplePass, request.password)
+        assertEquals(sampleCredential, request.password)
     }
 
     @Test

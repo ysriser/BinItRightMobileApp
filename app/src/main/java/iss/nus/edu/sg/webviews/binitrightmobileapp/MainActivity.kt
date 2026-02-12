@@ -70,7 +70,6 @@ class MainActivity : AppCompatActivity() {
                     navBar.alpha = 0f
                     navBar.isClickable = false
                     navBar.isFocusable = false
-                    navBar.visibility = View.INVISIBLE
                     navBar.minimumHeight = 0
                     navBar.layoutParams = navBar.layoutParams.apply { height = 0 }
                     navBar.requestLayout()
@@ -80,7 +79,6 @@ class MainActivity : AppCompatActivity() {
                     navBar.alpha = 1f
                     navBar.isClickable = true
                     navBar.isFocusable = true
-                    navBar.visibility = View.VISIBLE
                     navBar.layoutParams = navBar.layoutParams.apply {
                         height = androidx.constraintlayout.widget.ConstraintLayout.LayoutParams.WRAP_CONTENT
                     }
