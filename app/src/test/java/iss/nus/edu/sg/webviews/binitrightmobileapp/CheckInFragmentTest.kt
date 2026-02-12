@@ -71,6 +71,8 @@ class CheckInFragmentTest {
 
         val binding = FragmentCheckInBinding.inflate(LayoutInflater.from(activity))
         setPrivateField(fragment, "_binding", binding)
+        setPrivateField(fragment, "binId", "b-1")
+        setPrivateField(fragment, "wasteType", "Plastic")
         setPrivateField(fragment, "currentCount", 12)
         fragment.updateCounterDisplay()
         callPrivate(fragment, "handleSubmitWithValidation")
@@ -92,6 +94,8 @@ class CheckInFragmentTest {
 
         val binding = FragmentCheckInBinding.inflate(LayoutInflater.from(activity))
         setPrivateField(fragment, "_binding", binding)
+        setPrivateField(fragment, "binId", "b-1")
+        setPrivateField(fragment, "wasteType", "Plastic")
         setPrivateField(fragment, "currentCount", 1)
         setPrivateField(fragment, "recordedFile", null)
         callPrivate(fragment, "handleSubmitWithValidation")

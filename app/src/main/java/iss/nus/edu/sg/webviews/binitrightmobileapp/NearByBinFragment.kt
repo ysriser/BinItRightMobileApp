@@ -50,7 +50,7 @@ class NearByBinFragment : Fragment(R.layout.fragment_near_by_bin), OnMapReadyCal
         private const val TAG = "NearByBinFragment"
         private const val LOCATION_PERMISSION_REQUEST_CODE = 1001
         private const val SEARCH_RADIUS_METERS = 10000
-        private const val STRICT_TYPE_FALLBACK_RADIUS_METERS = 50000
+        private const val MAX_DISPLAY_BINS = 5
         private const val FALLBACK_LAT = 1.2921
         private const val FALLBACK_LNG = 103.77
     }
@@ -138,16 +138,27 @@ class NearByBinFragment : Fragment(R.layout.fragment_near_by_bin), OnMapReadyCal
     }
 
     private fun applyFlowFilter() {
+        applyFlowFilter(true)
+    }
+
+    private fun applyFlowFilter(useFlowFilter: Boolean) {
         val oldSize = displayedBins.size
         displayedBins.clear()
-        displayedBins.addAll(filterByFlowBinType(nearbyBins, selectedBinType))
+        displayedBins.addAll(
+            (if (useFlowFilter) {
+                filterByFlowBinType(nearbyBins, selectedBinType)
+            } else {
+                nearbyBins
+            })
+                .take(MAX_DISPLAY_BINS)
+        )
 
         adapter?.notifyForDataChange(oldSize, displayedBins.size)
         updateMapMarkers(displayedBins)
 
         Log.d(
             TAG,
-            "Flow list updated with selectedBinType=$selectedBinType displayed=${displayedBins.size} total=${nearbyBins.size}"
+            "Flow list updated with selectedBinType=$selectedBinType appliedFlowFilter=$useFlowFilter displayed=${displayedBins.size} total=${nearbyBins.size} limit=$MAX_DISPLAY_BINS"
         )
     }
 
@@ -232,28 +243,48 @@ class NearByBinFragment : Fragment(R.layout.fragment_near_by_bin), OnMapReadyCal
                 val api = RetrofitClient.apiService()
                 val requestedBins = api.getNearbyBins(lat, lng, SEARCH_RADIUS_METERS, flowBinType)
                 val filteredRequestedBins = filterByFlowBinType(requestedBins, flowBinType)
-                val effectiveBins = if (filteredRequestedBins.isEmpty() && !flowBinType.isNullOrBlank()) {
-                    Log.w(TAG, "No bins for strict flowBinType=$flowBinType; retrying without server binType filter")
-                    val fallbackBins = api.getNearbyBins(lat, lng, SEARCH_RADIUS_METERS, null)
-                    val filteredFallbackBins = filterByFlowBinType(fallbackBins, flowBinType)
+                var shouldApplyFlowFilter = true
+                val effectiveBins = if (!flowBinType.isNullOrBlank() && filteredRequestedBins.isNotEmpty() && filteredRequestedBins.size < MAX_DISPLAY_BINS) {
+                    val expandedTypeBins = filterByFlowBinType(
+                        api.getNearbyBins(lat, lng, null, flowBinType),
+                        flowBinType
+                    )
+                    val mergedBins = (filteredRequestedBins + expandedTypeBins).distinctBy { it.id }
+                    if (mergedBins.size > filteredRequestedBins.size) {
+                        Log.d(
+                            TAG,
+                            "Top-up results for $flowBinType: strict=${filteredRequestedBins.size} merged=${mergedBins.size}"
+                        )
+                        updateExpandedTypeHint(flowBinType)
+                    }
+                    mergedBins
+                } else if (filteredRequestedBins.isEmpty() && !flowBinType.isNullOrBlank()) {
+                    Log.w(TAG, "No bins for strict flowBinType=$flowBinType; retrying with expanded type search")
+                    val expandedTypeBins = filterByFlowBinType(
+                        api.getNearbyBins(lat, lng, null, flowBinType),
+                        flowBinType
+                    )
 
-                    if (filteredFallbackBins.isNotEmpty()) {
-                        filteredFallbackBins
-                    } else if (flowBinType == "BLUEBIN") {
-                        if (fallbackBins.isNotEmpty()) {
-                            binding.tvFlowHint.text = getString(R.string.nearby_hint_default_bins)
-                        }
-                        fallbackBins
+                    if (expandedTypeBins.isNotEmpty()) {
+                        Log.w(TAG, "Found ${expandedTypeBins.size} bins for expanded type search: $flowBinType")
+                        updateExpandedTypeHint(flowBinType)
+                        expandedTypeBins
                     } else {
-                        Log.w(TAG, "No bins found in $SEARCH_RADIUS_METERS m for $flowBinType; expanding search")
-                        val wideSearchBins = api.getNearbyBins(lat, lng, STRICT_TYPE_FALLBACK_RADIUS_METERS, null)
-                        val filteredWideSearchBins = filterByFlowBinType(wideSearchBins, flowBinType)
-                        if (filteredWideSearchBins.isNotEmpty()) {
-                            filteredWideSearchBins
+                        Log.w(TAG, "No bins for expanded flowBinType=$flowBinType; retrying without server binType filter")
+                        val fallbackBins = api.getNearbyBins(lat, lng, SEARCH_RADIUS_METERS, null)
+                        val filteredFallbackBins = filterByFlowBinType(fallbackBins, flowBinType)
+
+                        if (filteredFallbackBins.isNotEmpty()) {
+                            filteredFallbackBins
                         } else {
-                            Log.w(TAG, "No strict bins in radius search. Retrying with global binType query for $flowBinType")
-                            val globalTypeBins = api.getNearbyBins(lat, lng, null, flowBinType)
-                            filterByFlowBinType(globalTypeBins, flowBinType)
+                            shouldApplyFlowFilter = false
+                            if (fallbackBins.isNotEmpty()) {
+                                Log.w(TAG, "No strict $flowBinType bins found; showing nearest available bins instead")
+                                binding.tvFlowHint.text = getString(R.string.nearby_hint_fallback_bins)
+                            } else {
+                                Log.w(TAG, "No bins found in $SEARCH_RADIUS_METERS m")
+                            }
+                            fallbackBins
                         }
                     }
                 } else {
@@ -261,7 +292,7 @@ class NearByBinFragment : Fragment(R.layout.fragment_near_by_bin), OnMapReadyCal
                 }
                 nearbyBins.clear()
                 nearbyBins.addAll(effectiveBins)
-                applyFlowFilter()
+                applyFlowFilter(shouldApplyFlowFilter)
             } catch (error: Exception) {
                 Log.e(TAG, "Retrofit error: ${error.message}", error)
             }
@@ -278,6 +309,16 @@ class NearByBinFragment : Fragment(R.layout.fragment_near_by_bin), OnMapReadyCal
         return bins.filter { bin ->
             ScannedCategoryHelper.normalizeBinType(bin.binType) == flowBinType
         }
+    }
+
+    private fun updateExpandedTypeHint(flowBinType: String) {
+        val hint = when (flowBinType) {
+            "EWASTE" -> getString(R.string.nearby_hint_ewaste_bins_expanded)
+            "LIGHTING" -> getString(R.string.nearby_hint_lighting_bins_expanded)
+            "BLUEBIN" -> getString(R.string.nearby_hint_blue_bins_expanded)
+            else -> getString(R.string.nearby_hint_default_bins)
+        }
+        binding.tvFlowHint.text = hint
     }
 
     private fun updateMapMarkers(bins: List<DropOffLocation>) {

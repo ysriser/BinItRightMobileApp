@@ -3,13 +3,17 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:clipChildren="false"
+    android:clipToPadding="false"
     android:background="#F8F9FA">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:clipChildren="false"
+        android:clipToPadding="false"
         android:orientation="vertical"
-        android:padding="20dp">
+        android:padding="16dp">
 
         <!-- Header with Back Button -->
         <LinearLayout
@@ -17,7 +21,7 @@
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:gravity="center_vertical"
-            android:layout_marginBottom="20dp">
+            android:layout_marginBottom="12dp">
 
             <ImageButton
                 android:id="@+id/btnBackToHome"
@@ -29,13 +33,15 @@
                 app:tint="#2E7D32"/>
 
             <TextView
-                android:text="Check-in (Record Video)"
-                android:textSize="24sp"
+                android:text="@string/checkin_title"
+                android:textSize="22sp"
                 android:textStyle="bold"
                 android:textColor="#2E7D32"
                 android:layout_marginStart="12dp"
                 android:layout_width="0dp"
                 android:layout_weight="1"
+                android:maxLines="1"
+                android:ellipsize="end"
                 android:layout_height="wrap_content"/>
 
         </LinearLayout>
@@ -47,29 +53,30 @@
             app:cardCornerRadius="16dp"
             app:cardElevation="2dp"
             app:cardBackgroundColor="#FFFFFF"
-            android:layout_marginBottom="16dp">
+            app:cardUseCompatPadding="true"
+            android:layout_marginBottom="10dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:padding="20dp">
+                android:padding="16dp">
 
                 <TextView
-                    android:text="How many items are you recycling?"
+                    android:text="@string/checkin_items_prompt"
                     android:textSize="16sp"
                     android:textStyle="bold"
                     android:textColor="#212121"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginBottom="16dp"/>
+                    android:layout_marginBottom="12dp"/>
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
                     android:gravity="center_vertical"
-                    android:layout_marginBottom="12dp">
+                    android:layout_marginBottom="8dp">
 
                     <!-- Minus Button -->
                     <com.google.android.material.button.MaterialButton
@@ -100,7 +107,7 @@
                             android:id="@+id/tvItemCount"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="0"
+                            android:text="1"
                             android:textSize="40sp"
                             android:textStyle="bold"
                             android:textColor="#2E7D32"/>
@@ -108,7 +115,7 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="items"
+                            android:text="@string/checkin_items_label"
                             android:textSize="14sp"
                             android:textColor="#66BB6A"/>
 
@@ -128,57 +135,19 @@
                         android:textColor="#FFFFFF"/>
 
                 </LinearLayout>
+
+                <TextView
+                    android:id="@+id/tvPendingReviewHint"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="#FFF8E1"
+                    android:paddingHorizontal="10dp"
+                    android:paddingVertical="8dp"
+                    android:text="@string/checkin_pending_review_hint"
+                    android:textColor="#8D6E63"
+                    android:textSize="12sp"
+                    android:visibility="gone" />
             </LinearLayout>
-
-        </com.google.android.material.card.MaterialCardView>
-
-        <!-- Item Description Card -->
-        <com.google.android.material.card.MaterialCardView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            app:cardCornerRadius="16dp"
-            app:cardElevation="2dp"
-            app:cardBackgroundColor="#FFFFFF"
-            android:layout_marginBottom="16dp">
-
-<!--            <LinearLayout-->
-<!--                android:layout_width="match_parent"-->
-<!--                android:layout_height="wrap_content"-->
-<!--                android:orientation="vertical"-->
-<!--                android:padding="20dp">-->
-
-<!--                <TextView-->
-<!--                    android:text="What are you recycling?"-->
-<!--                    android:textSize="16sp"-->
-<!--                    android:textStyle="bold"-->
-<!--                    android:textColor="#212121"-->
-<!--                    android:layout_width="wrap_content"-->
-<!--                    android:layout_height="wrap_content"-->
-<!--                    android:layout_marginBottom="12dp"/>-->
-
-<!--                <com.google.android.material.textfield.TextInputLayout-->
-<!--                    android:layout_width="match_parent"-->
-<!--                    android:layout_height="wrap_content"-->
-<!--                    android:hint="e.g., Plastic bottles, Paper"-->
-<!--                    app:boxStrokeColor="#2E7D32"-->
-<!--                    app:hintTextColor="#2E7D32"-->
-<!--                    app:boxCornerRadiusTopStart="12dp"-->
-<!--                    app:boxCornerRadiusTopEnd="12dp"-->
-<!--                    app:boxCornerRadiusBottomStart="12dp"-->
-<!--                    app:boxCornerRadiusBottomEnd="12dp"-->
-<!--                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">-->
-
-
-<!--                    <com.google.android.material.textfield.TextInputEditText-->
-<!--                        android:id="@+id/etItemName"-->
-<!--                        android:layout_width="match_parent"-->
-<!--                        android:layout_height="wrap_content"-->
-<!--                        android:inputType="textCapSentences"-->
-<!--                        android:maxLines="2"/>-->
-
-<!--                </com.google.android.material.textfield.TextInputLayout>-->
-
-<!--            </LinearLayout>-->
 
         </com.google.android.material.card.MaterialCardView>
 
@@ -189,16 +158,17 @@
             app:cardCornerRadius="16dp"
             app:cardElevation="2dp"
             app:cardBackgroundColor="#FFFFFF"
-            android:layout_marginBottom="16dp">
+            app:cardUseCompatPadding="true"
+            android:layout_marginBottom="10dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:padding="20dp">
+                android:padding="16dp">
 
                 <TextView
-                    android:text="Item Type"
+                    android:text="@string/checkin_item_type"
                     android:textSize="16sp"
                     android:textStyle="bold"
                     android:textColor="#212121"
@@ -283,14 +253,15 @@
             app:cardCornerRadius="16dp"
             app:cardElevation="2dp"
             app:cardBackgroundColor="#FFFFFF"
-            android:layout_marginBottom="16dp">
+            app:cardUseCompatPadding="true"
+            android:layout_marginBottom="10dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
                 android:gravity="center"
-                android:padding="40dp">
+                android:padding="24dp">
 
                 <ImageView
                     android:layout_width="72dp"
@@ -300,21 +271,49 @@
                     android:layout_marginBottom="16dp"/>
 
                 <TextView
-                    android:text="Show us your items being recycled"
+                    android:text="@string/checkin_video_prompt"
                     android:textSize="16sp"
                     android:textColor="#424242"
                     android:textAlignment="center"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginBottom="20dp"/>
+                    android:layout_marginBottom="12dp"/>
+
+                <TextView
+                    android:id="@+id/tvVideoGuidance"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="6dp"
+                    android:gravity="center"
+                    android:text="@string/checkin_video_min_duration_hint"
+                    android:textColor="#616161"
+                    android:textSize="13sp" />
+
+                <TextView
+                    android:id="@+id/tvVideoRecordedStatus"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="8dp"
+                    android:background="@drawable/bg_status_chip"
+                    android:paddingHorizontal="12dp"
+                    android:paddingVertical="6dp"
+                    android:text="@string/checkin_video_recorded"
+                    android:textColor="#1B5E20"
+                    android:textSize="12sp"
+                    android:textStyle="bold"
+                    android:visibility="gone" />
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnRecordVideo"
-                    android:layout_width="200dp"
+                    android:layout_width="match_parent"
                     android:layout_height="56dp"
-                    android:text="Record Video"
+                    android:layout_marginHorizontal="8dp"
+                    android:text="@string/checkin_record_video"
                     android:textSize="16sp"
                     android:textStyle="bold"
+                    android:maxLines="1"
+                    android:ellipsize="end"
+                    android:textAllCaps="false"
                     app:cornerRadius="28dp"
                     app:icon="@drawable/ic_videocam_24"
                     app:iconGravity="start"
@@ -332,7 +331,8 @@
             app:cardCornerRadius="16dp"
             app:cardElevation="2dp"
             app:cardBackgroundColor="#E3F2FD"
-            android:layout_marginBottom="20dp">
+            app:cardUseCompatPadding="true"
+            android:layout_marginBottom="10dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -354,7 +354,7 @@
                         android:layout_marginEnd="8dp"/>
 
                     <TextView
-                        android:text="Recycling at:"
+                        android:text="@string/checkin_recycling_at"
                         android:textSize="12sp"
                         android:textColor="#1565C0"
                         android:textStyle="bold"
@@ -390,7 +390,7 @@
             android:id="@+id/tvStatusMessage"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
+            android:layout_marginBottom="8dp"
             android:text=""
             android:textSize="14sp"
             android:textColor="#388E3C"
@@ -404,7 +404,7 @@
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:gravity="center"
-            android:layout_marginBottom="24dp">
+            android:layout_marginBottom="12dp">
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnSubmit"
@@ -412,7 +412,7 @@
                 android:layout_width="0dp"
                 android:layout_weight="1"
                 android:layout_height="56dp"
-                android:text="Submit"
+                android:text="@string/action_submit"
                 android:textSize="15sp"
                 android:textStyle="bold"
                 app:cornerRadius="28dp"

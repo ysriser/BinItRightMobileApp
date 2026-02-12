@@ -3,7 +3,6 @@ package iss.nus.edu.sg.webviews.binitrightmobileapp
 import android.Manifest
 import android.annotation.SuppressLint
 import android.app.AlertDialog
-import android.content.ContentValues
 import android.content.Context
 import android.content.pm.PackageManager
 import android.graphics.Color
@@ -49,12 +48,20 @@ class CheckInFragment : Fragment() {
     private var selectedBinType: String? = null
     private var wasteCategory: String? = null
     private var mappedWasteCategory: String? = null
-    private var currentCount = 0
+    private var currentCount = 1
     private var _binding: FragmentCheckInBinding? = null
     private val binding get() = _binding!!
     private var isSubmitted = false
     private var recordedFile: File? = null
     private lateinit var fusedLocationClient: FusedLocationProviderClient
+    private val supportedWasteTypes = setOf(
+        "Plastic",
+        "Paper",
+        "Glass",
+        "Metal",
+        "E-Waste",
+        "Lighting"
+    )
 
     companion object {
         private const val TAG = "CheckInFragment"
@@ -65,7 +72,11 @@ class CheckInFragment : Fragment() {
             if (isGranted) {
                 checkLocationAndNavigate()
             } else {
-                Toast.makeText(requireContext(), "Permission required.", Toast.LENGTH_SHORT).show()
+                Toast.makeText(
+                    requireContext(),
+                    getString(R.string.checkin_permission_required),
+                    Toast.LENGTH_SHORT
+                ).show()
             }
         }
 
@@ -99,8 +110,10 @@ class CheckInFragment : Fragment() {
             setupButtons()
             setupCounter()
             setupChipListeners()
+            observeRecordedVideoState()
             displayBinInformation()
             preselectWasteTypeChip()
+            updateCounterDisplay()
         }catch (e: Exception){
             e.printStackTrace()
         }
@@ -177,6 +190,12 @@ class CheckInFragment : Fragment() {
 
     private fun setupButtons() {
         binding.btnRecordVideo.setOnClickListener {
+            if (recordedFile != null) {
+                recordedFile = null
+                binding.tvVideoRecordedStatus.visibility = View.GONE
+                updateSubmitButtonState(false)
+                enableRecordVideo()
+            }
             requestPermissionNeeded()
         }
 
@@ -192,9 +211,45 @@ class CheckInFragment : Fragment() {
 
     private fun setupCounter() {
         binding.btnIncrease.setOnClickListener { currentCount++; updateCounterDisplay() }
-        binding.btnDecrease.setOnClickListener { if (currentCount > 0) { currentCount--; updateCounterDisplay() } }
+        binding.btnDecrease.setOnClickListener {
+            if (currentCount > 1) {
+                currentCount--
+                updateCounterDisplay()
+            }
+        }
         findNavController().currentBackStackEntry?.savedStateHandle?.getLiveData<Int>("item_count")
-            ?.observe(viewLifecycleOwner) { currentCount = it; updateCounterDisplay() }
+            ?.observe(viewLifecycleOwner) {
+                currentCount = maxOf(1, it)
+                updateCounterDisplay()
+            }
+    }
+
+    private fun updatePendingReviewHint() {
+        binding.tvPendingReviewHint.visibility = if (currentCount > 10) View.VISIBLE else View.GONE
+    }
+
+    private fun observeRecordedVideoState() {
+        val handle = findNavController().currentBackStackEntry?.savedStateHandle ?: return
+        handle.getLiveData<String>("recorded_video_path").observe(viewLifecycleOwner) { path ->
+            if (path.isNullOrBlank()) return@observe
+            val file = File(path)
+            if (file.exists()) {
+                recordedFile = file
+                showVideoRecordedState()
+                updateSubmitButtonState(true)
+            } else {
+                loadLastRecordedVideo()
+            }
+            handle.remove<String>("recorded_video_path")
+            handle.remove<Boolean>("video_recorded")
+        }
+
+        handle.getLiveData<Boolean>("video_recorded").observe(viewLifecycleOwner) { recorded ->
+            if (recorded == true && recordedFile == null) {
+                loadLastRecordedVideo()
+                handle.remove<Boolean>("video_recorded")
+            }
+        }
     }
 
     private fun setupChipListeners() {
@@ -241,17 +296,17 @@ class CheckInFragment : Fragment() {
     @SuppressLint("MissingPermission")
     fun checkLocationAndNavigate() {
         if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            Toast.makeText(requireContext(), "Permission required.", Toast.LENGTH_SHORT).show()
+            Toast.makeText(requireContext(), getString(R.string.checkin_permission_required), Toast.LENGTH_SHORT).show()
             return
         }
 
         fusedLocationClient.getCurrentLocation(Priority.PRIORITY_HIGH_ACCURACY, null).addOnSuccessListener { location ->
             if (location != null && LocationChecker.isWithinRadius(location.latitude, location.longitude, binLatitude, binLongitude, radius)) {
-                val currentValue = binding.tvItemCount.text.toString().toIntOrNull() ?: 0
+                val currentValue = maxOf(1, binding.tvItemCount.text.toString().toIntOrNull() ?: currentCount)
                 findNavController().currentBackStackEntry?.savedStateHandle?.set("item_count", currentValue)
                 findNavController().navigate(R.id.action_checkIn_to_videoRecord)
             } else {
-                Toast.makeText(requireContext(), "You must be near the recycling bin.", Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(), getString(R.string.checkin_near_bin_required), Toast.LENGTH_SHORT).show()
             }
         }
     }
@@ -262,6 +317,7 @@ class CheckInFragment : Fragment() {
         val lastVideo = videoDir?.listFiles { it.extension == "mp4" }?.maxByOrNull { it.lastModified() }
         if (lastVideo != null) {
             recordedFile = lastVideo
+            showVideoRecordedState()
             updateSubmitButtonState(true)
         }
     }
@@ -271,12 +327,18 @@ class CheckInFragment : Fragment() {
         if (isSubmitted) {
             disableRecordVideo()
             updateSubmitButtonState(false)
-        } else if (findNavController().currentBackStackEntry?.savedStateHandle?.contains("item_count") == true) {
-            loadLastRecordedVideo()
+        } else {
+            if (recordedFile != null) {
+                showVideoRecordedState()
+                updateSubmitButtonState(true)
+            } else if (findNavController().currentBackStackEntry?.savedStateHandle?.contains("item_count") == true) {
+                loadLastRecordedVideo()
+            }
         }
     }
 
     private fun disableRecordVideo() {
+        binding.tvVideoRecordedStatus.visibility = View.VISIBLE
         binding.btnRecordVideo.apply {
             isEnabled = false
             text = getString(R.string.checkin_video_submitted)
@@ -284,7 +346,18 @@ class CheckInFragment : Fragment() {
         }
     }
 
+    private fun showVideoRecordedState() {
+        binding.tvVideoRecordedStatus.visibility = View.VISIBLE
+        binding.btnRecordVideo.isEnabled = true
+        binding.btnRecordVideo.text = getString(R.string.checkin_record_again)
+        binding.btnRecordVideo.setBackgroundColor(
+            ContextCompat.getColor(requireContext(), android.R.color.holo_green_dark)
+        )
+        binding.btnRecordVideo.setTextColor(Color.WHITE)
+    }
+
     private fun enableRecordVideo() {
+        binding.tvVideoRecordedStatus.visibility = View.GONE
         binding.btnRecordVideo.isEnabled = true
         binding.btnRecordVideo.isClickable = true
         binding.btnRecordVideo.alpha = 1f
@@ -296,12 +369,24 @@ class CheckInFragment : Fragment() {
     }
 
     private fun handleSubmitWithValidation() {
+        showStatus("")
+        if (binId.isBlank()) {
+            showStatus(getString(R.string.checkin_invalid_bin), isError = true)
+            return
+        }
+        val resolvedWasteType = resolveWasteTypeForSubmission()
+        if (resolvedWasteType == null) {
+            showStatus(getString(R.string.checkin_invalid_item_type), isError = true)
+            return
+        }
+        wasteType = resolvedWasteType
+
         val quantity = currentCount
         val file = recordedFile
 
         if (quantity > 10) {
             if (file == null) {
-                showStatus("Video required for quantity > 10", isError = true)
+                showStatus(getString(R.string.checkin_video_required_quantity), isError = true)
                 enableRecordVideo()
                 return
             }
@@ -311,15 +396,25 @@ class CheckInFragment : Fragment() {
 
         val durationSeconds = file?.let { getVideoDurationSeconds(it) } ?: 0
 
-        if (durationSeconds > 5) {
+        if (durationSeconds >= 5) {
             submitWithoutVideo(durationSeconds)
         } else {
-            showStatus(
-                "Invalid check-in: duration must be more than 5 seconds",
-                isError = true
-            )
+            showStatus(getString(R.string.checkin_video_duration_invalid), isError = true)
             enableRecordVideo()
         }
+    }
+
+    private fun resolveWasteTypeForSubmission(): String? {
+        val candidates = listOf(
+            wasteType,
+            mappedWasteCategory,
+            ScannedCategoryHelper.toCheckInWasteType(wasteCategory),
+            ScannedCategoryHelper.toCheckInWasteTypeFromBinType(selectedBinType ?: binType)
+        )
+
+        return candidates
+            .map { it.orEmpty().trim() }
+            .firstOrNull { supportedWasteTypes.contains(it) }
     }
 
     private fun uploadVideoAndSubmit(file: File) {
@@ -327,7 +422,7 @@ class CheckInFragment : Fragment() {
 
         updateSubmitButtonState(false)
         disableRecordVideo()
-        showStatus("Requesting upload permission...", isError = false)
+        showStatus("")
 
         lifecycleScope.launch {
             try {
@@ -336,7 +431,7 @@ class CheckInFragment : Fragment() {
                 )
 
                 if (!presignResponse.isSuccessful || presignResponse.body() == null) {
-                    showStatus("Failed to get upload permission", isError = true)
+                    showStatus(getString(R.string.checkin_status_upload_permission_failed), isError = true)
                     updateSubmitButtonState(true)
                     enableRecordVideo()
                     return@launch
@@ -345,20 +440,14 @@ class CheckInFragment : Fragment() {
                 val presignData = presignResponse.body()!!
                 Log.d(TAG, "Got pre-signed URL for key: ${presignData.objectKey}")
 
-                showStatus("Uploading video...", isError = false)
-
                 val uploadSuccess = VideoUploader.uploadVideoToSpaces(
                     file = file,
                     presignedUrl = presignData.uploadUrl,
-                    onProgress = { progress ->
-                        lifecycleScope.launch {
-                            showStatus("Uploading: $progress%", isError = false)
-                        }
-                    }
+                    onProgress = { _ -> }
                 )
 
                 if (!uploadSuccess) {
-                    showStatus("Video upload failed", isError = true)
+                    showStatus(getString(R.string.checkin_status_upload_failed), isError = true)
                     updateSubmitButtonState(true)
                     enableRecordVideo()
                     return@launch
@@ -383,7 +472,7 @@ class CheckInFragment : Fragment() {
     private fun submitWithoutVideo(durationSeconds: Int) {
         updateSubmitButtonState(false)
         disableRecordVideo()
-        showStatus("Submitting check-in...", isError = false)
+        showStatus("")
 
         lifecycleScope.launch {
             try {
@@ -426,6 +515,7 @@ class CheckInFragment : Fragment() {
                 if (resBody.responseCode == "SUCCESS") {
                     Log.d(TAG, "### Check-in successful, showing popup")
                     isSubmitted = true
+                    showStatus("")
                     showSuccessPopup()
                 } else {
                     val message = resBody.responseCode + "\n" + resBody.responseDesc
@@ -439,7 +529,28 @@ class CheckInFragment : Fragment() {
                 enableRecordVideo()
             }
         } else {
-            showStatus("Submission failed (${response.code()})", isError = true)
+            val errorDetail = runCatching { response.errorBody()?.string() }
+                .getOrNull()
+                ?.replace("\n", " ")
+                ?.trim()
+                ?.take(160)
+                .orEmpty()
+
+            Log.e(
+                TAG,
+                "Check-in submission failed code=${response.code()} detail=$errorDetail"
+            )
+            if (errorDetail.isBlank()) {
+                showStatus(
+                    getString(R.string.checkin_status_submit_failed, response.code()),
+                    isError = true
+                )
+            } else {
+                showStatus(
+                    getString(R.string.checkin_status_submit_failed_detail, response.code(), errorDetail),
+                    isError = true
+                )
+            }
             updateSubmitButtonState(true)
             enableRecordVideo()
         }
@@ -487,6 +598,10 @@ class CheckInFragment : Fragment() {
     }
 
     private fun showStatus(message: String, isError: Boolean = false) {
+        if (message.isBlank()) {
+            binding.tvStatusMessage.visibility = View.GONE
+            return
+        }
         binding.tvStatusMessage.apply {
             text = message
             setTextColor(
@@ -515,6 +630,7 @@ class CheckInFragment : Fragment() {
 
     fun updateCounterDisplay() {
         binding.tvItemCount.text = getString(R.string.number_plain_int, currentCount)
+        updatePendingReviewHint()
     }
 
     override fun onDestroyView() {

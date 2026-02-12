@@ -5,8 +5,10 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.navigation.NavOptions
 import androidx.navigation.findNavController
 import androidx.navigation.fragment.NavHostFragment
@@ -68,17 +70,22 @@ class MainActivity : AppCompatActivity() {
                     navBar.alpha = 0f
                     navBar.isClickable = false
                     navBar.isFocusable = false
+                    navBar.visibility = View.INVISIBLE
+                    navBar.minimumHeight = 0
                     navBar.layoutParams = navBar.layoutParams.apply { height = 0 }
                     navBar.requestLayout()
+                    updateNavHostBottomConstraint(anchorToBottomNav = false)
                 }
                 else -> {
                     navBar.alpha = 1f
                     navBar.isClickable = true
                     navBar.isFocusable = true
+                    navBar.visibility = View.VISIBLE
                     navBar.layoutParams = navBar.layoutParams.apply {
                         height = androidx.constraintlayout.widget.ConstraintLayout.LayoutParams.WRAP_CONTENT
                     }
                     navBar.requestLayout()
+                    updateNavHostBottomConstraint(anchorToBottomNav = true)
                     if (navBar.menu.isEmpty()) {
                         navBar.inflateMenu(R.menu.bottom_menu)
 
@@ -89,5 +96,20 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         }
+    }
+
+    private fun updateNavHostBottomConstraint(anchorToBottomNav: Boolean) {
+        val navHostView = binding.root.findViewById<View>(R.id.nav_host_fragment)
+        val params = navHostView.layoutParams as ConstraintLayout.LayoutParams
+
+        if (anchorToBottomNav) {
+            params.bottomToTop = R.id.bottom_nav_view
+            params.bottomToBottom = ConstraintLayout.LayoutParams.UNSET
+        } else {
+            params.bottomToTop = ConstraintLayout.LayoutParams.UNSET
+            params.bottomToBottom = ConstraintLayout.LayoutParams.PARENT_ID
+        }
+
+        navHostView.layoutParams = params
     }
 }

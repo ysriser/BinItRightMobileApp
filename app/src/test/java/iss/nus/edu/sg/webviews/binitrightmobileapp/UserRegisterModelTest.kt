@@ -10,13 +10,15 @@ import org.junit.Test
 class UserRegisterModelTest {
 
     @Test
-    fun registerRequest_holdsUsernameAndPassword() {
+    fun registerRequest_holdsUsernameEmailAndPassword() {
         val request = RegisterRequest(
             username = "alice",
+            emailAddress = "alice@example.com",
             password = "secret123"
         )
 
         assertEquals("alice", request.username)
+        assertEquals("alice@example.com", request.emailAddress)
         assertEquals("secret123", request.password)
     }
 

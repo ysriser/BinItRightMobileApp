@@ -58,12 +58,14 @@ class ModelDataContractsTest {
     @Test
     fun registerAndRedeemResponses_keepPayload() {
         val accountInput = composeValue("u", "1")
+        val emailInput = "u1@example.com"
         val authInput = composeValue("p", "1")
-        val request = RegisterRequest(accountInput, authInput)
+        val request = RegisterRequest(accountInput, emailInput, authInput)
         val registerResponse = RegisterResponse(success = true, message = "created")
         val redeemResponse = RedeemResponse(newTotalPoints = 888, message = "ok")
 
         assertEquals(accountInput, request.username)
+        assertEquals(emailInput, request.emailAddress)
         assertTrue(registerResponse.success)
         assertEquals(888, redeemResponse.newTotalPoints)
     }

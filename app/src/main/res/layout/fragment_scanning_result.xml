@@ -154,7 +154,7 @@
             android:layout_marginHorizontal="20dp"
             android:layout_marginTop="24dp"
             android:backgroundTint="#00C853"
-            android:text="Yes, I want to recycle this"
+            android:text="@string/scanning_recycle_cta_enabled"
             android:textSize="14sp"
             android:maxLines="2"
             android:ellipsize="end"

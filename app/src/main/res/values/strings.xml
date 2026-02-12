@@ -51,14 +51,36 @@
     <string name="scanning_instruction_default">1. Follow local disposal guidance</string>
     <string name="scanning_error_prefix">Scan failed: %1$s</string>
     <string name="scanning_feedback_sent">Feedback sent!</string>
+    <string name="scanning_recycle_cta_enabled">Yes, I want to recycle this</string>
+    <string name="scanning_recycle_cta_disabled">This item is not recyclable</string>
 
     <string name="recycle_history_quantity_format">x%1$d</string>
     <string name="number_plain_int">%1$d</string>
 
     <string name="checkin_video_submitted">VIDEO SUBMITTED</string>
     <string name="checkin_record_video">RECORD VIDEO</string>
+    <string name="checkin_record_again">Record Again</string>
+    <string name="checkin_video_recorded">VIDEO RECORDED</string>
+    <string name="checkin_title">Check-in</string>
+    <string name="checkin_items_prompt">How many items are you recycling?</string>
+    <string name="checkin_items_label">items</string>
+    <string name="checkin_item_type">Item Type</string>
+    <string name="checkin_video_prompt">Show us your items being recycled</string>
+    <string name="checkin_video_min_duration_hint">Minimum recording time: 5 seconds</string>
+    <string name="checkin_pending_review_hint">For quantities over 10, this check-in will be marked Pending Review before points are awarded.</string>
+    <string name="checkin_recycling_at">Recycling at:</string>
+    <string name="checkin_video_required_quantity">Video required for quantity &gt; 10</string>
+    <string name="checkin_video_duration_invalid">Invalid check-in: video must be at least 5 seconds</string>
+    <string name="checkin_status_upload_permission_failed">Failed to get upload permission</string>
+    <string name="checkin_status_upload_failed">Video upload failed</string>
+    <string name="checkin_status_submit_failed">Submission failed (%1$d)</string>
+    <string name="checkin_status_submit_failed_detail">Submission failed (%1$d): %2$s</string>
+    <string name="checkin_permission_required">Permission required.</string>
+    <string name="checkin_near_bin_required">You must be near the recycling bin.</string>
     <string name="checkin_default_bin_name">Recycling Bin</string>
     <string name="checkin_default_bin_address">Location not available</string>
+    <string name="checkin_invalid_bin">Unable to submit. Please select a recycling bin again.</string>
+    <string name="checkin_invalid_item_type">Please select a supported item type before submitting.</string>
 
     <string name="news_recent">Recent</string>
 
@@ -66,6 +88,10 @@
     <string name="nearby_hint_blue_bins">Showing nearest blue recycling bins</string>
     <string name="nearby_hint_ewaste_bins">Showing nearest e-waste bins</string>
     <string name="nearby_hint_lighting_bins">Showing nearest lighting bins</string>
+    <string name="nearby_hint_blue_bins_expanded">No nearby blue bins. Showing nearest blue bins with expanded search.</string>
+    <string name="nearby_hint_ewaste_bins_expanded">No nearby e-waste bins. Showing nearest e-waste bins with expanded search.</string>
+    <string name="nearby_hint_lighting_bins_expanded">No nearby lighting bins. Showing nearest lighting bins with expanded search.</string>
+    <string name="nearby_hint_fallback_bins">No exact bin type nearby. Showing nearest available bins.</string>
     <string name="nearby_hint_default_bins">Showing nearest recycling bins</string>
     <string name="nearby_default_bin_name">Recycling Bin</string>
     <string name="nearby_distance_unknown">Distance unknown</string>
@@ -75,7 +101,16 @@
     <string name="video_permissions_required">Camera &amp; audio permissions are required</string>
     <string name="video_action_start">Start</string>
     <string name="video_action_stop">Stop</string>
+    <string name="video_action_start_recording">Start Recording</string>
+    <string name="video_action_finish_save">Finish &amp; Save</string>
+    <string name="video_record_title">Record Check-in Video</string>
+    <string name="video_record_min_duration">Minimum 5 seconds required</string>
+    <string name="video_record_timer_default">00:00</string>
+    <string name="video_recording_saved">Video saved</string>
+    <string name="video_recording_too_short">Please record for at least 5 seconds</string>
     <string name="video_recording_stopped">Recording stopped</string>
+    <string name="video_recording_in_progress">Recording in progress... Tap "Finish &amp; Save" when done.</string>
+    <string name="video_camera_initializing">Camera is initializing, please wait a moment.</string>
 
     <string name="scan_home_title">Do you know what you\'re recycling?</string>
     <string name="scan_home_subtitle">This helps us guide you through the right process</string>

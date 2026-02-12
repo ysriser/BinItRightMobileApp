@@ -42,6 +42,11 @@ class RegisterFragmentTest {
         )
 
         root.findViewById<com.google.android.material.textfield.TextInputEditText>(R.id.etUsername).setText("ok_user")
+        root.findViewById<com.google.android.material.textfield.TextInputEditText>(R.id.etEmail).setText("bad-email")
+        root.findViewById<View>(R.id.btnCreateAccount).performClick()
+        assertEquals("Enter a valid email", ShadowToast.getTextOfLatestToast())
+
+        root.findViewById<com.google.android.material.textfield.TextInputEditText>(R.id.etEmail).setText("ok_user@test.com")
         root.findViewById<com.google.android.material.textfield.TextInputEditText>(R.id.etPassword).setText("123")
         root.findViewById<com.google.android.material.textfield.TextInputEditText>(R.id.etConfirmPassword).setText("123")
         root.findViewById<View>(R.id.btnCreateAccount).performClick()
@@ -102,6 +107,8 @@ class RegisterFragmentTest {
 
         fragment.requireView().findViewById<com.google.android.material.textfield.TextInputEditText>(R.id.etUsername)
             .setText("ok_user")
+        fragment.requireView().findViewById<com.google.android.material.textfield.TextInputEditText>(R.id.etEmail)
+            .setText("ok_user@test.com")
         fragment.requireView().findViewById<com.google.android.material.textfield.TextInputEditText>(R.id.etPassword)
             .setText("123456")
         fragment.requireView().findViewById<com.google.android.material.textfield.TextInputEditText>(R.id.etConfirmPassword)
@@ -135,6 +142,8 @@ class RegisterFragmentTest {
 
         fragment.requireView().findViewById<com.google.android.material.textfield.TextInputEditText>(R.id.etUsername)
             .setText("ok_user")
+        fragment.requireView().findViewById<com.google.android.material.textfield.TextInputEditText>(R.id.etEmail)
+            .setText("ok_user@test.com")
         fragment.requireView().findViewById<com.google.android.material.textfield.TextInputEditText>(R.id.etPassword)
             .setText("123456")
         fragment.requireView().findViewById<com.google.android.material.textfield.TextInputEditText>(R.id.etConfirmPassword)
@@ -162,6 +171,8 @@ class RegisterFragmentTest {
 
         fragment.requireView().findViewById<com.google.android.material.textfield.TextInputEditText>(R.id.etUsername)
             .setText("ok_user")
+        fragment.requireView().findViewById<com.google.android.material.textfield.TextInputEditText>(R.id.etEmail)
+            .setText("ok_user@test.com")
         fragment.requireView().findViewById<com.google.android.material.textfield.TextInputEditText>(R.id.etPassword)
             .setText("123456")
         fragment.requireView().findViewById<com.google.android.material.textfield.TextInputEditText>(R.id.etConfirmPassword)

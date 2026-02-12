@@ -52,7 +52,10 @@ class VideoRecordFragmentTest {
 
         verify(activeRecording).stop()
         assertNull(getPrivateField(fragment, "recording"))
-        assertEquals("Start", binding.btnStartRecording.text.toString())
+        assertEquals(
+            activity.getString(R.string.video_action_start_recording),
+            binding.btnStartRecording.text.toString()
+        )
         assertEquals("Recording stopped", ShadowToast.getTextOfLatestToast())
     }
 

@@ -1,5 +1,6 @@
 package iss.nus.edu.sg.todo.samplebin
 
+import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.view.LayoutInflater
 import android.view.ViewGroup
@@ -10,7 +11,8 @@ import iss.nus.edu.sg.webviews.binitrightmobileapp.databinding.ItemFindRecycling
 import iss.nus.edu.sg.webviews.binitrightmobileapp.model.DropOffLocation
 
 class FindBinsAdapter(
-    private val bins: List<DropOffLocation>
+    private val bins: List<DropOffLocation>,
+    private val onDirectionsUnavailable: ((DropOffLocation) -> Unit)? = null
 ) : RecyclerView.Adapter<FindBinsAdapter.ViewHolder>() {
 
     fun formatDistance(distanceMeters: Double, context: android.content.Context): String {
@@ -27,6 +29,38 @@ class FindBinsAdapter(
     }
 
     fun buildNavigationUri(lat: Double, lng: Double) = "google.navigation:q=$lat,$lng".toUri()
+
+    private fun buildGeoUri(bin: DropOffLocation) =
+        "geo:0,0?q=${bin.latitude},${bin.longitude}(${bin.name})".toUri()
+
+    private fun buildBrowserUri(bin: DropOffLocation) =
+        "https://www.google.com/maps/search/?api=1&query=${bin.latitude},${bin.longitude}".toUri()
+
+    private fun tryStartIntent(context: android.content.Context, intent: Intent): Boolean {
+        return try {
+            context.startActivity(intent)
+            true
+        } catch (_: ActivityNotFoundException) {
+            false
+        }
+    }
+
+    private fun openDirections(context: android.content.Context, bin: DropOffLocation): Boolean {
+        val mapsIntent = Intent(Intent.ACTION_VIEW, buildNavigationUri(bin.latitude, bin.longitude)).apply {
+            setPackage("com.google.android.apps.maps")
+        }
+        if (tryStartIntent(context, mapsIntent)) {
+            return true
+        }
+
+        val geoIntent = Intent(Intent.ACTION_VIEW, buildGeoUri(bin))
+        if (tryStartIntent(context, geoIntent)) {
+            return true
+        }
+
+        val webIntent = Intent(Intent.ACTION_VIEW, buildBrowserUri(bin))
+        return tryStartIntent(context, webIntent)
+    }
 
     fun notifyForDataChange(oldSize: Int, newSize: Int) {
         when {
@@ -57,10 +91,10 @@ class FindBinsAdapter(
             binding.txtType.text = mapBinType(bin.binType)
 
             binding.btnDirections.setOnClickListener {
-                val intent = Intent(Intent.ACTION_VIEW, buildNavigationUri(bin.latitude, bin.longitude)).apply {
-                    setPackage("com.google.android.apps.maps")
+                val opened = openDirections(it.context, bin)
+                if (!opened) {
+                    onDirectionsUnavailable?.invoke(bin)
                 }
-                it.context.startActivity(intent)
             }
         }
     }
