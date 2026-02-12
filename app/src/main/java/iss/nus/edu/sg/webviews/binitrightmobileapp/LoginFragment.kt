@@ -92,7 +92,7 @@ class LoginFragment : Fragment(R.layout.fragment_login) {
                         val userSlot = userSlot()
 
                         prefs.edit {
-                            body?.token?.let { token ->
+                            body.token?.let { token ->
                                 putString(sessionSlot, token)
                                 val userId = JwtUtils.getUserIdFromToken(token)
                                 userId?.let {

@@ -72,7 +72,7 @@ data class Tier2Error(
 )
 
 data class Meta(
-    val schema_version: String? = null,
+    val schemaVersion: String? = null,
     @SerializedName("force_cloud")
     val forceCloud: Boolean? = null,
     @SerializedName("tier2_provider_attempted")

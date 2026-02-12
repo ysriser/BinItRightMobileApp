@@ -59,7 +59,7 @@ class ScanApiContractModelTest {
         assertEquals("FORCE_CLOUD", decision?.reasonCodes?.first())
 
         val meta = response.data?.meta
-        assertEquals("0.1", meta?.schema_version)
+        assertEquals("0.1", meta?.schemaVersion)
         assertEquals("openai", meta?.tier2ProviderUsed)
     }
 

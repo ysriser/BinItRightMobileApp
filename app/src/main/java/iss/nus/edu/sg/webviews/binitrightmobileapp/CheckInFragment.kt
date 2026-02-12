@@ -3,7 +3,6 @@ package iss.nus.edu.sg.webviews.binitrightmobileapp
 import android.Manifest
 import android.annotation.SuppressLint
 import android.app.AlertDialog
-import android.content.ContentValues
 import android.content.Context
 import android.content.pm.PackageManager
 import android.graphics.Color

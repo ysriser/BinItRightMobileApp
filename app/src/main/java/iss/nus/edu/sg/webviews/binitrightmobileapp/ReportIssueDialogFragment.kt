@@ -16,6 +16,7 @@ import iss.nus.edu.sg.webviews.binitrightmobileapp.databinding.DialogReportIssue
 import iss.nus.edu.sg.webviews.binitrightmobileapp.model.IssueCreateRequest
 import iss.nus.edu.sg.webviews.binitrightmobileapp.network.RetrofitClient
 import kotlinx.coroutines.launch
+import androidx.core.graphics.drawable.toDrawable
 
 class ReportIssueDialogFragment : DialogFragment() {
 
@@ -50,7 +51,7 @@ class ReportIssueDialogFragment : DialogFragment() {
                 width,
                 WindowManager.LayoutParams.WRAP_CONTENT
             )
-            setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+            setBackgroundDrawable(Color.TRANSPARENT.toDrawable())
         }
     }
 
