@@ -50,7 +50,7 @@ class NearByBinFragment : Fragment(R.layout.fragment_near_by_bin), OnMapReadyCal
         private const val TAG = "NearByBinFragment"
         private const val LOCATION_PERMISSION_REQUEST_CODE = 1001
         private const val SEARCH_RADIUS_METERS = 10000
-        private const val MAX_DISPLAY_BINS = 5
+        private const val MAX_DISPLAY_BINS = 3
         private const val FALLBACK_LAT = 1.2921
         private const val FALLBACK_LNG = 103.77
     }
