@@ -139,14 +139,13 @@
                 <TextView
                     android:id="@+id/tvPendingReviewHint"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
+                    android:layout_height="0dp"
                     android:background="#FFF8E1"
                     android:paddingHorizontal="10dp"
                     android:paddingVertical="8dp"
-                    android:text="@string/checkin_pending_review_hint"
+                    android:text=""
                     android:textColor="#8D6E63"
-                    android:textSize="12sp"
-                    android:visibility="gone" />
+                    android:textSize="12sp" />
             </LinearLayout>
 
         </com.google.android.material.card.MaterialCardView>
@@ -292,16 +291,15 @@
                 <TextView
                     android:id="@+id/tvVideoRecordedStatus"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                    android:layout_height="0dp"
                     android:layout_marginBottom="8dp"
                     android:background="@drawable/bg_status_chip"
                     android:paddingHorizontal="12dp"
                     android:paddingVertical="6dp"
-                    android:text="@string/checkin_video_recorded"
+                    android:text=""
                     android:textColor="#1B5E20"
                     android:textSize="12sp"
-                    android:textStyle="bold"
-                    android:visibility="gone" />
+                    android:textStyle="bold" />
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnRecordVideo"

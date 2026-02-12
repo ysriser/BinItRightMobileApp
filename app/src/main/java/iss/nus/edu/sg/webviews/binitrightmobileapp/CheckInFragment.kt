@@ -192,7 +192,7 @@ class CheckInFragment : Fragment() {
         binding.btnRecordVideo.setOnClickListener {
             if (recordedFile != null) {
                 recordedFile = null
-                binding.tvVideoRecordedStatus.visibility = View.GONE
+                setVideoRecordedStatusVisible(false)
                 updateSubmitButtonState(false)
                 enableRecordVideo()
             }
@@ -225,7 +225,7 @@ class CheckInFragment : Fragment() {
     }
 
     private fun updatePendingReviewHint() {
-        binding.tvPendingReviewHint.visibility = if (currentCount > 10) View.VISIBLE else View.GONE
+        setPendingReviewHintVisible(currentCount > 10)
     }
 
     private fun observeRecordedVideoState() {
@@ -338,7 +338,7 @@ class CheckInFragment : Fragment() {
     }
 
     private fun disableRecordVideo() {
-        binding.tvVideoRecordedStatus.visibility = View.VISIBLE
+        setVideoRecordedStatusVisible(true)
         binding.btnRecordVideo.apply {
             isEnabled = false
             text = getString(R.string.checkin_video_submitted)
@@ -347,7 +347,7 @@ class CheckInFragment : Fragment() {
     }
 
     private fun showVideoRecordedState() {
-        binding.tvVideoRecordedStatus.visibility = View.VISIBLE
+        setVideoRecordedStatusVisible(true)
         binding.btnRecordVideo.isEnabled = true
         binding.btnRecordVideo.text = getString(R.string.checkin_record_again)
         binding.btnRecordVideo.setBackgroundColor(
@@ -357,7 +357,7 @@ class CheckInFragment : Fragment() {
     }
 
     private fun enableRecordVideo() {
-        binding.tvVideoRecordedStatus.visibility = View.GONE
+        setVideoRecordedStatusVisible(false)
         binding.btnRecordVideo.isEnabled = true
         binding.btnRecordVideo.isClickable = true
         binding.btnRecordVideo.alpha = 1f
@@ -366,6 +366,33 @@ class CheckInFragment : Fragment() {
             ContextCompat.getColor(requireContext(), android.R.color.holo_blue_dark)
         )
         binding.btnRecordVideo.setTextColor(Color.WHITE)
+    }
+
+    private fun setPendingReviewHintVisible(visible: Boolean) {
+        if (visible) {
+            binding.tvPendingReviewHint.text = getString(R.string.checkin_pending_review_hint)
+        } else {
+            binding.tvPendingReviewHint.text = ""
+        }
+        setCollapsed(binding.tvPendingReviewHint, !visible)
+    }
+
+    private fun setVideoRecordedStatusVisible(visible: Boolean) {
+        if (visible) {
+            binding.tvVideoRecordedStatus.text = getString(R.string.checkin_video_recorded)
+        } else {
+            binding.tvVideoRecordedStatus.text = ""
+        }
+        setCollapsed(binding.tvVideoRecordedStatus, !visible)
+    }
+
+    private fun setCollapsed(view: View, collapsed: Boolean) {
+        val params = view.layoutParams ?: return
+        params.height = if (collapsed) 0 else ViewGroup.LayoutParams.WRAP_CONTENT
+        view.layoutParams = params
+        view.alpha = if (collapsed) 0f else 1f
+        view.isEnabled = !collapsed
+        view.isClickable = !collapsed
     }
 
     private fun handleSubmitWithValidation() {

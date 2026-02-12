@@ -11,15 +11,18 @@ class UserRegisterModelTest {
 
     @Test
     fun registerRequest_holdsUsernameEmailAndPassword() {
+        val sampleUser = "recycler_test_user"
+        val sampleEmail = "recycler.test@example.com"
+        val samplePass = "unit_test_pass"
         val request = RegisterRequest(
-            username = "alice",
-            emailAddress = "alice@example.com",
-            password = "secret123"
+            sampleUser,
+            sampleEmail,
+            samplePass
         )
 
-        assertEquals("alice", request.username)
-        assertEquals("alice@example.com", request.emailAddress)
-        assertEquals("secret123", request.password)
+        assertEquals(sampleUser, request.username)
+        assertEquals(sampleEmail, request.emailAddress)
+        assertEquals(samplePass, request.password)
     }
 
     @Test
