@@ -626,7 +626,8 @@ class CheckInFragment : Fragment() {
 
     private fun showStatus(message: String, isError: Boolean = false) {
         if (message.isBlank()) {
-            binding.tvStatusMessage.visibility = View.GONE
+            binding.tvStatusMessage.text = ""
+            setCollapsed(binding.tvStatusMessage, true)
             return
         }
         binding.tvStatusMessage.apply {
@@ -638,8 +639,8 @@ class CheckInFragment : Fragment() {
                     else android.R.color.holo_green_dark
                 )
             )
-            visibility = View.VISIBLE
         }
+        setCollapsed(binding.tvStatusMessage, false)
     }
 
     private fun getVideoDurationSeconds(videoFile: File): Int {

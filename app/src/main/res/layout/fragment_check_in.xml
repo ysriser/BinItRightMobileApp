@@ -387,12 +387,11 @@
         <TextView
             android:id="@+id/tvStatusMessage"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="0dp"
             android:layout_marginBottom="8dp"
             android:text=""
             android:textSize="14sp"
             android:textColor="#388E3C"
-            android:visibility="gone"
             android:gravity="center"
             android:padding="12dp"/>
 
