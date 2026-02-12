@@ -7,37 +7,37 @@ class IssueCategoryMappingTest {
 
     @Test
     fun position0_mapsToBinIssues() {
-        assertEquals("BinIssues", mapCategory(0))
+        assertEquals("BIN_ISSUES", mapCategory(0))
     }
 
     @Test
     fun position1_mapsToAppProblems() {
-        assertEquals("AppProblems", mapCategory(1))
+        assertEquals("APP_PROBLEMS", mapCategory(1))
     }
 
     @Test
     fun position2_mapsToLocationErrors() {
-        assertEquals("LocationErrors", mapCategory(2))
+        assertEquals("LOCATION_ERRORS", mapCategory(2))
     }
 
     @Test
     fun position3_mapsToOthers() {
-        assertEquals("Others", mapCategory(3))
+        assertEquals("OTHERS", mapCategory(3))
     }
 
     @Test
     fun unknownPosition_mapsToOthers() {
-        assertEquals("Others", mapCategory(99))
+        assertEquals("OTHERS", mapCategory(99))
     }
 
 
     private fun mapCategory(position: Int): String {
         return when (position) {
-            0 -> "BinIssues"
-            1 -> "AppProblems"
-            2 -> "LocationErrors"
-            3 -> "Others"
-            else -> "Others"
+            0 -> "BIN_ISSUES"
+            1 -> "APP_PROBLEMS"
+            2 -> "LOCATION_ERRORS"
+            3 -> "OTHERS"
+            else -> "OTHERS"
         }
     }
 }

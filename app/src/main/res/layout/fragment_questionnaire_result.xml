@@ -55,78 +55,17 @@
             app:layout_constraintTop_toBottomOf="@id/tvCategory" />
 
         <androidx.cardview.widget.CardView
-            android:id="@+id/cardAccuracy"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginHorizontal="24dp"
-            android:layout_marginTop="32dp"
-            app:cardBackgroundColor="@android:color/white"
-            app:cardCornerRadius="12dp"
-            app:cardElevation="2dp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/tvBadge">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:padding="16dp">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center"
-                    android:text="Is this identification accurate?"
-                    android:textColor="#424242" />
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="16dp"
-                    android:orientation="horizontal">
-
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btnAccurate"
-                        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_marginEnd="8dp"
-                        android:layout_weight="1"
-                        android:maxLines="1"
-                        android:text="Yes, accurate"
-                        android:textColor="#00C853"
-                        app:autoSizeTextType="uniform"
-                        app:strokeColor="#00C853" />
-
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btnIncorrect"
-                        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="8dp"
-                        android:layout_weight="1"
-                        android:maxLines="1"
-                        android:text="No, incorrect"
-                        android:textColor="#D32F2F"
-                        app:autoSizeTextType="uniform"
-                        app:strokeColor="#D32F2F" />
-                </LinearLayout>
-            </LinearLayout>
-        </androidx.cardview.widget.CardView>
-
-        <androidx.cardview.widget.CardView
             android:id="@+id/cardInfo"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginHorizontal="24dp"
-            android:layout_marginTop="24dp"
+            android:layout_marginTop="32dp"
             app:cardBackgroundColor="#E8F5E9"
             app:cardCornerRadius="12dp"
             app:cardElevation="0dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/cardAccuracy">
+            app:layout_constraintTop_toBottomOf="@id/tvBadge">
 
             <LinearLayout
                 android:layout_width="match_parent"

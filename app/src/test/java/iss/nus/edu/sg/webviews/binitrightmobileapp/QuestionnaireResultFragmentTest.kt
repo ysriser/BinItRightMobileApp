@@ -121,7 +121,7 @@ class QuestionnaireResultFragmentTest {
     }
 
     @Test
-    fun listeners_navigateAndHandleFeedback() {
+    fun listeners_navigate_withoutFeedbackSection() {
         val activity = Robolectric.buildActivity(FragmentActivity::class.java).setup().get()
         val fragment = QuestionnaireResultFragment().apply {
             arguments = Bundle().apply {
@@ -178,15 +178,6 @@ class QuestionnaireResultFragmentTest {
         shadowOf(Looper.getMainLooper()).idle()
         assertEquals(R.id.nav_home, homeNav.currentDestination?.id)
 
-        val root = fragment.requireView()
-        root.findViewById<View>(R.id.btnAccurate).performClick()
-        shadowOf(Looper.getMainLooper()).idle()
-        assertTrue(root.findViewById<View>(R.id.cardAccuracy).visibility != View.VISIBLE)
-
-        root.findViewById<View>(R.id.cardAccuracy).visibility = View.VISIBLE
-        root.findViewById<View>(R.id.btnIncorrect).performClick()
-        shadowOf(Looper.getMainLooper()).idle()
-        assertTrue(root.findViewById<View>(R.id.cardAccuracy).visibility != View.VISIBLE)
     }
 
     private fun navFromHomeToQuestionnaireResult(activity: FragmentActivity): TestNavHostController {
