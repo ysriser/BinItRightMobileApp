@@ -25,15 +25,6 @@ private val RECYCLABLE_FALLBACK_INSTRUCTIONS = listOf(
     CLEAN_DRY_INSTRUCTION,
     PROPER_STREAM_INSTRUCTION,
 )
-private val RECYCLABLE_CATEGORY_KEYWORDS = setOf(
-    "plastic",
-    "metal",
-    "glass",
-    "paper",
-    "e-waste",
-    "textile",
-    "lighting",
-)
 
 interface ScanRepository {
     suspend fun scanImage(
@@ -129,7 +120,7 @@ class RealScanRepository : ScanRepository {
     }
 
     private fun mapFinalToScanResult(final: FinalResult, meta: Meta?): ScanResult {
-        val effectiveRecyclable = final.recyclable || ScannedCategoryHelper.isSpecialRecyclable(final.category)
+        val effectiveRecyclable = ScannedCategoryHelper.isCategoryRecyclable(final.category)
         val finalInstructions = final.instructions.ifEmpty {
             fallbackInstructionsFor(effectiveRecyclable)
         }
@@ -279,7 +270,7 @@ class HybridScanRepository(
     }
 
     private fun mapFinalToScanResult(final: FinalResult, meta: Meta?): ScanResult {
-        val effectiveRecyclable = final.recyclable || ScannedCategoryHelper.isSpecialRecyclable(final.category)
+        val effectiveRecyclable = ScannedCategoryHelper.isCategoryRecyclable(final.category)
         val finalInstructions = final.instructions.ifEmpty {
             fallbackInstructionsFor(effectiveRecyclable)
         }
@@ -296,7 +287,7 @@ class HybridScanRepository(
     }
 
     private fun mapTier1ToScanResult(tier1: Tier1Result): ScanResult {
-        val recyclable = isRecyclableCategory(tier1.category)
+        val recyclable = ScannedCategoryHelper.isCategoryRecyclable(tier1.category)
 
         val categoryName = tier1.category.replaceFirstChar { it.uppercase() }
 
@@ -411,7 +402,7 @@ private fun compressBitmap(source: Bitmap): ByteArray {
 }
 
 private fun isRecyclableCategory(category: String): Boolean {
-    return category.lowercase() in RECYCLABLE_CATEGORY_KEYWORDS
+    return ScannedCategoryHelper.isCategoryRecyclable(category)
 }
 
 private fun fallbackInstructionsFor(recyclable: Boolean): List<String> {

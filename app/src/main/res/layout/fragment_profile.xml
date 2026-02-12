@@ -74,7 +74,7 @@
                         android:layout_height="match_parent"
                         android:padding="8dp"
                         android:scaleType="fitCenter"
-                        android:src="@drawable/ic_launcher_foreground" />
+                        android:src="@drawable/default_avatar" />
                 </androidx.cardview.widget.CardView>
 
                 <TextView
@@ -85,19 +85,6 @@
                     android:text="Name"
                     android:textColor="#212121"
                     android:textSize="22sp"
-                    android:textStyle="bold" />
-
-                <TextView
-                    android:id="@+id/rankLabel"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:background="#E8EAF6"
-                    android:paddingHorizontal="16dp"
-                    android:paddingVertical="4dp"
-                    android:text="Level 1 Recycler"
-                    android:textColor="#536DFE"
-                    android:textSize="13sp"
                     android:textStyle="bold" />
 
                 <LinearLayout

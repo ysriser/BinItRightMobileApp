@@ -4,6 +4,7 @@ import android.app.Application
 import android.os.Bundle
 import android.os.Looper
 import android.view.View
+import android.widget.Button
 import android.widget.TextView
 import androidx.fragment.app.FragmentActivity
 import androidx.navigation.Navigation
@@ -66,7 +67,9 @@ class QuestionnaireResultFragmentTest {
                 tips = listOf("Check local guide")
             )
         )
-        assertEquals("Not sure", fragment.requireView().findViewById<TextView>(R.id.tvBadge).text.toString())
+        val root = fragment.requireView()
+        assertEquals("Not sure", root.findViewById<TextView>(R.id.tvBadge).text.toString())
+        assertTrue(!root.findViewById<Button>(R.id.btnRecycle).isEnabled)
 
         callPrivate(
             fragment,
@@ -79,7 +82,8 @@ class QuestionnaireResultFragmentTest {
                 tips = listOf("Rinse", "Dry")
             )
         )
-        assertEquals("Recyclable", fragment.requireView().findViewById<TextView>(R.id.tvBadge).text.toString())
+        assertEquals("Recyclable", root.findViewById<TextView>(R.id.tvBadge).text.toString())
+        assertTrue(root.findViewById<Button>(R.id.btnRecycle).isEnabled)
 
         callPrivate(
             fragment,
@@ -93,9 +97,27 @@ class QuestionnaireResultFragmentTest {
                 instruction = "Put into general waste"
             )
         )
-        val root = fragment.requireView()
         assertEquals("Not Recyclable", root.findViewById<TextView>(R.id.tvBadge).text.toString())
         assertEquals("Put into general waste", root.findViewById<TextView>(R.id.tvTips).text.toString())
+        assertTrue(!root.findViewById<Button>(R.id.btnRecycle).isEnabled)
+
+        callPrivate(
+            fragment,
+            "setupUI",
+            SerializableOutcome(
+                categoryTitle = "Textile - Old Shirt",
+                disposalLabel = "Recyclable",
+                certainty = "MEDIUM",
+                explanation = "Use dedicated stream",
+                tips = listOf("Bring to textile collection point")
+            )
+        )
+        val textileBtn = root.findViewById<Button>(R.id.btnRecycle)
+        assertTrue(!textileBtn.isEnabled)
+        assertEquals(
+            activity.getString(R.string.scanning_recycle_cta_textile_disabled),
+            textileBtn.text.toString()
+        )
     }
 
     @Test
@@ -106,11 +128,11 @@ class QuestionnaireResultFragmentTest {
                 putSerializable(
                     "outcome",
                     SerializableOutcome(
-                        categoryTitle = "E-waste - Charger",
-                        disposalLabel = "Not Recyclable",
+                        categoryTitle = "Plastic bottle",
+                        disposalLabel = "Recyclable",
                         certainty = "MEDIUM",
-                        explanation = "special stream",
-                        tips = listOf("Bring to e-waste collection point")
+                        explanation = "recyclable flow",
+                        tips = listOf("Rinse and dry first")
                     )
                 )
             }
@@ -131,9 +153,9 @@ class QuestionnaireResultFragmentTest {
         shadowOf(Looper.getMainLooper()).idle()
         assertEquals(R.id.nearByBinFragment, recycleNav.currentDestination?.id)
         val recycleArgs = recycleNav.currentBackStackEntry?.arguments
-        assertEquals("EWASTE", recycleArgs?.getString("selectedBinType"))
-        assertEquals("E-waste - Charger", recycleArgs?.getString("wasteCategory"))
-        assertEquals("E-Waste", recycleArgs?.getString("mappedWasteCategory"))
+        assertEquals("BLUEBIN", recycleArgs?.getString("selectedBinType"))
+        assertEquals("Plastic bottle", recycleArgs?.getString("wasteCategory"))
+        assertEquals("Plastic", recycleArgs?.getString("mappedWasteCategory"))
 
         val backNav = navFromHomeToQuestionnaireResult(activity)
         Navigation.setViewNavController(fragment.requireView(), backNav)

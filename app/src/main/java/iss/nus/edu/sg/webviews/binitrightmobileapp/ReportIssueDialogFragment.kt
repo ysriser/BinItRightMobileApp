@@ -93,11 +93,11 @@ class ReportIssueDialogFragment : DialogFragment() {
         // Get category - map display name to backend enum
         val categoryPosition = binding.spinnerCategory.selectedItemPosition
         val category = when (categoryPosition) {
-            0 -> "BinIssues"
-            1 -> "AppProblems"
-            2 -> "LocationErrors"
-            3 -> "Others"
-            else -> "Others"
+            0 -> "BIN_ISSUES"
+            1 -> "APP_PROBLEMS"
+            2 -> "LOCATION_ERRORS"
+            3 -> "OTHERS"
+            else -> "OTHERS"
         }
 
         // Get userId from SharedPreferences
@@ -137,14 +137,14 @@ class ReportIssueDialogFragment : DialogFragment() {
                     val issueId = response.body()?.issueId
                     Toast.makeText(
                         requireContext(),
-                        "Issue reported successfully! (ID: $issueId)",
+                        "Issue reported successfully!",
                         Toast.LENGTH_SHORT
                     ).show()
                     dismiss()
                 } else {
                     Toast.makeText(
                         requireContext(),
-                        "Failed to submit issue: ${response.code()}",
+                        "Failed to submit issue",
                         Toast.LENGTH_SHORT
                     ).show()
                 }
