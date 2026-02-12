@@ -56,6 +56,7 @@ class RecycleHistoryAdapter : RecyclerView.Adapter<RecycleHistoryAdapter.ViewHol
             normalized.contains("lighting") || normalized.contains("lamp") || normalized.contains("bulb") -> R.drawable.ic_lighting
             normalized.contains("other") || normalized.contains("not sure") || normalized.contains("uncertain") || normalized.contains("textile") -> R.drawable.ic_others
             normalized.contains("glass") -> R.drawable.ic_glass
+            normalized.contains("metal") -> R.drawable.ic_metal
             else -> R.drawable.ic_recycle
         }
     }
