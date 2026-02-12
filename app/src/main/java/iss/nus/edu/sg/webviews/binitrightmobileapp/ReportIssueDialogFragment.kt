@@ -134,7 +134,6 @@ class ReportIssueDialogFragment : DialogFragment() {
                 binding.btnCancel.isEnabled = true
 
                 if (response.isSuccessful) {
-                    val issueId = response.body()?.issueId
                     Toast.makeText(
                         requireContext(),
                         "Issue reported successfully!",
@@ -144,7 +143,7 @@ class ReportIssueDialogFragment : DialogFragment() {
                 } else {
                     Toast.makeText(
                         requireContext(),
-                        "Failed to submit issue",
+                        "Failed to submit issue: ${response.code()}",
                         Toast.LENGTH_SHORT
                     ).show()
                 }

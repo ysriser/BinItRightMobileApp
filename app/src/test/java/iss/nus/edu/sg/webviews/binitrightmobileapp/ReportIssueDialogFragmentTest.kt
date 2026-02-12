@@ -110,7 +110,7 @@ class ReportIssueDialogFragmentTest {
             !dialog.isAdded
         }
 
-        assertEquals("AppProblems", capturedRequest?.issueCategory)
+        assertEquals("APP_PROBLEMS", capturedRequest?.issueCategory)
         assertEquals("network issue", capturedRequest?.description)
         assertEquals(true, ShadowToast.getTextOfLatestToast().toString().contains("Issue reported successfully!"))
     }

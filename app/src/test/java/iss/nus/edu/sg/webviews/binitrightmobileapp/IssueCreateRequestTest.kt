@@ -9,11 +9,11 @@ class IssueCreateRequestTest {
     @Test
     fun issueCreateRequest_holdsCorrectValues() {
         val request = IssueCreateRequest(
-            issueCategory = "BinIssues",
+            issueCategory = "BIN_ISSUES",
             description = "Bin is overflowing"
         )
 
-        assertEquals("BinIssues", request.issueCategory)
+        assertEquals("BIN_ISSUES", request.issueCategory)
         assertEquals("Bin is overflowing", request.description)
     }
 }
