@@ -55,8 +55,14 @@ class RecycleHistoryAdapterTest {
     }
 
     @Test
-    fun resolveIcon_unknown_returnsDefaultRecycleIcon() {
+    fun resolveIcon_metal_returnsMetalIcon() {
         val icon = adapter.resolveIcon("Metal")
+        assertEquals(R.drawable.ic_metal, icon)
+    }
+
+    @Test
+    fun resolveIcon_unknown_returnsDefaultRecycleIcon() {
+        val icon = adapter.resolveIcon("UnknownCategory")
         assertEquals(R.drawable.ic_recycle, icon)
     }
 
