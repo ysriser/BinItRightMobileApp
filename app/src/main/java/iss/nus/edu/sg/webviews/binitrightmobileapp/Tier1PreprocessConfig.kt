@@ -8,7 +8,7 @@ object Tier1PreprocessConfig {
     const val RESIZE_SCALE = 1.1f
 
     // Tier-1 escalation thresholds.
-    const val CONF_THRESHOLD_DEFAULT = 0.6f
+    const val CONF_THRESHOLD_DEFAULT = 0.65f
     const val CONF_THRESHOLD_PLASTIC = 0.70f
     const val CONF_THRESHOLD_GLASS = 0.70f
     const val MARGIN_THRESHOLD = 0.3f
