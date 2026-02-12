@@ -31,12 +31,17 @@ class RegisterFragment : Fragment(R.layout.fragment_register) {
 
     private fun handleRegister() {
         val username = binding.etUsername.text.toString().trim()
+        val email = binding.etEmail.text.toString().trim()
         val password = binding.etPassword.text.toString().trim()
         val confirm = binding.etConfirmPassword.text.toString().trim()
 
         // Frontend validation
         if (username.isEmpty()) {
             binding.tilUsername.error = "Username required"
+            return
+        }
+        if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+            Toast.makeText(requireContext(), "Enter a valid email", Toast.LENGTH_SHORT).show()
             return
         }
         if (password.length < 6) {
@@ -49,27 +54,33 @@ class RegisterFragment : Fragment(R.layout.fragment_register) {
         }
 
         // API call
-        createAccount(username, password)
+        createAccount(username,email,password)
     }
 
-    private fun createAccount(username: String, password: String) {
+    private fun createAccount(username: String, email: String, password: String) {
         viewLifecycleOwner.lifecycleScope.launch {
             try {
                 val response = RetrofitClient.apiService()
-                    .register(RegisterRequest(username, password))
-
+                    .register(
+                        RegisterRequest(
+                            username = username,
+                            emailAddress = email,
+                            password = password
+                        )
+                    )
                 if (response.isSuccessful) {
-                    Toast.makeText(
-                        requireContext(),
-                        response.body()?.message ?: "Account created",
-                        Toast.LENGTH_SHORT
-                    ).show()
-                    findNavController().navigate(R.id.loginFragment)
-                }
-                else {
+                    val body = response.body()
+                    if (body?.success == true) {
+                        Toast.makeText(requireContext(), body.message, Toast.LENGTH_SHORT).show()
+                        findNavController().navigate(R.id.loginFragment)
+                    } else {
+                        Toast.makeText(requireContext(), body?.message ?: "Registration failed", Toast.LENGTH_LONG).show()
+                    }
+                } else {
                     val err = response.errorBody()?.string() ?: "Registration failed"
                     Toast.makeText(requireContext(), err, Toast.LENGTH_LONG).show()
                 }
+
             } catch (e: Exception) {
                 Toast.makeText(
                     requireContext(),
