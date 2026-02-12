@@ -153,6 +153,9 @@ class ScanningResultFragment : Fragment() {
         } else {
             getString(R.string.scanning_instruction_default)
         }
+
+        val canProceedToRecycleFlow = effectiveRecyclable || isNotSure
+        updateRecycleButtonState(canProceedToRecycleFlow)
     }
 
     private fun setupListeners() {
@@ -165,6 +168,10 @@ class ScanningResultFragment : Fragment() {
         }
 
         binding.btnRecycle.setOnClickListener {
+            if (!binding.btnRecycle.isEnabled) {
+                return@setOnClickListener
+            }
+
             val rawCategory = currentScanResult?.category.orEmpty()
             val effectiveRecyclable = (currentScanResult?.recyclable == true) || ScannedCategoryHelper.isSpecialRecyclable(rawCategory)
             val mappedWasteCategory = ScannedCategoryHelper.toCheckInWasteType(rawCategory)
@@ -188,6 +195,17 @@ class ScanningResultFragment : Fragment() {
             )
         }
 
+    }
+
+    private fun updateRecycleButtonState(enabled: Boolean) {
+        binding.btnRecycle.isEnabled = enabled
+        binding.btnRecycle.isClickable = enabled
+        binding.btnRecycle.alpha = if (enabled) 1f else 0.55f
+        binding.btnRecycle.text = if (enabled) {
+            getString(R.string.scanning_recycle_cta_enabled)
+        } else {
+            getString(R.string.scanning_recycle_cta_disabled)
+        }
     }
 
     override fun onDestroyView() {

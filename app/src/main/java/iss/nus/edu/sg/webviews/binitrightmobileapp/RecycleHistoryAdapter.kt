@@ -7,6 +7,14 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import iss.nus.edu.sg.webviews.binitrightmobileapp.model.RecycleHistoryModel
+import java.time.Instant
+import java.time.LocalDateTime
+import java.time.OffsetDateTime
+import java.time.ZoneId
+import java.time.ZoneOffset
+import java.time.format.DateTimeFormatter
+import java.time.format.DateTimeParseException
+import java.util.Locale
 
 class RecycleHistoryAdapter : RecyclerView.Adapter<RecycleHistoryAdapter.ViewHolder>() {
 
@@ -35,12 +43,54 @@ class RecycleHistoryAdapter : RecyclerView.Adapter<RecycleHistoryAdapter.ViewHol
         }
     }
 
+    private val singaporeZone: ZoneId = ZoneId.of("Asia/Singapore")
+    private val outputFormatter: DateTimeFormatter =
+        DateTimeFormatter.ofPattern("dd MMM yyyy, hh:mm a", Locale.ENGLISH)
+
     fun resolveIcon(categoryName: String): Int {
-        return when (categoryName) {
-            "Plastic" -> R.drawable.ic_plastic
-            "E-Waste" -> R.drawable.ic_ewaste
-            "Glass" -> R.drawable.ic_glass
+        val normalized = categoryName.trim().lowercase(Locale.ENGLISH)
+        return when {
+            normalized.contains("plastic") -> R.drawable.ic_plastic
+            normalized.contains("paper") || normalized.contains("cardboard") -> R.drawable.ic_paper
+            normalized.contains("e-waste") || normalized.contains("ewaste") || normalized.contains("electronic") -> R.drawable.ic_ewaste
+            normalized.contains("glass") -> R.drawable.ic_glass
             else -> R.drawable.ic_recycle
+        }
+    }
+
+    private fun formatHistoryDate(rawDate: String): String {
+        val text = rawDate.trim()
+        if (text.isEmpty()) return rawDate
+
+        parseIsoWithZone(text)?.let { return it }
+        parseIsoWithoutZone(text)?.let { return it }
+
+        return rawDate
+    }
+
+    private fun parseIsoWithZone(text: String): String? {
+        return try {
+            val instant = if (text.endsWith("Z", ignoreCase = true)) {
+                Instant.parse(text)
+            } else {
+                OffsetDateTime.parse(text).toInstant()
+            }
+            instant.atZone(singaporeZone).format(outputFormatter)
+        } catch (_: DateTimeParseException) {
+            null
+        }
+    }
+
+    private fun parseIsoWithoutZone(text: String): String? {
+        val normalized = text.replace(" ", "T")
+        return try {
+            val utcDateTime = LocalDateTime.parse(normalized)
+            utcDateTime
+                .atZone(ZoneOffset.UTC)
+                .withZoneSameInstant(singaporeZone)
+                .format(outputFormatter)
+        } catch (_: DateTimeParseException) {
+            null
         }
     }
 
@@ -60,7 +110,7 @@ class RecycleHistoryAdapter : RecyclerView.Adapter<RecycleHistoryAdapter.ViewHol
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val item = items[position]
         holder.category.text = item.categoryName
-        holder.date.text = item.date
+        holder.date.text = formatHistoryDate(item.date)
         holder.qty.text = holder.itemView.context.getString(
             R.string.recycle_history_quantity_format,
             item.quantity

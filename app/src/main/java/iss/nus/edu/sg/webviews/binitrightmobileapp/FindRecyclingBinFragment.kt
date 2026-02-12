@@ -101,8 +101,31 @@ class FindRecyclingBinFragment : Fragment(R.layout.fragment_find_recycling_bin),
     // -----------------------------
     private fun setupRecyclerView() {
         binding.binsRecyclerView.layoutManager = LinearLayoutManager(requireContext())
-        adapter = FindBinsAdapter(filteredBins)
+        adapter = FindBinsAdapter(filteredBins) { selectedBin ->
+            navigateToCheckIn(selectedBin)
+        }
         binding.binsRecyclerView.adapter = adapter
+    }
+
+    private fun navigateToCheckIn(bin: DropOffLocation) {
+        val mapped = ScannedCategoryHelper.toCheckInWasteTypeFromBinType(bin.binType)
+        val normalizedBinType = ScannedCategoryHelper.normalizeBinType(bin.binType)
+
+        val bundle = Bundle().apply {
+            putString("binId", bin.id)
+            putString("binName", bin.name)
+            putString("binAddress", bin.address)
+            putString("binType", bin.binType)
+            putDouble("binLatitude", bin.latitude)
+            putDouble("binLongitude", bin.longitude)
+            putString("selectedBinType", normalizedBinType)
+            putString("mappedWasteCategory", mapped)
+        }
+
+        findNavController().navigate(
+            R.id.checkInFragment,
+            bundle
+        )
     }
 
     // -----------------------------
