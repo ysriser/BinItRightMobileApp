@@ -4,6 +4,7 @@ import android.app.Application
 import android.os.Bundle
 import android.os.Looper
 import android.view.View
+import android.widget.Button
 import android.widget.TextView
 import androidx.fragment.app.FragmentActivity
 import androidx.navigation.Navigation
@@ -53,6 +54,12 @@ class ScanningResultFragmentTest {
             )
         )
         assertEquals("Not sure", fragment.requireView().findViewById<TextView>(R.id.tvBadge).text.toString())
+        val uncertainCta = fragment.requireView().findViewById<Button>(R.id.btnRecycle)
+        assertTrue(!uncertainCta.isEnabled)
+        assertEquals(
+            activity.getString(R.string.scanning_recycle_cta_disabled),
+            uncertainCta.text.toString()
+        )
 
         callPrivate(
             fragment,

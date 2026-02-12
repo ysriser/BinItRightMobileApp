@@ -154,7 +154,7 @@ class ScanningResultFragment : Fragment() {
             getString(R.string.scanning_instruction_default)
         }
 
-        val canProceedToRecycleFlow = effectiveRecyclable || isNotSure
+        val canProceedToRecycleFlow = effectiveRecyclable && !isNotSure
         updateRecycleButtonState(canProceedToRecycleFlow)
     }
 
