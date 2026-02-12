@@ -8,6 +8,7 @@ plugins {
     alias(libs.plugins.kotlin.android)
     id("androidx.navigation.safeargs.kotlin")
     id("jacoco")
+    id("com.google.android.libraries.mapsplatform.secrets-gradle-plugin")
 }
 
 // Define the helper function at the top level of the script
