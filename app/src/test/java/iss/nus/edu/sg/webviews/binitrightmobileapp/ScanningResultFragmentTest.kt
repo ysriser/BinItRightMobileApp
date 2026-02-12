@@ -91,6 +91,23 @@ class ScanningResultFragmentTest {
         val root = fragment.requireView()
         assertEquals("Not Recyclable", root.findViewById<TextView>(R.id.tvBadge).text.toString())
         assertTrue(root.findViewById<TextView>(R.id.tvInstructionSteps).text.toString().contains("Follow local disposal guidance"))
+
+        callPrivate(
+            fragment,
+            "displayResult",
+            ScanResult(
+                category = "Textile - Old Shirt",
+                recyclable = true,
+                confidence = 0.9f,
+                instructions = listOf("Bring to textile point")
+            )
+        )
+        val textileBtn = root.findViewById<Button>(R.id.btnRecycle)
+        assertTrue(!textileBtn.isEnabled)
+        assertEquals(
+            activity.getString(R.string.scanning_recycle_cta_textile_disabled),
+            textileBtn.text.toString()
+        )
     }
 
     @Test

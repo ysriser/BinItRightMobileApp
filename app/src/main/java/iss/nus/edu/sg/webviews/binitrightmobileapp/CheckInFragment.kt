@@ -125,7 +125,7 @@ class CheckInFragment : Fragment() {
 
         val preferredType = mappedWasteCategory
             ?.takeIf { it.isNotBlank() }
-            ?: if (fromCategory != "Others") fromCategory else fromBinType
+            ?: if (supportedWasteTypes.contains(fromCategory)) fromCategory else fromBinType
 
         Log.d(
             TAG,
@@ -173,7 +173,7 @@ class CheckInFragment : Fragment() {
 
             if (mappedWasteCategory.isNullOrBlank()) {
                 val fromCategory = ScannedCategoryHelper.toCheckInWasteType(wasteCategory)
-                mappedWasteCategory = if (fromCategory != "Others") {
+                mappedWasteCategory = if (supportedWasteTypes.contains(fromCategory)) {
                     fromCategory
                 } else {
                     ScannedCategoryHelper.toCheckInWasteTypeFromBinType(selectedBinType ?: binType)

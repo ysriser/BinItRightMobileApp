@@ -18,6 +18,10 @@ class ScannedCategoryHelperTest {
         assertEquals("E-waste", ScannedCategoryHelper.toDisplayCategory("E-waste - Phone Charger"))
         assertEquals("Textile", ScannedCategoryHelper.toDisplayCategory("Textile - Old Shirt"))
         assertEquals("Lighting", ScannedCategoryHelper.toDisplayCategory("Lighting - LED Bulb"))
+        assertEquals("Glass", ScannedCategoryHelper.toDisplayCategory("Glass - Bottle"))
+        assertEquals("Metal", ScannedCategoryHelper.toDisplayCategory("Metal - Soda Can"))
+        assertEquals("Plastic", ScannedCategoryHelper.toDisplayCategory("Plastic - Container"))
+        assertEquals("Paper", ScannedCategoryHelper.toDisplayCategory("Paper - Cardboard"))
     }
 
     @Test
@@ -43,7 +47,7 @@ class ScannedCategoryHelperTest {
 
     @Test
     fun toCheckInWasteType_mapsTier2LikeCategories() {
-        assertEquals("Glass", ScannedCategoryHelper.toCheckInWasteType("ceramic mug"))
+        assertEquals("Others", ScannedCategoryHelper.toCheckInWasteType("ceramic mug"))
         assertEquals("E-Waste", ScannedCategoryHelper.toCheckInWasteType("usb charger cable"))
         assertEquals("Others", ScannedCategoryHelper.toCheckInWasteType("old textile shirt"))
         assertEquals("Paper", ScannedCategoryHelper.toCheckInWasteType("cardboard box"))
@@ -51,10 +55,12 @@ class ScannedCategoryHelperTest {
 
     @Test
     fun toBinType_mapsCategoryAndRecyclableToExpectedBin() {
-        assertEquals("LIGHTING", ScannedCategoryHelper.toBinType("LED lamp", recyclable = false))
-        assertEquals("EWASTE", ScannedCategoryHelper.toBinType("E-waste - Charger", recyclable = false))
+        assertEquals("", ScannedCategoryHelper.toBinType("LED lamp", recyclable = false))
+        assertEquals("", ScannedCategoryHelper.toBinType("E-waste - Charger", recyclable = false))
+        assertEquals("LIGHTING", ScannedCategoryHelper.toBinType("LED lamp", recyclable = true))
+        assertEquals("EWASTE", ScannedCategoryHelper.toBinType("E-waste - Charger", recyclable = true))
         assertEquals("", ScannedCategoryHelper.toBinType("Textile - Shirt", recyclable = true))
-        assertEquals("BLUEBIN", ScannedCategoryHelper.toBinType("Unknown plastic item", recyclable = true))
+        assertEquals("BLUEBIN", ScannedCategoryHelper.toBinType("plastic bottle", recyclable = true))
     }
 
     @Test
@@ -79,6 +85,13 @@ class ScannedCategoryHelperTest {
     fun toCheckInWasteTypeFromBinType_mapsOnlySupportedBins() {
         assertEquals("E-Waste", ScannedCategoryHelper.toCheckInWasteTypeFromBinType("EWASTE"))
         assertEquals("Lighting", ScannedCategoryHelper.toCheckInWasteTypeFromBinType("LIGHTING"))
-        assertEquals("Others", ScannedCategoryHelper.toCheckInWasteTypeFromBinType("BLUEBIN"))
+        assertEquals("", ScannedCategoryHelper.toCheckInWasteTypeFromBinType("BLUEBIN"))
+    }
+
+    @Test
+    fun isCategoryRecyclable_requiresKnownWasteCategoriesOnly() {
+        assertTrue(ScannedCategoryHelper.isCategoryRecyclable("Glass bottle"))
+        assertFalse(ScannedCategoryHelper.isCategoryRecyclable("ceramic mug"))
+        assertFalse(ScannedCategoryHelper.isCategoryRecyclable("other_uncertain"))
     }
 }

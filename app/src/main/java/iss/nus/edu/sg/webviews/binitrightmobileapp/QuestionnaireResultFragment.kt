@@ -19,6 +19,7 @@ class QuestionnaireResultFragment : Fragment() {
     private val binding get() = _binding!!
 
     private var currentOutcome: SerializableOutcome? = null
+    private var canProceedToRecycleFlow: Boolean = false
 
     companion object {
         private const val RECYCLABLE_LABEL = "recyclable"
@@ -51,9 +52,10 @@ class QuestionnaireResultFragment : Fragment() {
     private fun setupUI(outcome: SerializableOutcome) {
         val displayCategory = ScannedCategoryHelper.toDisplayCategory(outcome.categoryTitle)
         val uncertain = ScannedCategoryHelper.isUncertain(outcome.categoryTitle)
-        val specialRecyclable = ScannedCategoryHelper.isSpecialRecyclable(outcome.categoryTitle)
+        val textile = ScannedCategoryHelper.isTextileCategory(outcome.categoryTitle)
         val fromOutcome = isRecyclableLabel(outcome.disposalLabel)
-        val effectiveRecyclable = fromOutcome || specialRecyclable
+        val categoryAllowsRecycle = ScannedCategoryHelper.isCategoryRecyclable(outcome.categoryTitle)
+        val effectiveRecyclable = if (textile) true else fromOutcome && categoryAllowsRecycle
 
         binding.tvCategory.text = displayCategory
 
@@ -98,6 +100,12 @@ class QuestionnaireResultFragment : Fragment() {
             binding.tvExplanation.setTextColor("#B71C1C".toColorInt())
             binding.tvExplanationDetail.setTextColor("#C62828".toColorInt())
         }
+
+        canProceedToRecycleFlow = effectiveRecyclable && !uncertain && !textile
+        updateRecycleButtonState(
+            canProceedToRecycleFlow,
+            textileDisabled = textile && effectiveRecyclable
+        )
     }
 
     private fun setupListeners() {
@@ -118,10 +126,13 @@ class QuestionnaireResultFragment : Fragment() {
         }
 
         binding.btnRecycle.setOnClickListener {
+            if (!canProceedToRecycleFlow || !binding.btnRecycle.isEnabled) {
+                return@setOnClickListener
+            }
             val outcome = currentOutcome
             val category = outcome?.categoryTitle.orEmpty()
-            val effectiveRecyclable = isRecyclableLabel(outcome?.disposalLabel)
-                    || ScannedCategoryHelper.isSpecialRecyclable(category)
+            val effectiveRecyclable =
+                isRecyclableLabel(outcome?.disposalLabel) && ScannedCategoryHelper.isCategoryRecyclable(category)
             val mappedWasteCategory = ScannedCategoryHelper.toCheckInWasteType(category)
             val selectedBinType = ScannedCategoryHelper.toBinType(category, effectiveRecyclable)
 
@@ -161,5 +172,18 @@ class QuestionnaireResultFragment : Fragment() {
         return disposalLabel
             ?.trim()
             ?.lowercase(Locale.ROOT) == RECYCLABLE_LABEL
+    }
+
+    private fun updateRecycleButtonState(enabled: Boolean, textileDisabled: Boolean = false) {
+        binding.btnRecycle.isEnabled = enabled
+        binding.btnRecycle.isClickable = enabled
+        binding.btnRecycle.alpha = if (enabled) 1f else 0.55f
+        binding.btnRecycle.text = if (enabled) {
+            getString(R.string.scanning_recycle_cta_enabled)
+        } else if (textileDisabled) {
+            getString(R.string.scanning_recycle_cta_textile_disabled)
+        } else {
+            getString(R.string.scanning_recycle_cta_disabled)
+        }
     }
 }

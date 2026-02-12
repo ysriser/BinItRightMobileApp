@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">BinItRightMobileApp</string>
+    <string name="app_name">Bin It Right</string>
     <string name="title_activity_main">MainActivity</string>
     <string name="hello_blank_fragment">Hello blank fragment</string>
 
@@ -53,6 +53,7 @@
     <string name="scanning_feedback_sent">Feedback sent!</string>
     <string name="scanning_recycle_cta_enabled">Yes, I want to recycle this</string>
     <string name="scanning_recycle_cta_disabled">This item is not recyclable</string>
+    <string name="scanning_recycle_cta_textile_disabled">Please drop at the nearest textile collection point</string>
 
     <string name="recycle_history_quantity_format">x%1$d</string>
     <string name="number_plain_int">%1$d</string>

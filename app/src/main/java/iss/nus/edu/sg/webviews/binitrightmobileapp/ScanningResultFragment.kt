@@ -78,7 +78,8 @@ class ScanningResultFragment : Fragment() {
 
         val displayCategory = ScannedCategoryHelper.toDisplayCategory(scanResult.category)
         val isNotSure = ScannedCategoryHelper.isUncertain(scanResult.category)
-        val effectiveRecyclable = scanResult.recyclable || ScannedCategoryHelper.isSpecialRecyclable(scanResult.category)
+        val isTextile = ScannedCategoryHelper.isTextileCategory(scanResult.category)
+        val effectiveRecyclable = ScannedCategoryHelper.isCategoryRecyclable(scanResult.category)
 
         binding.tvCategory.text = displayCategory
 
@@ -154,8 +155,8 @@ class ScanningResultFragment : Fragment() {
             getString(R.string.scanning_instruction_default)
         }
 
-        val canProceedToRecycleFlow = effectiveRecyclable && !isNotSure
-        updateRecycleButtonState(canProceedToRecycleFlow)
+        val canProceedToRecycleFlow = effectiveRecyclable && !isNotSure && !isTextile
+        updateRecycleButtonState(canProceedToRecycleFlow, textileDisabled = isTextile && effectiveRecyclable)
     }
 
     private fun setupListeners() {
@@ -173,11 +174,9 @@ class ScanningResultFragment : Fragment() {
             }
 
             val rawCategory = currentScanResult?.category.orEmpty()
-            val effectiveRecyclable = (currentScanResult?.recyclable == true) || ScannedCategoryHelper.isSpecialRecyclable(rawCategory)
+            val effectiveRecyclable = ScannedCategoryHelper.isCategoryRecyclable(rawCategory)
             val mappedWasteCategory = ScannedCategoryHelper.toCheckInWasteType(rawCategory)
-            val selectedBinType = currentScanResult?.binType
-                ?.takeIf { it.isNotBlank() }
-                ?: ScannedCategoryHelper.toBinType(rawCategory, effectiveRecyclable)
+            val selectedBinType = ScannedCategoryHelper.toBinType(rawCategory, effectiveRecyclable)
 
             Log.d("ScanningResult", "Passing wasteCategory: $rawCategory")
             Log.d("ScanningResult", "Passing mappedWasteCategory: $mappedWasteCategory")
@@ -197,12 +196,14 @@ class ScanningResultFragment : Fragment() {
 
     }
 
-    private fun updateRecycleButtonState(enabled: Boolean) {
+    private fun updateRecycleButtonState(enabled: Boolean, textileDisabled: Boolean = false) {
         binding.btnRecycle.isEnabled = enabled
         binding.btnRecycle.isClickable = enabled
         binding.btnRecycle.alpha = if (enabled) 1f else 0.55f
         binding.btnRecycle.text = if (enabled) {
             getString(R.string.scanning_recycle_cta_enabled)
+        } else if (textileDisabled) {
+            getString(R.string.scanning_recycle_cta_textile_disabled)
         } else {
             getString(R.string.scanning_recycle_cta_disabled)
         }

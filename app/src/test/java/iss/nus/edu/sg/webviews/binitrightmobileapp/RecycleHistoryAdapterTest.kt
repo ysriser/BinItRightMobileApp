@@ -59,4 +59,16 @@ class RecycleHistoryAdapterTest {
         val icon = adapter.resolveIcon("Metal")
         assertEquals(R.drawable.ic_recycle, icon)
     }
+
+    @Test
+    fun resolveIcon_lighting_returnsLightingIcon() {
+        val icon = adapter.resolveIcon("Lighting")
+        assertEquals(R.drawable.ic_lighting, icon)
+    }
+
+    @Test
+    fun resolveIcon_others_returnsOthersIcon() {
+        val icon = adapter.resolveIcon("Others")
+        assertEquals(R.drawable.ic_others, icon)
+    }
 }

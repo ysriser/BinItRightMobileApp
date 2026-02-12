@@ -219,8 +219,7 @@ class CheckInFragmentTest {
             "Plastic" to R.id.chipPlastic,
             "Paper" to R.id.chipPaper,
             "Glass" to R.id.chipGlass,
-            "Lighting" to R.id.chipLighting,
-            "Others" to R.id.chipOthers
+            "Lighting" to R.id.chipLighting
         )
 
         cases.forEach { (mapped, chipId) ->
