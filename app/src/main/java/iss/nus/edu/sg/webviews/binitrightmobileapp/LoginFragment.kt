@@ -67,7 +67,7 @@ class LoginFragment : Fragment(R.layout.fragment_login) {
             return
         }
 
-        binding.btnSignIn.isEnabled = false
+        binding.btnSignIn.isEnabled = true
 
 
         viewLifecycleOwner.lifecycleScope.launch {
